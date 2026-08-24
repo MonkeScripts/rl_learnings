@@ -38,3 +38,4 @@ against this version. Upstream source checkout for reading/examples: `~/upkie`.
 - `scripts/` — my own code. `pd_balancer.py` (S1), `evaluate.py` (S3).
 - `runs/` — training output, gitignored.
 - `notes/` — reading notes per session.
+# rl_learnings
