@@ -27,3 +27,6 @@ upkie = "==12.0.0"
 # Session 1
 pd = "python scripts/pd_balancer.py"
 pd-gui = "python scripts/pd_balancer.py --gui"
+
+# Session 2
+sweep = "python scripts/sweep.py"
