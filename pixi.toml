@@ -1,0 +1,29 @@
+# Upkie RL balancing — 20-session learning repo.
+# Env is deliberately separate from the ~/upkie source checkout: this repo holds
+# *my* scripts, pinned so Session 19 (reproducibility) is not a fiction.
+[workspace]
+name = "rl_learnings"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = "3.11.*"
+numpy = "*"
+pybullet = ">=3.25"
+gymnasium = ">=0.29"
+stable-baselines3 = ">=2.3"
+pytorch-cpu = "*"          # no Nvidia GPU on this box; [64,64] MLP trains fine on CPU
+matplotlib-base = "*"
+tensorboard = ">=2.20,<3"
+pyyaml = "*"
+pytest = "*"
+tqdm = "*"
+rich = "*"
+
+[pypi-dependencies]
+upkie = "==12.0.0"
+
+[tasks]
+# Session 1
+pd = "python scripts/pd_balancer.py"
+pd-gui = "python scripts/pd_balancer.py --gui"

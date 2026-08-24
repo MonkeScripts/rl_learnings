@@ -1,0 +1,6 @@
+.pixi/
+runs/
+*.zip
+__pycache__/
+*.pyc
+.venv/
