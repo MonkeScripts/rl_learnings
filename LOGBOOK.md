@@ -29,6 +29,16 @@ robot RL is re-running an experiment you already ran.
 | 2026-08-24 | 2 | **(run C)** Q7's dichotomy — marginally stable *vs* slowly diverging | logged θ and p every 500 steps instead of extremes only (the instrumentation gap noted above) | — | `[1,0,0,0.1]`: θ bounded ±0.010 rad, p pinned +0.0018 m. `[10,1,0,0.1]`: θ bounded ±0.014 rad, p settles −0.119 m. **Neither grows.** | **False dichotomy — both are locally stable.** The difference is *basin size*, which no undisturbed trial can see. |
 | 2026-08-24 | 2 | **(run C)** basin of attraction is the thing the push ramp was actually measuring | `update_init_rand(pitch=0.02, omega_y=0.1)`, seeds 0-4, 6000 steps | undisturbed: both 6000/6000, **scored identical** | `[1,0,0,0.1]` → **2/5** survive; `[10,1,0,0.1]` → **4/5** | **Decisive, and it settles the S3 design.** A 1.1° initial lean separates two controllers that 30 s of undisturbed simulation calls equal. |
 | 2026-08-24 | 2 | **(run C)** the −0.119 m offset of `[10,1,0,0.1]` is drift | solved the zero-action equilibrium `K_θ·θ + K_p·p = 0` | — | predicts `p = −(K_θ/K_p)·θ = −10 × 0.0115 = −0.115 m` vs **measured −0.118 m** | **Refuted — it is an equilibrium, not drift.** Implies a **static pitch bias ≈ 0.012 rad (0.7°)** in the model, amplified into position error by the gain ratio `K_θ/K_p`. This is the S12 IMU-mounting-bias mechanism, in sim. |
+| 2026-08-24 | 3 | **THE BASELINE ROW.** `evaluate.py`, `policy(obs)->action` callable, 20 fixed seeds, `PITCH=0.05 rad / OMEGA_Y=0.2 rad/s`, `max_steps=2000` (10 s), 200 Hz | scored PD `[10, 1, 0, 0.1]`, **undisturbed** | S2 single-seed, no randomization: 2000 steps, max\|θ\|=0.016, \|p\|=0.119 | **fell 0/20** · episode_length **2000.0 ± 0.00** · max_θ +0.0217 ± 0.0092 · min_θ −0.0267 ± 0.0189 · mean\|θ\| **0.0068 ± 0.0029** · **mean\|Δa\| 0.0038 ± 0.0006** · p_drift 0.0906 ± 0.0273 | **This is the line every neural policy must clear.** But see the next row — the primary metric is saturated. |
+| 2026-08-24 | 3 | Mean episode length over 20 randomized seeds discriminates between controllers | same run, read the std column | — | **episode_length = 2000.0 ± 0.00, every seed at the cap** | **Refuted at these settings.** Zero variance = zero discriminating power. A ruler whose main graduation reads "max" for everything. Q9 still open. |
+| 2026-08-24 | 3 | **THE BASELINE ROW (pushed).** Same harness, 320 N for 1 step (J = 1.60 N·s) at step 400 | scored PD `[10, 1, 0, 0.1]` under push | undisturbed: 0/20 fell | **fell 8/20** · episode_length **1917.5 ± 144.98** · max_θ +0.4442 ± 0.4453 · mean\|θ\| 0.0469 ± 0.0162 · mean\|Δa\| 0.0036 ± 0.0006 · p_drift 0.5564 ± 0.2881 · **ξ 0.4511 ± 0.0154** | **Use this as the primary comparison, not the undisturbed one.** Real spread on every metric; the push is the only question the trial actually asks. |
+| 2026-08-24 | 3 | ξ is set by the disturbance, not the controller (S2 run B claim, re-tested independently) | read ξ across 20 randomized seeds at fixed force | S2 push ramp bracketed the threshold at ξ ∈ (0.436, 0.884) | ξ = **0.4511 ± 0.0154** — spread 3% of the mean, and inside the S2 bracket | **Confirmed twice, by different methods.** Good evidence the push instrumentation measures what it claims. |
+| 2026-08-24 | 3 | The Q8 pitch-bias offset survives randomization and seed averaging | compared p_drift to the equilibrium predicted in S2 | Q8 predicted p = −(K_θ/K_p)·θ ≈ −0.115 m, single seed measured −0.118 | **p_drift = 0.0906 ± 0.0273 over 20 seeds** | Consistent — same phenomenon, independent measurement. The spread is the randomization, the mean is the bias. |
+| 2026-08-24 | 3 | **ABLATION (S3 review item).** Pitch is the observation that matters most for staying upright — S1 guess, on record since session 1 | zeroed one observation component at a time in the PD policy, 20 seeds, 320 N push at step 400, gains `[10, 1, 0, 0.1]` | full PD: 8/20 fell, ep_len 1917.5 ± 145, mean\|θ\|=0.0469, mean\|Δa\|=0.00365 | **θ zeroed: 20/20 fall, ep_len 220.3 ± 63, mean\|θ\|=0.2274, mean\|Δa\|=0.00736** | **CONFIRMED — Q1 closed.** Without pitch it does not balance at all; it only takes a while to tip. \|Δa\| doubles, so it thrashes on the way down. |
+| 2026-08-24 | 3 | **(ablation)** ground-velocity feedback matters — S2 saw `K_velocity=0` fall, but only on the fragile `[1,0,0,0.1]` baseline | zeroed `p_dot` | full PD: 8/20 fell | **19/20 fall, ep_len 1759.4 ± 203**, mean\|θ\|=0.0634 | **Confirmed on the real baseline.** Second most important observation. Re-tested at 20 seeds, so no longer an artifact of the weak nominal. |
+| 2026-08-24 | 3 | **(ablation)** every observation the controller reads earns its place | zeroed `p` (position) | full PD: **8/20 fell**, ep_len 1917.5 ± 145, mean\|θ\|=**0.0469** | **1/20 falls**, ep_len **1983.8 ± 71**, mean\|θ\|=**0.0099** | **REFUTED, and unpredicted.** Removing position feedback *improves* every column measured: 8x fewer falls, 4.7x lower mean pitch. **`[10, 1, 0, 0.1]` is not optimal for robustness.** This is the S2 non-minimum-phase cost, quantified on the tuned baseline. Cost side not yet measured — see next row. |
+| 2026-08-24 | 3 | **(ablation, null control)** the masking harness works and the sim is deterministic | zeroed `theta_dot` | full PD: 8/20, 1917.5 ± 145.0, 0.0469, 0.00365 | **8/20, 1917.5 ± 145.0, 0.0469, 0.00365 — identical to the last digit** | **Free sanity check.** `K_pitch_rate = 0`, so zeroing an ignored observation must change nothing, and does not. **Corollary: this ablation says nothing about pitch rate** — testing it needs a nonzero gain. |
+| 2026-08-24 | 3 | **(method)** for a linear controller, ablating observation *i* is identical to setting gain *i* to zero | `K·(obs ⊙ mask)` = `(K ⊙ mask)·obs` | — | — | True here, and **it stops being true in S5.** A neural policy mixes observations nonlinearly, so the same script measures something a weight-zeroing experiment cannot. Same code, different meaning. |
 | 2026-08-24 | 2 | **(bookkeeping)** run A and run B sweep columns can be compared row-for-row | — | run A `K_pitch`=40: \|p\|=0.534 | run B `K_pitch`=40: **\|p\|=4.759** | **False.** Changing `nominal` re-based every column; each column is conditional on the other three gains. Same seed, so run A reproduces the earlier rows exactly where the gains match. |
 
 ---
@@ -97,6 +107,41 @@ A confusion that appears three sessions running gets promoted to a session objec
   reproduce exactly, they just measure the wrong thing. The push-ramp rows survive,
   because a push is the only real question any of those trials asked.
 
+### Session 3 — 2026-08-24
+- **Surprise:** fixing the discriminating-power problem from S2 did not fix it. With
+  randomization on and 20 seeds, the undisturbed score is *still* 2000.0 ± 0.00 — the
+  amplitudes moved the failure mode, not the saturation. **A metric can be perfectly
+  reproducible, correctly implemented, and still carry no information.** Only the std
+  column reveals it; the mean looks authoritative on its own (→ Q10).
+- **Surprise:** ξ came out at 0.4511 ± 0.0154 across 20 randomized seeds — a 3% spread
+  on a quantity measured after a disturbance the controller has not yet reacted to.
+  Independent confirmation of the S2 run B argument, by a different method.
+- **Confusion:** `mean|Δa|` is essentially identical undisturbed (0.0038) and under a
+  push that fells 8/20 (0.0036). Either the push is too brief to move a per-step average
+  over 2000 steps, or smoothness genuinely does not depend on disturbance for a linear
+  controller. Worth knowing which *before* S7 tunes an action-rate penalty against it.
+- **Design note:** `evaluate` takes `policy(obs) -> action` and contains no notion of a
+  gain vector. In S5 the PD callable is swapped for a wrapper around
+  `model.predict(obs, deterministic=True)` and nothing else in the file changes.
+- **Surprise (the big one):** the ablation was supposed to grade a guess about pitch. It
+  did — pitch wins 20/20 — but it also showed that **the position gain I hand-tuned in S2
+  is actively harmful under disturbance**: zeroing it turns 8 falls out of 20 into 1.
+  Two sessions of tuning produced a gain the harness rejected in its first run. This is
+  the plan's "build the ruler before the thing you measure" argument paying out directly.
+- **Method note:** the `theta_dot` ablation reproducing full PD to the last digit is a
+  free null control — worth building one deliberately into future ablations rather than
+  getting it by luck.
+
+#### Session 3 — the three "this controller fails when ___" sentences
+Measured on `[10, 1, 0, 0.1]`, 20 seeds, `PITCH=0.05 / OMEGA_Y=0.2`, 320 N at step 400.
+These become reward terms in S7.
+1. **…the pitch observation is unavailable** — 20/20 fall, 220 ± 63 steps.
+2. **…the disturbance exceeds ξ ≈ 0.45** — 8/20 fall at ξ = 0.4511 ± 0.015.
+3. **…ground-velocity feedback is removed** — 19/20 fall, 1759 ± 203 steps.
+
+Every one carries a quantity, a threshold, and the gain vector it was measured on. S2
+taught the third the hard way, when runs A and B turned out not to be row-comparable.
+
 ---
 
 ## 3. Next session's single target
@@ -119,6 +164,10 @@ action lag" — not "work on domain randomization."
   and its amplitudes frozen (Q9), and report **mean episode length over 20 seeds ± std**
   for `[10, 1, 0, 0.1]`. Every undisturbed single-seed number above is superseded: the
   test that produced them cannot distinguish a good controller from a bad one.
+- **After session 3 (→ S4):** Settle Q10, then run the observation ablation — zero one
+  observation component at a time in the PD policy and re-score under the **pushed**
+  condition — to grade the Session 1 guess in Q1. Prediction still on record: **pitch
+  (`obs[0]`) matters most.**
 
 ---
 
@@ -126,7 +175,8 @@ action lag" — not "work on domain randomization."
 
 | # | Question | Raised | Answered | Answer |
 |---|---|---|---|---|
-| Q1 | Which of the 4 obs components matters most for staying upright? | S1 (guess: **pitch**) | S3 (ablation) | |
+| Q1 | Which of the 4 obs components matters most for staying upright? | S1 (guess: **pitch**) | S3 | **Pitch, decisively — the S1 guess was right.** Ranked by falls out of 20 when zeroed (320 N push, `[10,1,0,0.1]`): **θ 20/20** ≫ **ṗ 19/20** ≫ full PD 8/20 ≫ **p 1/20**. Position feedback is *net harmful* under disturbance. θ̇ untestable at this gain vector (its gain is 0). |
+| Q11 | What does removing position feedback cost, given it improves robustness 8x? | S3 | | The ablation measured only the benefit. `p_drift` and the undisturbed condition were not printed. Without the cost side, "`[10,0,0,0.1]` beats `[10,1,0,0.1]`" is a half-measurement — and station-keeping is a real requirement, not a nicety, from S15 onward when the robot has to go where it is told. |
 | Q2 | Does `env.step()` do the PID — subtract from target, form the error, multiply by gains? | S1 | S1 | **No.** `step()` does no balancing feedback at all. It pads 1D→2D, converts ground velocity to wheel velocity by pure kinematics (`ṗ*/wheel_radius`), regulates loop rate, and hands a servo dict to the backend. The only PID downstream is the **joint servo loop** (PyBullet `VELOCITY_CONTROL`; moteus firmware on hardware) which answers a *different* question — "what torque achieves this wheel velocity?" — not "how do I stay upright." See Q3. |
 | Q3 | Why is there no subtraction in the control law? | S1 | S1 | Every setpoint is zero (θ\*=0, p\*=0, ṗ\*=0), so `e = 0 − o = −o` and `a = −K·e` collapses to `a = +K·o`. **The observation *is* the error.** This stops being true in S15, when a commanded velocity makes ṗ\* nonzero and the subtraction reappears. |
 | Q4 | Loop frequency: the script runs at 1000 Hz, the plan and README say 200 Hz. Which, and does it matter? | S1 | S2 | **Split, deliberately.** `pd_balancer.py` stays at **1000 Hz** as the committed S1 demo; all *measurement* (`sweep.py`, and `evaluate.py` in S3) runs at **200 Hz**. Consequence to respect: the demo script is not the controller being scored, so never quote a number from one against the other. γ in S4 and the latency budget in S8 are both computed against **200 Hz**. |
@@ -134,4 +184,5 @@ action lag" — not "work on domain randomization."
 | Q6 | Does high `K_position` produce the slow non-minimum-phase oscillation the physics predicts? | S2 | S2 (**partial**) | **Range was too narrow; the cost is real but shows up in pitch, not position.** Over 0→32 with `[10, ·, 0, 0.1]`, drift falls monotonically all the way to 0.006 m at K_pos=16 while max\|θ\| climbs 0.017 → 0.022 → **0.045**, then 32 falls at 95 steps. So you buy station-keeping and pay in pitch excursion, as predicted. **But the 32.0 failure is fast divergence (0.48 s), not the slow multi-second oscillation that was hypothesised, and `max_steps` was never raised — the window half of this question is still untested.** |
 | Q7 | Is `[1, 0, 0, 0.1]` marginally stable, or just diverging too slowly to fall inside a 10 s window from a near-zero reset? | S2 (runs A/B) | S2 (run C) | **Neither — the dichotomy was false.** Over 30 s undisturbed, θ stays bounded within ±0.010 rad and p within 0.002 m: it is genuinely locally stable, not diverging. What it lacks is **basin size** — under a 0.02 rad initial lean it survives 2/5 seeds vs 4/5 for `[10,1,0,0.1]`. The prior evidence (7x lower push threshold, non-monotonic survival) was measuring the basin all along. |
 | Q8 | Why does `[10,1,0,0.1]` stand at p = −0.119 m when it has position feedback and `[1,0,0,0.1]` does not? | S2 (run C) | S2 (run C) | **Static pitch bias ≈ 0.012 rad (0.7°) in the PyBullet model.** At equilibrium `K_θ·θ + K_p·p = 0`, so `p = −(K_θ/K_p)·θ ≈ −0.115 m`, measured −0.118 m. The position loop cannot null a pitch bias; it trades it for a standing position offset amplified by `K_θ/K_p`. **Carry to S12** — this is the IMU-mounting-bias mechanism, and the gain ratio is the exchange rate. |
-| Q9 | What initial-state randomization amplitudes should `evaluate.py` freeze? | S2 (run C) | | `pitch=0.02, omega_y=0.1` demonstrably discriminates, but was picked to make a point, not tuned. Needs to be wide enough to separate controllers and narrow enough that a good controller still scores well. **Whatever is chosen must be frozen and recorded — it is the ruler's unit, and changing it voids every prior number.** |
+| Q9 | What initial-state randomization amplitudes should `evaluate.py` freeze? | S2 (run C) | S3 (**partial**) | Frozen at **`PITCH = 0.05 rad (2.9°)`, `OMEGA_Y = 0.2 rad/s`** as module constants. **But at `max_steps=2000` this leaves the primary metric saturated: 20/20 survive, std 0.00.** The amplitudes are recorded and every S3+ number is stamped with them; whether they are *good* is Q10. |
+| Q10 | The undisturbed primary score has no discriminating power — fix the ruler, or change what counts as primary? | S3 | | Three options: raise `max_steps`; raise the randomization amplitudes; or **treat the pushed condition as the primary comparison and undisturbed as a sanity check**. Third is preferred — it is honest about what the harness is for, and the push is the only question the trial asks. Deciding this changes nothing already recorded, because both conditions are logged. **Decide before S5**, or the first PPO comparison will be made against a saturated metric. |
