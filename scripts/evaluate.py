@@ -32,7 +32,6 @@ COM_HEIGHT = 0.3546
 WHEEL_RADIUS = 0.05
 PENDULUM_LENGTH = COM_HEIGHT - WHEEL_RADIUS  # 0.3046 m
 LAMBDA = np.sqrt(GRAVITY / PENDULUM_LENGTH)  # 5.675 rad/s
-PUSH_FORCE = np.array([1.0, 0.0, 0.0])
 
 # --- The ruler's units (Q9) -------------------------------------------------
 # Initial-state randomization amplitudes. WITHOUT THESE THE SEEDS DO NOTHING:
@@ -45,6 +44,25 @@ PUSH_FORCE = np.array([1.0, 0.0, 0.0])
 # the same amplitudes.
 PITCH = 0.05  # rad, initial lean (2.9 deg)
 OMEGA_Y = 0.2  # rad/s, initial pitch rate
+
+# The disturbance, and the third frozen unit. Calibrated in S4 so the PD
+# baseline falls ~50% of the time -- headroom for a policy to beat it in
+# either direction. 460 N for one 5 ms step is J = 2.30 N.s, xi = 0.6469.
+# Below ~410 N every controller scores 0/20 and above ~600 N every controller
+# scores 20/20, so the usable scale is only ~200 N wide (Q16).
+PUSH = 460.0  # N, applied to the torso for PUSH_LEN steps from PUSH_STEP
+PUSH_STEP = 400  # step at which the push lands (arbitrary, unexamined -- Q15)
+PUSH_LEN = 1  # steps the force is held (arbitrary, unexamined -- Q15)
+MAX_STEPS = 2000  # 10 s at 200 Hz (arbitrary, unexamined -- Q15)
+SEEDS = range(20)  # fixed, and identical for every controller scored
+
+# Action limit. TASK_SPEC.md section 3: this belongs on the env, never as a
+# clip inside the policy. For a deterministic controller the two are the same;
+# for PPO they are not, because SB3 scales its exploration Gaussian to the
+# declared action space. Declaring +-3.0 while the policy clips at +-0.99 wastes
+# most of the exploration on commands that are silently thrown away -- and the
+# inherited +-0.99 clip was causing 8 falls in 20 that the gains were blamed for.
+MAX_GROUND_VELOCITY = 3.0  # m/s
 
 
 METRICS = (
@@ -80,11 +98,11 @@ def summarize(results) -> dict:
 
 def evaluate(
     policy,
-    seeds=range(20),
-    max_steps=2000,
+    seeds=SEEDS,
+    max_steps=MAX_STEPS,
     push=None,
-    push_step=400,
-    push_len=1,
+    push_step=PUSH_STEP,
+    push_len=PUSH_LEN,
 ) -> dict:
     """Score `policy` over `seeds`. `push` is a force in newtons.
 
@@ -96,6 +114,7 @@ def evaluate(
         frequency=FREQUENCY,
         gui=False,
         regulate_frequency=False,
+        max_ground_velocity=MAX_GROUND_VELOCITY,
     ) as env:
         simulator = env.unwrapped.backend
         env.unwrapped.update_init_rand(pitch=PITCH, omega_y=OMEGA_Y)
@@ -282,10 +301,13 @@ if __name__ == "__main__":
     GAIN = np.array([10.0, 1.0, 0.0, 0.1])
 
     def pd_policy(obs):
-        return np.clip([GAIN @ obs], -0.99, 0.99)
+        return np.clip(
+            [GAIN @ obs], -MAX_GROUND_VELOCITY, MAX_GROUND_VELOCITY
+        )
 
     report("PD baseline [10, 1, 0, 0.1], undisturbed", evaluate(pd_policy))
     report(
-        "PD baseline [10, 1, 0, 0.1], 320 N push at step 400",
-        evaluate(pd_policy, push=320.0),
+        f"PD baseline [10, 1, 0, 0.1], {PUSH:.0f} N push at step {PUSH_STEP}"
+        " -- THE ROW TO BEAT",
+        evaluate(pd_policy, push=PUSH),
     )
