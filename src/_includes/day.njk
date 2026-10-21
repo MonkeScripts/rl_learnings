@@ -1,0 +1,78 @@
+---
+layout: base.njk
+---
+{%- set t = i18n[lang] -%}
+{%- set dayLabel = (t.day ~ " " ~ day ~ " " ~ t.dayAfter) if lang == "zh" else (t.day ~ " " ~ day) -%}
+{%- set prevN = day - 1 -%}
+{%- set nextN = day + 1 -%}
+{%- set pages = collections["days_" ~ lang] -%}
+{%- set prevPage = pages | findDay(prevN) -%}
+{%- set nextPage = pages | findDay(nextN) -%}
+
+{%- set quizHtml -%}
+{% if quiz %}
+<section class="quiz" id="quiz" data-quiz data-day="{{ day }}" aria-labelledby="quiz-title">
+  <h2 id="quiz-title">{{ t.quiz }}</h2>
+  {% for item in quiz %}
+  {% set qi = loop.index0 %}
+  <fieldset class="quiz-q" data-answer="{{ item.answer }}">
+    <legend><span class="quiz-kind quiz-kind-{{ item.kind }}">{{ item.kind }}</span> {{ item.q | mdInline | safe }}</legend>
+    {% for c in item.choices %}
+    <label class="quiz-choice"><input type="radio" name="q{{ day }}-{{ qi }}" value="{{ loop.index0 }}"> <span>{{ c | mdInline | safe }}</span></label>
+    {% endfor %}
+    <div class="quiz-feedback" hidden>
+      <p class="quiz-verdict" data-correct="{{ t.correct }}" data-wrong="{{ t.wrong }}"></p>
+      <div class="quiz-explain">{{ item.explain | md | safe }}</div>
+    </div>
+  </fieldset>
+  {% endfor %}
+  <div class="quiz-actions">
+    <button type="button" class="button" data-quiz-check>{{ t.check }}</button>
+    <p class="quiz-done" hidden>{{ t.quizDone }}</p>
+  </div>
+</section>
+{% endif %}
+{%- endset -%}
+
+<div class="reading-bar" aria-hidden="true"><span data-reading-bar></span></div>
+<main class="day-layout">
+  <aside class="day-nav" aria-label="{{ t.allDays }}">
+    <details class="day-nav-inner" data-day-nav>
+      <summary>{{ t.allDays }}</summary>
+      {% for stage in course.stages %}
+      <div class="nav-stage">
+        <p class="nav-stage-title">{{ t.stage }} {{ stage.n }} · {{ stage[lang].t }}</p>
+        <ol>
+        {% for n in stage.days %}
+          {%- set exists = pages | findDay(n) -%}
+          <li class="{% if n == day %}current{% endif %}{% if not exists %} soon{% endif %}" data-day-item="{{ n }}">
+            {% if exists %}<a href="{{ (base ~ 'day' ~ (n | pad2) ~ '/') | url }}"{% if n == day %} aria-current="page"{% endif %}>{% else %}<span title="{{ t.soon }}">{% endif %}
+            <span class="nav-num">{{ n | pad2 }}</span> {{ course.days[n][lang] }}
+            {% if exists %}</a>{% else %}</span>{% endif %}
+          </li>
+        {% endfor %}
+        </ol>
+      </div>
+      {% endfor %}
+    </details>
+  </aside>
+
+  <article class="day" data-day="{{ day }}">
+    <header class="day-head">
+      <p class="eyebrow">{{ dayLabel }} · {{ t.stage }} {{ stageInfo.n }}: {{ stageInfo[lang].t }}</p>
+      <h1>{{ title }}</h1>
+      {% if minutes %}<p class="meta">{{ minutes }} {{ t.minutes }}</p>{% endif %}
+    </header>
+    <nav class="toc" aria-label="{{ t.onThisPage }}" data-toc><p class="toc-title">{{ t.onThisPage }}</p></nav>
+    <div class="prose">
+      {{ content | replace("<!-- quiz -->", quizHtml) | safe }}
+    </div>
+    <div class="day-done">
+      <button type="button" class="button secondary" data-mark-done data-label-done="{{ t.markedDone }}">{{ t.markDone }}</button>
+    </div>
+    <nav class="pager">
+      {% if prevPage %}<a class="pager-prev" href="{{ prevPage.url | url }}"><small>← {{ t.prev }}</small>{{ prevPage.data.title }}</a>{% else %}<span></span>{% endif %}
+      {% if nextPage %}<a class="pager-next" href="{{ nextPage.url | url }}"><small>{{ t.next }} →</small>{{ nextPage.data.title }}</a>{% elif course.days[nextN] %}<span class="pager-next soon"><small>{{ t.next }} · {{ t.soon }}</small>{{ course.days[nextN][lang] }}</span>{% endif %}
+    </nav>
+  </article>
+</main>

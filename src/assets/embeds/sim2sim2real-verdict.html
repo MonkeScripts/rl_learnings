@@ -1,0 +1,216 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>The sim2sim2real Verdict</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F7; --bg2:#FFFFFF; --ink:#171B20; --ink2:#4A535E; --mute:#77808B; --rule:#D3D9E0; --rule2:#E6EAEE;
+  --ctrl:#3F4750; --b1:#1D6C8A; --b0:#C0762B; --b1s:#7A4E9E; --fail:#B03A3A; --pass:#2C7A4B; --warn:#9A6B00;
+  --pass-bg:#E4F1E9; --fail-bg:#F6E3E3; --warn-bg:#F5EDD6; --tint:#E3EEF3;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14171B; --bg2:#1C2026; --ink:#E8EBEF; --ink2:#B7BEC7; --mute:#8A939E; --rule:#333A43; --rule2:#272D35;
+  --ctrl:#B7BEC7; --b1:#5FB0D0; --b0:#E29A4E; --b1s:#B48BD6; --fail:#E07070; --pass:#66C08A; --warn:#E0B24A;
+  --pass-bg:#1E3328; --fail-bg:#3A2222; --warn-bg:#3A311A; --tint:#1F2D35;
+}}
+:root[data-theme="dark"]{
+  --bg:#14171B; --bg2:#1C2026; --ink:#E8EBEF; --ink2:#B7BEC7; --mute:#8A939E; --rule:#333A43; --rule2:#272D35;
+  --ctrl:#B7BEC7; --b1:#5FB0D0; --b0:#E29A4E; --b1s:#B48BD6; --fail:#E07070; --pass:#66C08A; --warn:#E0B24A;
+  --pass-bg:#1E3328; --fail-bg:#3A2222; --warn-bg:#3A311A; --tint:#1F2D35;
+}
+body{background:var(--bg);color:var(--ink);font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.55;margin:0}
+.page{max-width:72ch;margin:0 auto;padding:48px 24px 96px}
+h1,h2,h3{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:500;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:2.6rem;letter-spacing:-.01em}
+h2{font-size:1.7rem;margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule)}
+h3{font-size:1.2rem;margin-top:1.8rem;font-weight:600}
+p{margin:.85rem 0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.lede{font-size:1.15rem;color:var(--ink2);font-family:Newsreader,Georgia,serif;font-style:italic;margin-top:.8rem}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;color:var(--mute);font-size:.88rem;margin-top:1.2rem;font-variant-numeric:tabular-nums}
+.verdict{margin:2.2rem 0 0;border-left:4px solid var(--ink);padding:.2rem 0 .2rem 1.2rem}
+.verdict p{margin:.5rem 0}
+.verdict strong{font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:.92rem;font-variant-numeric:tabular-nums;margin:1rem 0}
+th,td{padding:.45rem .6rem;text-align:left;border-bottom:1px solid var(--rule2);vertical-align:top}
+th{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600;border-bottom:1px solid var(--rule)}
+td.n,th.n{text-align:right}
+.tbl{overflow-x:auto;margin:1rem -8px;padding:0 8px}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.86em}
+code{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.86em;background:var(--rule2);padding:.05em .3em;border-radius:3px}
+.formula{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.95rem;background:var(--bg2);border:1px solid var(--rule);padding:.8rem 1rem;margin:1rem 0;overflow-x:auto;white-space:nowrap}
+.pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:1.4rem 0;border:1px solid var(--rule);background:var(--bg2)}
+.pipe > div{padding:.9rem 1rem;border-right:1px solid var(--rule)}
+.pipe > div:last-child{border-right:0}
+.pipe .k{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:600}
+.pipe .t{font-family:Newsreader,Georgia,serif;font-size:1.15rem;margin:.15rem 0 .35rem}
+.pipe .d{font-size:.9rem;color:var(--ink2);line-height:1.4}
+@media (max-width:640px){.pipe{grid-template-columns:1fr}.pipe > div{border-right:0;border-bottom:1px solid var(--rule)}.pipe > div:last-child{border-bottom:0}}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:.1rem .45rem;border-radius:2px;vertical-align:middle}
+.pass{background:var(--pass-bg);color:var(--pass)} .fail{background:var(--fail-bg);color:var(--fail)} .tie{background:var(--warn-bg);color:var(--warn)}
+.sw{display:inline-block;width:.9em;height:.9em;border-radius:2px;vertical-align:-.1em;margin-right:.35em}
+.chart{background:var(--bg2);border:1px solid var(--rule);padding:12px 8px 4px;margin:1.2rem 0}
+.chart svg{width:100%;height:auto;display:block}
+.chart .cap{font-size:.85rem;color:var(--mute);padding:.4rem .6rem .5rem;line-height:1.4}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:.85rem;padding:.2rem .6rem 0;color:var(--ink2)}
+.callout{background:var(--tint);padding:1rem 1.2rem;margin:1.2rem 0;border-radius:2px}
+.callout p{margin:.4rem 0}
+ul{padding-left:1.2rem}
+li{margin:.35rem 0}
+.foot{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);color:var(--mute);font-size:.85rem}
+.small{font-size:.9rem;color:var(--ink2)}
+</style>
+<div class="page">
+<div class="eyebrow">Wheeled-leg balancing robot · rl_toys · 2026-09-03 to 09-08</div>
+<h1>The sim2sim2real Verdict</h1>
+<p class="lede">Does a frozen model of the robot's own kinematics, learned in a clean simulator, carry a behaviour into the randomized one? We built the mechanism, ran it against our honest control, and it did not.</p>
+<div class="meta"><span>Paper: arXiv 2606.02636v2</span><span>Control: sk_lag_r128_s0</span><span>7 training runs, 4 plants, 2 ladders</span><span>All numbers single seed, n = 1000 episodes</span></div>
+
+<div class="verdict">
+<p><strong>The imitation-on-kinematics mechanism adds nothing measurable on this robot.</strong> With a warm start it ties the plain warm start; from scratch it lands below the plain control at the 3000-iteration checkpoint; and with a reference learned on a plant outside the robot's neighbourhood it fails outright.</p>
+<p><strong>What did hold is the two-plant structure.</strong> A policy pretrained on a clean plant and dropped into the full domain-randomized one reaches the control's plateau in about a hundred iterations instead of seven hundred, and matches it at the full budget.</p>
+<p><strong>Everything here is one seed on one robot in one simulator.</strong> The tie is the honest reading; a small effect in either direction is still inside the noise.</p>
+</div>
+
+<h2>1. What the paper proposes</h2>
+<p><em>Too Much of a Good Thing: When sim2real Efforts Impede Policy Learning</em> is a position paper. Its argument: every domain-randomization axis added to make a policy robust also makes the learning problem harder, until the randomization itself is what stops the behaviour from being found. The proposed cure is to separate the two jobs.</p>
+<div class="pipe">
+<div><div class="k">Support phase</div><div class="t">Idealized simulator</div><div class="d">Learn the behaviour where nothing fights it. Alongside the policy, train a forward model that predicts the next kinematic state from the actor's own observation.</div></div>
+<div><div class="k">Transfer phase</div><div class="t">High-fidelity simulator</div><div class="d">Freeze the model. Retrain on the honest, randomized plant with a state-based imitation reward: stay close to what the idealized behaviour would have done next.</div></div>
+<div><div class="k">Deployment</div><div class="t">Hardware</div><div class="d">The policy keeps its interface; the forward model is discarded. Robustness came from the transfer plant, the behaviour from the support plant.</div></div>
+</div>
+<p>The paper gives the mechanism and one humanoid case study. It gives no reward formula, no architecture, no ablations, and no numbers. Everything below the mechanism is therefore our adaptation, and the verdict is on that adaptation.</p>
+
+<h2>2. Why it mattered here</h2>
+<p>Our single-phase pipeline trains PPO from scratch on the honest plant: a held action delay of 5 to 45 ms per episode, a log-uniform Coulomb friction decade, mass and gain multipliers, sensor noise and bias, pushes, asymmetry, and a curriculum. Every bench session that showed a gap became a new or wider axis. The list had stopped being a robustness tool and become system identification in disguise, with ranges that were guesses. The paper's promise was to learn the behaviour once and only rerun the cheap phase when the plant belief changed.</p>
+<p>The control is <span class="mono">sk_lag_r128_s0</span>: 1024 environments, 128-step rollouts, 5000 iterations, 24 minibatches. On the honest plant it survives <strong>0.870</strong> of 1000 episodes at the last checkpoint and 0.886 at the era checkpoint 4500; on the clean plant, 0.996. Those are the numbers every arm below is measured against, with the same evaluator, seed and episode count.</p>
+
+<h2>3. What we built</h2>
+<p>A self-contained package that imports the existing environment and recipe without changing them. The actor keeps its 40-wide observation and voltage actions; the forward model rides in the checkpoint as extra top-level keys and both stock loaders accept the files unchanged.</p>
+<div class="tbl"><table>
+<tr><th>Piece</th><th>Our choice</th><th>Why</th></tr>
+<tr><td>Forward model</td><td>MLP 40 → 128 → 128 → 6, ELU, on the actor observation only. Predicts the standardized change of true pitch, pitch rate, both wheel speeds, forward speed and yaw rate over 5 policy steps (50 ms). L1 + L2 loss, fitted after each PPO update from the same rollout.</td><td>No action input, so given only the observation it can encode nothing but what the closed loop does next: the behaviour, not the plant. 50 ms spans the delay range and a quarter period of the 7 Hz bench mode.</td></tr>
+<tr><td>Imitation reward</td><td class="mono">0.5 · exp(−mean((Δ̂−Δ)/σ)² / τ)</td><td>Bounded, zero for the first 5 steps of an episode, added beside the untouched station-keeping reward. σ is the phase-A delta spread; τ was 1 in the first ladder and calibrated in the second.</td></tr>
+<tr><td>Warm start</td><td>Actor and critic from the phase-A checkpoint; fresh optimizer, fresh iteration counter, curriculum clock reset.</td><td>The transfer phase in the paper continues from the support policy. The clock reset matters: the stock loader restores it and would have started the curriculum 80% ramped.</td></tr>
+<tr><td>Orchestrator</td><td>Waits for the GPU, runs one stage at a time, kills on pre-registered rules read from the training log's own scalars, evaluates each stage at three checkpoints on both plants.</td><td>Autonomy only under rules and fallbacks written down first. Predictions were logged before every launch.</td></tr>
+</table></div>
+
+<h2>4. Ladder 1: the ideal plant</h2>
+<p>Phase A ran on a plant with every sim2real axis removed: no delay, no noise, no pushes, nominal everything, and additionally zero Coulomb friction, zero viscous damping and zero battery sag. The interface regularizers stayed.</p>
+<div class="tbl"><table>
+<tr><th>Stage</th><th>Plant</th><th class="n">Survival, honest</th><th class="n">Survival, clean</th><th>Outcome</th></tr>
+<tr><td>A, 2000 it</td><td>ideal</td><td class="n">0.019</td><td class="n">0.42</td><td>Never fell on its own plant from iteration 200; forward model r² 0.925. <span class="tag fail">outside the neighbourhood</span></td></tr>
+<tr><td>B1, imitation + warm start</td><td>honest</td><td class="n" colspan="2">episode length 77 → ~150, flat</td><td>Killed at iteration 1000 by the pre-registered rule. Control was at 843. <span class="tag fail">killed</span></td></tr>
+</table></div>
+<p>The clean evaluation differs from the ideal plant only by nominal friction, damping and sag. Those alone halved survival; adding the delay range removed it. The reference the model had learned was a controller for a plant that does not exist.</p>
+
+<h2>5. Diagnosis: two faults, not one</h2>
+<p>Before changing anything we scored the frozen model directly. The scoring script rolls a policy out on a plant, applies the imitation kernel at every step exactly as the reward manager would, and splits the per-step reward by what the episode was doing: surviving to the cap, or the last half second before a fall.</p>
+<div class="tbl"><table>
+<tr><th>Rollouts scored with ladder-1's model</th><th>Plant</th><th class="n">Survival</th><th class="n">r while balancing</th><th class="n">r before a fall</th><th class="n">mean sq. error</th></tr>
+<tr><td>control 4500, τ = 1</td><td>honest</td><td class="n">0.887</td><td class="n">0.039</td><td class="n">0.003</td><td class="n">56.7</td></tr>
+<tr><td>control 4500, τ = 1</td><td>clean</td><td class="n">0.994</td><td class="n">0.007</td><td class="n">~0</td><td class="n">–</td></tr>
+<tr><td>phase-A policy, τ = 1</td><td>ideal</td><td class="n">1.000</td><td class="n">0.995</td><td class="n">–</td><td class="n">–</td></tr>
+<tr><td>control 4500, τ = 81.9</td><td>honest</td><td class="n">0.892</td><td class="n">0.673</td><td class="n">0.332</td><td class="n">56.4</td></tr>
+</table></div>
+<p><strong>Fault one, the plant.</strong> The repository's own log had the firmware chain measured at 11 to 13 ms, policies that do not cover a delay falling at it, and the real plant carrying about 20 ms-equivalent of phase. Delay is essential dynamics on this robot, not a nuisance to idealize away.</p>
+<p><strong>Fault two, the kernel.</strong> A controller that survives 89% of honest episodes sat 7.5 σ off the model's predictions and earned 0.04 of a possible 1. The width had been set by the frictionless plant's own deltas. A temperature τ = mse / ln 2, chosen so that a known-good controller earns about half credit while balancing, made the term attainable and gave it a clear margin between balancing and falling.</p>
+<p class="small">A note on reading logs: rewards in this environment are not scaled by the time step, and the logged episode reward is the episode sum divided by the 10 s cap. Our first reading of ladder-1's imitation scalar as "near saturation" was wrong; it was near zero. The diagnosis above is what the direct measurement showed.</p>
+
+<h2>6. Ladder 2: the clean plant, a calibrated kernel, and a gate</h2>
+<p>Phase A2 kept nominal friction, damping and sag and one held action delay of 12 ms, removing only noise, pushes and randomization. A gate ran before any phase B: A2's own policy had to survive the clean evaluation at 0.9 or better, and its model had to be attainable while balancing on the control's honest rollouts and separate balancing from falling after calibration. It passed with τ = 2.48, r = 0.73 while balancing, and a margin of 0.50.</p>
+<div class="chart" id="chart"></div>
+<div class="tbl"><table>
+<tr><th>Run</th><th>Plant, init</th><th class="n">to 300 / 600 / 800 steps</th><th class="n">Honest 4999 / 4500 / 3000</th><th class="n">Clean</th><th class="n">vel RMSE</th><th class="n">lateral drift</th><th class="n">36–44 ms bin</th></tr>
+<tr><td><span class="sw" style="background:var(--ctrl)"></span>control</td><td>honest, scratch</td><td class="n">421 / 626 / 734</td><td class="n">0.870 / 0.886 / 0.877</td><td class="n">0.996</td><td class="n">0.115</td><td class="n">0.012 m</td><td class="n">0.789</td></tr>
+<tr><td><span class="sw" style="background:var(--b1)"></span>B1</td><td>honest, warm from A2 + imitation</td><td class="n">5 / 30 / 115</td><td class="n">0.884 / 0.885 / 0.877</td><td class="n">0.996</td><td class="n">0.110</td><td class="n">0.006 m</td><td class="n">0.771</td></tr>
+<tr><td><span class="sw" style="background:var(--b0)"></span>B0</td><td>honest, warm from A2, no imitation</td><td class="n">4 / 47 / 97</td><td class="n">0.874 / 0.888 / 0.885</td><td class="n">0.996</td><td class="n">0.120</td><td class="n">0.008 m</td><td class="n">0.762</td></tr>
+<tr><td><span class="sw" style="background:var(--fail)"></span>B1v1</td><td>honest, warm from ladder-1 A + imitation, τ 81.9</td><td class="n">never</td><td class="n" colspan="4">killed at 1000, length 127</td><td class="n">–</td></tr>
+<tr><td><span class="sw" style="background:var(--b1s)"></span>B1S</td><td>honest, scratch + imitation, τ 2.48</td><td class="n">282 / 487 / 719</td><td class="n">– / – / 0.832 <span class="small">(stopped at 3000)</span></td><td class="n">0.996</td><td class="n">0.124</td><td class="n">0.012 m</td><td class="n">0.661</td></tr>
+</table></div>
+<p class="small">Survival is the fraction of 1000 episodes that reach the 10 s cap on the honest plant with the full randomization, evaluator seed 12345. The 36–44 ms bin is survival among the episodes that drew the longest held action delays, the bench-wobble regime. Run-to-run spread on these survival numbers is about ±0.011.</p>
+
+<h2>7. The arm that isolates the term</h2>
+<p>B1 and B0 differ only in the imitation term and came out the same, which says the term adds nothing on top of a warm start. B1S asks whether it does anything on its own: the honest plant, the calibrated kernel, and a random initialization. It ran to iteration 3000 and was stopped there on request, so its comparison is the control's 3000 checkpoint: <strong>0.832 against 0.877</strong> on the honest plant, four times the run-to-run spread, with the same clean survival, a higher velocity error, and a weaker longest-delay bin at 0.661 against the control's 0.789 at the era checkpoint. Its training curve had crossed the control's repeatedly and averaged eight steps below it over the last thousand iterations. Read plainly: from a random initialization the term does not accelerate learning and, at this checkpoint, the policy it shapes is somewhat worse than the one shaped by the task reward alone. Whether that deficit would have closed by 5000 is unknown; the control itself moved by less than 0.01 between 3000 and 4999.</p>
+
+<h2>8. Honest evaluation</h2>
+<h3>Against the pre-registered predictions</h3>
+<div class="tbl"><table>
+<tr><th>Prediction, written before launch</th><th>Outcome</th><th></th></tr>
+<tr><td>Ladder 1: B1 at or above the control at 5000</td><td>Killed at 1000</td><td><span class="tag fail">missed</span></td></tr>
+<tr><td>Ladder 2: A2 survives the clean evaluation ≥ 0.9; gate passes</td><td>0.975; τ 2.48, margin 0.50</td><td><span class="tag pass">confirmed</span></td></tr>
+<tr><td>Ladder 2: B1 within 0.02 of the control at 5000, no beat expected</td><td>+0.014; survival, velocity and by-lag bin all tie</td><td><span class="tag pass">confirmed</span></td></tr>
+<tr><td>Ladder 2: B1 − B0 ≥ 0.02 means the term works</td><td>+0.010 and −0.003 at the two checkpoints</td><td><span class="tag tie">inert</span></td></tr>
+<tr><td>Ladder 2: calibrated kernel rescues the ladder-1 model</td><td>Killed at 1000</td><td><span class="tag fail">missed</span></td></tr>
+<tr><td>B1S: a tie with the control; 800 steps before iteration 450 would revive the mechanism</td><td>Stopped at 3000: 0.832 against the control's 0.877 there, outside the 0.02 tie band on the low side; 800-step episodes at 719, not before 450</td><td><span class="tag fail">below control</span></td></tr>
+</table></div>
+
+<h3>What held</h3>
+<ul>
+<li><strong>The behaviour transfers through the actor's weights.</strong> A policy pretrained on the clean plant reaches the control's plateau in about a hundred honest-plant iterations instead of seven hundred, and ends at the same survival.</li>
+<li><strong>Both warm-started arms keep station better.</strong> Lateral drift halves and position error falls from 0.032 to 0.027 m in both, and B1's final yaw error is the lowest of the era. This is consistent across the two arms but it is still one seed each.</li>
+<li><strong>The diagnostic tooling.</strong> Scoring a frozen model against a known-good controller, before training on it, caught both faults in minutes.</li>
+</ul>
+<h3>What did not</h3>
+<ul>
+<li><strong>The forward model as a transfer mechanism.</strong> With the plant inside the robot's neighbourhood, the warm start alone does everything the imitation arm does. With the plant outside it, no kernel width helps. From scratch, the term neither speeds learning nor changes the endpoint beyond noise.</li>
+<li><strong>The premise that randomization impedes learning here.</strong> PPO from scratch finds balancing under the full randomization in about seven hundred iterations. There is no exploration bottleneck for a reference to unlock. The paper's case is a humanoid, where there may be one.</li>
+<li><strong>"Idealized" as a free choice.</strong> The support plant has to keep the dynamics that define the task. For this robot that is friction and a real action delay, which we only knew from the hardware log.</li>
+</ul>
+<h3>Caveats we owe the reader</h3>
+<ul>
+<li>One seed per arm. Survival differences under about 0.02 are noise at this size. Nothing here reaches that bar in either direction.</li>
+<li>Sim only. The hardware comparison against the deployed checkpoint was specified but not run.</li>
+<li>Our adaptation, not the paper's. The horizon, the kernel, the weight and the observation-only model are our choices; a different one could behave differently, though the warm-start result bounds how much room there is.</li>
+<li>The kernel temperature was calibrated on the control's rollouts. That is a small leakage of the control into the arm being compared with it; it made the term attainable, and the term still did nothing.</li>
+<li>The clean plant already needed the 12 ms delay, which came from the hardware log. The method did not tell us which dynamics were essential; the bench did.</li>
+<li>Cost accounting. The first-time cost of the two-phase route, 2000 clean iterations plus a short honest phase, is not lower than training from scratch once. The saving appears only on the second and later reruns.</li>
+</ul>
+
+<h2>9. What survives, and what to do with it</h2>
+<div class="callout">
+<p><strong>Keep:</strong> the clean-plant pretrain and the honest-plant warm start, without the imitation term. Keep the scoring script as a diagnostic.</p>
+<p><strong>Drop:</strong> the forward model from the training recipe.</p>
+<p><strong>Test next:</strong> a 500-iteration honest phase from the clean checkpoint on every gate, including the wobble gate and cross-engine play. If it matches the control, the domain-randomization question becomes a series of fifteen-minute reruns instead of five-hour ones, which is the problem the paper was brought in to solve. Then a second seed for the drift numbers, and the bench comparison.</p>
+</div>
+<div class="foot">Code and pre-registration: <span class="mono">~/sim2sim2real</span> (design, training log, results, tests). Plant pinned to robot_solution at 3fcabfb. Every number above is reproducible from the checkpoints and the evaluator with seed 12345.</div>
+</div>
+<script>
+const DATA = {"control": [[12, 52.9], [37, 60.0], [62, 65.0], [87, 68.9], [112, 73.6], [137, 77.9], [162, 85.9], [187, 96.7], [212, 108.0], [237, 121.9], [262, 137.2], [287, 152.9], [312, 166.8], [337, 183.5], [362, 199.0], [387, 221.2], [412, 263.4], [437, 290.2], [462, 326.6], [487, 388.8], [512, 399.2], [537, 437.3], [562, 476.5], [587, 496.3], [612, 536.6], [637, 574.6], [662, 596.6], [687, 614.0], [712, 671.9], [737, 723.7], [762, 719.7], [787, 734.4], [812, 752.7], [837, 770.5], [862, 782.5], [887, 783.2], [912, 771.3], [937, 795.4], [962, 816.7], [987, 828.1], [1012, 823.0], [1037, 829.7], [1062, 832.0], [1087, 838.2], [1112, 850.4], [1137, 847.2], [1162, 859.6], [1187, 857.4], [1212, 863.2], [1237, 851.7], [1262, 867.4], [1287, 857.5], [1312, 877.7], [1337, 871.3], [1362, 875.6], [1387, 890.8], [1412, 892.4], [1437, 881.2], [1462, 884.2], [1487, 890.8], [1512, 897.6], [1537, 908.2], [1562, 903.8], [1587, 898.2], [1612, 903.9], [1637, 898.5], [1662, 903.5], [1687, 915.9], [1712, 908.2], [1737, 902.1], [1762, 911.1], [1787, 912.1], [1812, 901.6], [1837, 902.6], [1862, 906.9], [1887, 908.7], [1912, 909.9], [1937, 898.8], [1962, 899.7], [1987, 898.6], [2012, 910.2], [2037, 912.3], [2062, 906.5], [2087, 905.0], [2112, 906.2], [2137, 904.5], [2162, 896.3], [2187, 898.8], [2212, 901.8], [2237, 899.4], [2262, 892.2], [2287, 892.2], [2312, 895.3], [2337, 897.4], [2362, 896.1], [2387, 896.6], [2412, 898.4], [2437, 884.6], [2462, 897.8], [2487, 902.7], [2512, 900.5], [2537, 883.1], [2562, 892.6], [2587, 883.5], [2612, 897.8], [2637, 891.1], [2662, 893.9], [2687, 896.3], [2712, 896.8], [2737, 898.6], [2762, 903.1], [2787, 905.3], [2812, 907.5], [2837, 903.0], [2862, 898.0], [2887, 897.9], [2912, 897.6], [2937, 911.8], [2962, 908.0], [2987, 913.9], [3012, 909.5], [3037, 907.2], [3062, 895.8], [3087, 899.0], [3112, 904.1], [3137, 900.3], [3162, 905.4], [3187, 909.4], [3212, 902.6], [3237, 906.9], [3262, 899.0], [3287, 911.5], [3312, 893.8], [3337, 888.3], [3362, 904.9], [3387, 891.1], [3412, 905.4], [3437, 894.8], [3462, 901.4], [3487, 901.1], [3512, 898.4], [3537, 897.4], [3562, 885.8], [3587, 875.7], [3612, 883.9], [3637, 902.5], [3662, 895.2], [3687, 903.2], [3712, 907.0], [3737, 908.0], [3762, 908.4], [3787, 896.6], [3812, 888.0], [3837, 888.8], [3862, 908.5], [3887, 902.5], [3912, 899.7], [3937, 895.1], [3962, 894.3], [3987, 902.2], [4012, 907.9], [4037, 886.8], [4062, 903.6], [4087, 882.8], [4112, 892.6], [4137, 894.1], [4162, 891.3], [4187, 903.4], [4212, 886.1], [4237, 883.7], [4262, 896.4], [4287, 901.4], [4312, 901.5], [4337, 912.0], [4362, 903.7], [4387, 903.5], [4412, 905.1], [4437, 908.4], [4462, 898.6], [4487, 890.3], [4512, 909.3], [4537, 909.9], [4562, 907.5], [4587, 903.3], [4612, 906.3], [4637, 902.7], [4662, 903.4], [4687, 912.1], [4712, 910.1], [4737, 902.0], [4762, 901.1], [4787, 914.8], [4812, 906.3], [4837, 898.0], [4862, 897.3], [4887, 895.3], [4912, 902.8], [4937, 901.0], [4962, 913.5], [4987, 899.3]], "A1": [[12, 37.4], [37, 44.5], [62, 80.2], [87, 720.0], [112, 927.0], [137, 975.9], [162, 992.5], [187, 996.2], [212, 998.5], [237, 991.5], [262, 993.3], [287, 982.7], [312, 986.1], [337, 988.6], [362, 998.6], [387, 1000.0], [412, 999.7], [437, 998.9], [462, 999.3], [487, 1000.0], [512, 1000.0], [537, 998.2], [562, 996.8], [587, 998.6], [612, 999.6], [637, 999.3], [662, 999.3], [687, 1000.0], [712, 1000.0], [737, 1000.0], [762, 1000.0], [787, 998.7], [812, 999.6], [837, 999.6], [862, 998.9], [887, 999.6], [912, 1000.0], [937, 1000.0], [962, 1000.0], [987, 1000.0], [1012, 1000.0], [1037, 1000.0], [1062, 1000.0], [1087, 1000.0], [1112, 1000.0], [1137, 999.7], [1162, 999.6], [1187, 1000.0], [1212, 999.6], [1237, 999.3], [1262, 1000.0], [1287, 1000.0], [1312, 1000.0], [1337, 999.7], [1362, 1000.0], [1387, 1000.0], [1412, 1000.0], [1437, 1000.0], [1462, 1000.0], [1487, 1000.0], [1512, 1000.0], [1537, 1000.0], [1562, 1000.0], [1587, 1000.0], [1612, 1000.0], [1637, 1000.0], [1662, 1000.0], [1687, 1000.0], [1712, 1000.0], [1737, 1000.0], [1762, 1000.0], [1787, 1000.0], [1812, 1000.0], [1837, 1000.0], [1862, 1000.0], [1887, 1000.0], [1912, 1000.0], [1937, 1000.0], [1962, 1000.0], [1987, 1000.0]], "B1_l1": [[12, 120.2], [37, 137.4], [62, 135.9], [87, 125.5], [112, 130.5], [137, 140.2], [162, 138.2], [187, 137.6], [212, 142.3], [237, 145.6], [262, 131.3], [287, 145.1], [312, 150.9], [337, 140.3], [362, 148.7], [387, 144.3], [412, 145.0], [437, 150.6], [462, 142.1], [487, 137.4], [512, 142.6], [537, 150.0], [562, 151.0], [587, 151.9], [612, 156.2], [637, 151.6], [662, 154.8], [687, 152.8], [712, 150.1], [737, 145.9], [762, 142.8], [787, 152.2], [812, 159.4], [837, 150.0], [862, 152.8], [887, 160.4], [912, 156.9], [937, 153.3], [962, 160.0], [987, 159.7], [1012, 163.3]], "A2": [[12, 39.2], [37, 39.8], [62, 40.9], [87, 41.3], [112, 43.5], [137, 53.9], [162, 349.8], [187, 633.1], [212, 852.0], [237, 937.3], [262, 961.3], [287, 969.3], [312, 975.9], [337, 984.7], [362, 977.0], [387, 981.7], [412, 982.3], [437, 983.0], [462, 983.6], [487, 979.8], [512, 981.7], [537, 980.2], [562, 981.9], [587, 983.4], [612, 979.6], [637, 980.8], [662, 975.6], [687, 977.2], [712, 978.4], [737, 978.5], [762, 977.5], [787, 976.5], [812, 980.4], [837, 979.0], [862, 976.0], [887, 977.0], [912, 976.3], [937, 982.0], [962, 985.5], [987, 981.4], [1012, 982.7], [1037, 979.9], [1062, 976.3], [1087, 980.9], [1112, 980.7], [1137, 983.5], [1162, 980.8], [1187, 979.6], [1212, 982.2], [1237, 989.0], [1262, 982.5], [1287, 989.1], [1312, 989.7], [1337, 987.4], [1362, 989.2], [1387, 992.3], [1412, 986.2], [1437, 990.7], [1462, 991.4], [1487, 991.0], [1512, 992.5], [1537, 991.0], [1562, 993.6], [1587, 993.9], [1612, 989.8], [1637, 993.2], [1662, 992.9], [1687, 995.5], [1712, 994.3], [1737, 989.5], [1762, 992.5], [1787, 991.8], [1812, 993.2], [1837, 991.8], [1862, 988.3], [1887, 991.0], [1912, 989.1], [1937, 988.3], [1962, 990.2], [1987, 989.6]], "B1": [[12, 420.9], [37, 551.9], [62, 642.8], [87, 704.0], [112, 761.9], [137, 812.2], [162, 845.5], [187, 883.5], [212, 915.0], [237, 926.4], [262, 941.5], [287, 935.5], [312, 957.3], [337, 957.8], [362, 952.4], [387, 961.5], [412, 961.4], [437, 955.5], [462, 960.2], [487, 957.1], [512, 966.9], [537, 955.4], [562, 957.3], [587, 958.4], [612, 960.5], [637, 960.4], [662, 967.1], [687, 958.1], [712, 968.4], [737, 963.6], [762, 962.1], [787, 959.0], [812, 958.5], [837, 951.0], [862, 954.1], [887, 955.2], [912, 961.9], [937, 953.6], [962, 959.2], [987, 955.9], [1012, 955.1], [1037, 957.3], [1062, 966.7], [1087, 958.1], [1112, 952.2], [1137, 952.7], [1162, 952.5], [1187, 952.9], [1212, 963.1], [1237, 954.4], [1262, 958.7], [1287, 959.2], [1312, 952.3], [1337, 953.3], [1362, 946.6], [1387, 941.1], [1412, 941.2], [1437, 946.4], [1462, 952.8], [1487, 945.0], [1512, 953.9], [1537, 948.4], [1562, 946.0], [1587, 947.6], [1612, 936.3], [1637, 931.9], [1662, 938.3], [1687, 935.4], [1712, 929.2], [1737, 940.3], [1762, 934.6], [1787, 947.8], [1812, 945.2], [1837, 938.9], [1862, 947.4], [1887, 947.6], [1912, 941.1], [1937, 938.3], [1962, 944.0], [1987, 941.1], [2012, 942.2], [2037, 935.6], [2062, 933.9], [2087, 936.6], [2112, 931.8], [2137, 933.2], [2162, 938.0], [2187, 929.9], [2212, 937.4], [2237, 929.9], [2262, 932.2], [2287, 921.3], [2312, 927.0], [2337, 934.2], [2362, 927.3], [2387, 933.0], [2412, 923.7], [2437, 923.3], [2462, 910.1], [2487, 920.3], [2512, 919.8], [2537, 914.2], [2562, 917.4], [2587, 924.8], [2612, 927.7], [2637, 921.8], [2662, 922.9], [2687, 917.0], [2712, 926.2], [2737, 924.3], [2762, 917.7], [2787, 926.2], [2812, 913.4], [2837, 928.6], [2862, 925.1], [2887, 927.7], [2912, 917.6], [2937, 918.4], [2962, 919.2], [2987, 918.1], [3012, 917.5], [3037, 929.4], [3062, 914.5], [3087, 931.5], [3112, 920.7], [3137, 923.6], [3162, 923.5], [3187, 917.1], [3212, 929.5], [3237, 926.1], [3262, 924.5], [3287, 927.1], [3312, 933.2], [3337, 928.4], [3362, 927.5], [3387, 916.4], [3412, 927.5], [3437, 921.9], [3462, 923.7], [3487, 920.9], [3512, 919.0], [3537, 916.7], [3562, 917.9], [3587, 919.9], [3612, 921.7], [3637, 925.0], [3662, 923.6], [3687, 928.5], [3712, 919.4], [3737, 921.0], [3762, 925.0], [3787, 923.4], [3812, 928.8], [3837, 932.2], [3862, 916.2], [3887, 932.9], [3912, 935.1], [3937, 918.4], [3962, 924.7], [3987, 925.4], [4012, 919.7], [4037, 913.6], [4062, 918.0], [4087, 912.1], [4112, 916.4], [4137, 908.5], [4162, 920.6], [4187, 917.2], [4212, 918.0], [4237, 923.2], [4262, 931.1], [4287, 921.6], [4312, 926.3], [4337, 920.2], [4362, 914.1], [4387, 921.3], [4412, 926.7], [4437, 910.3], [4462, 913.0], [4487, 906.0], [4512, 921.5], [4537, 904.2], [4562, 916.1], [4587, 927.0], [4612, 920.6], [4637, 924.4], [4662, 922.5], [4687, 926.6], [4712, 921.6], [4737, 916.9], [4762, 914.3], [4787, 925.5], [4812, 931.0], [4837, 923.4], [4862, 924.6], [4887, 922.9], [4912, 920.0], [4937, 909.1], [4962, 913.1], [4987, 924.2]], "B0": [[12, 423.7], [37, 535.8], [62, 601.0], [87, 692.7], [112, 749.2], [137, 799.8], [162, 831.8], [187, 875.6], [212, 901.5], [237, 907.9], [262, 912.9], [287, 940.4], [312, 942.6], [337, 950.9], [362, 950.8], [387, 947.4], [412, 951.0], [437, 952.7], [462, 961.7], [487, 961.4], [512, 964.0], [537, 962.0], [562, 958.9], [587, 965.6], [612, 957.7], [637, 953.0], [662, 958.4], [687, 958.3], [712, 969.9], [737, 965.6], [762, 961.3], [787, 956.8], [812, 954.9], [837, 956.6], [862, 958.9], [887, 959.6], [912, 962.6], [937, 962.1], [962, 963.1], [987, 965.7], [1012, 956.4], [1037, 960.7], [1062, 964.9], [1087, 961.2], [1112, 967.0], [1137, 965.1], [1162, 958.2], [1187, 956.6], [1212, 964.0], [1237, 959.8], [1262, 966.9], [1287, 954.7], [1312, 958.0], [1337, 954.2], [1362, 959.3], [1387, 951.7], [1412, 954.3], [1437, 959.7], [1462, 959.7], [1487, 954.3], [1512, 958.3], [1537, 946.7], [1562, 948.0], [1587, 953.1], [1612, 952.2], [1637, 947.5], [1662, 954.1], [1687, 946.7], [1712, 943.4], [1737, 944.2], [1762, 941.9], [1787, 942.4], [1812, 942.1], [1837, 944.4], [1862, 941.6], [1887, 945.5], [1912, 947.4], [1937, 944.3], [1962, 944.6], [1987, 951.3], [2012, 942.8], [2037, 934.9], [2062, 932.8], [2087, 938.0], [2112, 936.4], [2137, 937.4], [2162, 932.9], [2187, 939.0], [2212, 943.2], [2237, 926.2], [2262, 921.0], [2287, 918.3], [2312, 931.7], [2337, 923.8], [2362, 923.2], [2387, 918.7], [2412, 923.3], [2437, 921.0], [2462, 907.4], [2487, 918.6], [2512, 910.3], [2537, 910.3], [2562, 922.0], [2587, 922.7], [2612, 915.1], [2637, 914.7], [2662, 914.6], [2687, 920.2], [2712, 920.1], [2737, 922.8], [2762, 916.6], [2787, 918.8], [2812, 923.4], [2837, 913.5], [2862, 926.3], [2887, 923.7], [2912, 918.8], [2937, 924.3], [2962, 908.6], [2987, 923.5], [3012, 919.5], [3037, 939.6], [3062, 921.0], [3087, 928.6], [3112, 921.4], [3137, 920.0], [3162, 917.4], [3187, 915.5], [3212, 913.3], [3237, 905.2], [3262, 913.3], [3287, 916.2], [3312, 915.6], [3337, 906.0], [3362, 910.1], [3387, 903.5], [3412, 904.1], [3437, 905.7], [3462, 911.4], [3487, 908.8], [3512, 907.6], [3537, 910.4], [3562, 922.4], [3587, 915.0], [3612, 912.8], [3637, 902.8], [3662, 919.3], [3687, 917.2], [3712, 920.2], [3737, 918.3], [3762, 916.4], [3787, 922.2], [3812, 922.8], [3837, 924.3], [3862, 925.9], [3887, 924.1], [3912, 924.1], [3937, 916.0], [3962, 914.2], [3987, 906.8], [4012, 917.4], [4037, 913.5], [4062, 917.7], [4087, 921.8], [4112, 911.1], [4137, 910.1], [4162, 919.5], [4187, 912.7], [4212, 913.2], [4237, 919.5], [4262, 916.1], [4287, 926.9], [4312, 926.6], [4337, 919.2], [4362, 926.3], [4387, 918.7], [4412, 909.4], [4437, 927.6], [4462, 927.8], [4487, 924.9], [4512, 923.3], [4537, 927.1], [4562, 919.1], [4587, 915.4], [4612, 915.4], [4637, 918.4], [4662, 916.6], [4687, 920.3], [4712, 929.3], [4737, 923.8], [4762, 929.9], [4787, 919.2], [4812, 925.5], [4837, 920.3], [4862, 916.7], [4887, 917.3], [4912, 913.3], [4937, 912.7], [4962, 925.9], [4987, 915.8]], "B1v1": [[12, 118.9], [37, 129.0], [62, 130.1], [87, 120.7], [112, 124.7], [137, 114.8], [162, 132.2], [187, 131.2], [212, 123.3], [237, 129.9], [262, 128.1], [287, 131.5], [312, 143.3], [337, 143.9], [362, 143.0], [387, 149.3], [412, 140.9], [437, 147.1], [462, 137.6], [487, 149.0], [512, 148.8], [537, 147.7], [562, 134.6], [587, 151.4], [612, 150.7], [637, 146.5], [662, 158.5], [687, 151.9], [712, 156.8], [737, 160.5], [762, 151.5], [787, 166.0], [812, 152.6], [837, 161.1], [862, 160.8], [887, 158.5], [912, 167.3], [937, 167.2], [962, 165.7], [987, 150.4], [1012, 162.2], [1037, 159.7]], "B1S": [[12, 51.8], [37, 62.9], [62, 69.6], [87, 75.7], [112, 84.6], [137, 101.9], [162, 127.7], [187, 154.7], [212, 186.6], [237, 219.1], [262, 248.7], [287, 302.0], [312, 355.2], [337, 416.7], [362, 484.2], [387, 493.5], [412, 506.2], [437, 510.4], [462, 517.5], [487, 567.6], [512, 559.4], [537, 568.8], [562, 572.9], [587, 605.4], [612, 636.2], [637, 663.7], [662, 697.2], [687, 701.8], [712, 748.8], [737, 743.9], [762, 737.9], [787, 730.4], [812, 747.9], [837, 773.8], [862, 791.1], [887, 785.0], [912, 786.5], [937, 814.5], [962, 820.8], [987, 825.0], [1012, 833.4], [1037, 830.8], [1062, 823.4], [1087, 843.5], [1112, 842.6], [1137, 851.7], [1162, 864.5], [1187, 860.3], [1212, 870.1], [1237, 869.9], [1262, 873.6], [1287, 875.6], [1312, 868.8], [1337, 881.7], [1362, 873.7], [1387, 883.4], [1412, 891.2], [1437, 898.6], [1462, 890.2], [1487, 893.9], [1512, 888.8], [1537, 884.0], [1562, 894.6], [1587, 898.6], [1612, 897.6], [1637, 903.2], [1662, 898.3], [1687, 899.9], [1712, 905.4], [1737, 903.5], [1762, 895.7], [1787, 899.3], [1812, 891.3], [1837, 895.7], [1862, 888.7], [1887, 896.1], [1912, 901.7], [1937, 909.9], [1962, 904.0], [1987, 905.7], [2012, 903.9], [2037, 896.2], [2062, 902.3], [2087, 909.6], [2112, 908.9], [2137, 914.5], [2162, 896.3], [2187, 902.0], [2212, 908.2], [2237, 901.3], [2262, 898.2], [2287, 899.4], [2312, 888.6], [2337, 890.3], [2362, 888.4], [2387, 878.2], [2412, 873.3], [2437, 876.5], [2462, 884.5], [2487, 875.1], [2512, 878.3], [2537, 876.9], [2562, 883.2], [2587, 875.1], [2612, 884.7], [2637, 885.7], [2662, 891.1], [2687, 894.2], [2712, 888.1], [2737, 887.8], [2762, 891.2], [2787, 897.1], [2812, 895.7], [2837, 878.6], [2862, 880.1], [2887, 894.1], [2912, 897.3], [2937, 892.3]]};
+(function(){
+  const series = [
+    ["control","control, from scratch","--ctrl",""],
+    ["B1","B1: warm from A2 + imitation","--b1",""],
+    ["B0","B0: warm from A2, no imitation","--b0",""],
+    ["B1S","B1S: scratch + imitation","--b1s",""],
+    ["B1_l1","ladder 1 B1 (killed)","--fail","4 3"],
+    ["B1v1","B1v1 (killed)","--fail","1 3"],
+  ];
+  const el0=document.getElementById('chart');
+  const draw=()=>{
+  const W=Math.max(280,Math.round(el0.clientWidth-16)),H=W<560?300:380,L=W<560?48:56,R=16,T=18,B=44, X=5000, Y=1000;
+  const sx=i=>L+(i/X)*(W-L-R), sy=v=>T+(1-v/Y)*(H-T-B);
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mean training episode length against iteration for each run">`;
+  for(const v of [0,250,500,750,1000]){s+=`<line x1="${L}" x2="${W-R}" y1="${sy(v)}" y2="${sy(v)}" stroke="${css('--rule2')}" stroke-width="1"/><text x="${L-8}" y="${sy(v)+4}" text-anchor="end" font-size="12" fill="${css('--mute')}" font-family="JetBrains Mono, monospace">${v}</text>`;}
+  for(const i of [0,1000,2000,3000,4000,5000]){s+=`<line x1="${sx(i)}" x2="${sx(i)}" y1="${T}" y2="${H-B}" stroke="${css('--rule2')}" stroke-width="1"/><text x="${sx(i)}" y="${H-B+18}" text-anchor="middle" font-size="12" fill="${css('--mute')}" font-family="JetBrains Mono, monospace">${i}</text>`;}
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle" font-size="12" fill="${css('--mute')}">PPO iteration</text>`;
+  s+=`<text transform="translate(14 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle" font-size="12" fill="${css('--mute')}">mean episode length, steps (cap 1000)</text>`;
+  for(const [k,label,color,dash] of series){
+    const pts=DATA[k]; if(!pts) continue;
+    const d=pts.map((p,i)=>(i?"L":"M")+sx(p[0]).toFixed(1)+" "+sy(p[1]).toFixed(1)).join(" ");
+    s+=`<path d="${d}" fill="none" stroke="${css(color)}" stroke-width="${k==='control'?2.4:1.8}" ${dash?`stroke-dasharray="${dash}"`:""} stroke-linejoin="round"/>`;
+    const last=pts[pts.length-1];
+    if(k==='B1_l1'||k==='B1v1') s+=`<circle cx="${sx(last[0])}" cy="${sy(last[1])}" r="3.5" fill="${css(color)}"/>`;
+  }
+  s+=`</svg>`;
+  const el=document.getElementById('chart');
+  el.innerHTML = s + `<div class="legend">`+series.map(([k,l,c,d])=>`<span><span class="sw" style="background:${css(c)};${d?'opacity:.6':''}"></span>${l}</span>`).join("")+`</div><div class="cap">Training-time episode length, 25-iteration bins, under the honest plant's curriculum. The two warm-started arms sit at the top from the first hundred iterations; the scratch arm with the imitation term and the control cross each other repeatedly. Both killed arms never left the floor. Dots mark where a kill rule fired.</div>`;
+  };
+  draw();
+  // Redraw at the real width so the axis text stays readable on phones (site copy).
+  let lw=el0.clientWidth;
+  new ResizeObserver(()=>{const w=el0.clientWidth; if(w!==lw){lw=w;draw();}}).observe(el0);
+})();
+</script>
+
+</body></html>

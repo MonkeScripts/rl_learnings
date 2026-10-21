@@ -1,0 +1,44 @@
+---
+layout: base.njk
+---
+{%- set t = i18n[lang] -%}
+{%- set pages = collections["days_" ~ lang] -%}
+<main class="home">
+  <section class="hero">
+    <p class="eyebrow">19 {{ "days" if lang == "en" else "天" }} · 4 {{ "stages" if lang == "en" else "个阶段" }}</p>
+    <h1>{{ t.siteTitle }}</h1>
+    <p class="hero-sub">{{ t.tagline }}</p>
+    <p class="hero-cta">
+      <a class="button" href="{{ (base ~ 'day01/') | url }}" data-resume-link data-resume-label="{{ t.resume }}">{{ t.start }}</a>
+    </p>
+    <div class="progress-strip" aria-label="{{ t.progress }}"><span data-progress-bar></span><small data-progress-text data-done-word="{{ t.done }}"></small></div>
+  </section>
+
+  <section class="why">
+    <p class="eyebrow">{{ t.whyKicker }}</p>
+    <div class="why-grid">
+      {% for item in t.why %}<div class="why-card"><h3>{{ item[0] }}</h3><p>{{ item[1] }}</p></div>{% endfor %}
+    </div>
+  </section>
+
+  {% for stage in course.stages %}
+  <section class="stage">
+    <div class="stage-head">
+      <span class="stage-num">{{ stage.n | pad2 }}</span>
+      <div><h2>{{ stage[lang].t }}</h2><p>{{ stage[lang].s }}</p></div>
+    </div>
+    <ol class="stage-days">
+      {% for n in stage.days %}
+      {%- set exists = pages | findDay(n) -%}
+      <li data-day-item="{{ n }}" class="{% if not exists %}soon{% endif %}">
+        {% if exists %}<a href="{{ (base ~ 'day' ~ (n | pad2) ~ '/') | url }}">{% else %}<span>{% endif %}
+          <span class="nav-num">{{ n | pad2 }}</span>
+          <span class="day-title">{{ course.days[n][lang] }}</span>
+          {% if not exists %}<small>{{ t.soon }}</small>{% endif %}
+        {% if exists %}</a>{% else %}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endfor %}
+</main>

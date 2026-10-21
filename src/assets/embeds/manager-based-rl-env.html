@@ -1,0 +1,410 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ManagerBasedRlEnv</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --border: #d8d5cf;
+    --text: #2c2a25;
+    --text-muted: #6b6760;
+    --accent: #3d6b5e;
+    --accent-light: #e8f0ec;
+    --config: #8b6914;
+    --config-bg: #fdf6e3;
+    --manager: #3d5a80;
+    --manager-bg: #e8eef5;
+    --hook: #7c4d8a;
+    --hook-bg: #f3ecf5;
+    --code-bg: #f0eeea;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1d21;
+      --surface: #23272e;
+      --border: #3a3e46;
+      --text: #d4d2cd;
+      --text-muted: #8a877f;
+      --accent: #6db89a;
+      --accent-light: #1e2e28;
+      --config: #d4a332;
+      --config-bg: #2a2518;
+      --manager: #7ba3cc;
+      --manager-bg: #1c2433;
+      --hook: #b88bc4;
+      --hook-bg: #2a1e2e;
+      --code-bg: #1e2024;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1d21;
+    --surface: #23272e;
+    --border: #3a3e46;
+    --text: #d4d2cd;
+    --text-muted: #8a877f;
+    --accent: #6db89a;
+    --accent-light: #1e2e28;
+    --config: #d4a332;
+    --config-bg: #2a2518;
+    --manager: #7ba3cc;
+    --manager-bg: #1c2433;
+    --hook: #b88bc4;
+    --hook-bg: #2a1e2e;
+    --code-bg: #1e2024;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  h1 { font-size: 1.6rem; font-weight: 600; margin: 2rem 0 0.5rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 2.2rem 0 0.8rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { font-size: 0.95rem; font-weight: 600; margin: 1.5rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+
+  p { margin: 0.6rem 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+  }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: var(--code-bg);
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 0.8rem 0;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 0.8rem 0;
+  }
+
+  .card-config { border-left: 3px solid var(--config); }
+  .card-manager { border-left: 3px solid var(--manager); }
+  .card-hook { border-left: 3px solid var(--hook); }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72em;
+    font-weight: 500;
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 0.3em;
+  }
+  .tag-config { background: var(--config-bg); color: var(--config); }
+  .tag-manager { background: var(--manager-bg); color: var(--manager); }
+  .tag-hook { background: var(--hook-bg); color: var(--hook); }
+  .tag-rate { background: var(--accent-light); color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.9em; }
+  th { text-align: left; font-weight: 600; padding: 0.5rem 0.8rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  td code { font-size: 0.85em; }
+
+  .flow-label { font-size: 0.78em; color: var(--text-muted); }
+  .arrow { color: var(--text-muted); font-size: 1.2em; text-align: center; padding: 0.2rem 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  figure { margin: 1.5rem 0; }
+  figcaption { font-size: 0.82em; color: var(--text-muted); margin-top: 0.4rem; text-align: center; }
+
+  .subtitle { color: var(--text-muted); font-size: 0.95em; margin-top: -0.3rem; }
+</style>
+
+<h1>How ManagerBasedRlEnv assembles the wlbot task</h1>
+<p class="subtitle">The config objects, what each manager does, and when each piece runs.</p>
+
+<h2>The three YAML files become one env</h2>
+
+<p><code>make_env_cfg()</code> in <code>sk_env_cfg.py</code> reads three config files, merges them, and builds a single <code>ManagerBasedRlEnvCfg</code> that mjlab instantiates as the training environment.</p>
+
+<figure>
+<svg viewBox="0 0 820 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Config files merge into ManagerBasedRlEnvCfg, which splits into six managers" style="max-width:100%;height:auto">
+  <style>
+    .box { fill: var(--surface, #fff); stroke: var(--border, #d8d5cf); stroke-width: 1.2; rx: 6; }
+    .box-config { fill: var(--config-bg, #fdf6e3); stroke: var(--config, #8b6914); }
+    .box-manager { fill: var(--manager-bg, #e8eef5); stroke: var(--manager, #3d5a80); }
+    .box-hook { fill: var(--hook-bg, #f3ecf5); stroke: var(--hook, #7c4d8a); }
+    .box-env { fill: var(--accent-light, #e8f0ec); stroke: var(--accent, #3d6b5e); stroke-width: 1.5; }
+    .lbl { fill: currentColor; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 12px; text-anchor: middle; font-weight: 600; }
+    .lbl-sm { fill: currentColor; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; text-anchor: middle; opacity: 0.65; }
+    .lbl-rate { fill: var(--hook, #7c4d8a); font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-anchor: middle; font-weight: 500; }
+    .arr { stroke: currentColor; stroke-width: 1; fill: none; opacity: 0.4; }
+    .arr-head { fill: currentColor; opacity: 0.4; }
+  </style><style>/* learning_rl: phone-width fix */@media (max-width:600px){figure:has(> svg){overflow-x:auto;-webkit-overflow-scrolling:touch}figure > svg{min-width:640px;max-width:none!important}code{overflow-wrap:anywhere}td:first-child code{white-space:nowrap;overflow-wrap:normal}table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}th,td{padding:.4rem .5rem}}</style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="7" markerHeight="5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" class="arr-head"/></marker>
+  </defs>
+
+  <!-- config boxes -->
+  <rect class="box-config" x="40" y="20" width="160" height="50"/>
+  <text class="lbl" x="120" y="42">sim_default.yaml</text>
+  <text class="lbl-sm" x="120" y="57">the robot plant</text>
+
+  <rect class="box-config" x="240" y="20" width="160" height="50"/>
+  <text class="lbl" x="320" y="42">randomization.yaml</text>
+  <text class="lbl-sm" x="320" y="57">DR ranges</text>
+
+  <rect class="box-config" x="440" y="20" width="180" height="50"/>
+  <text class="lbl" x="530" y="42">train_sk / train_legs</text>
+  <text class="lbl-sm" x="530" y="57">reward, schedule, PPO, obs</text>
+
+  <!-- merge arrow -->
+  <line class="arr" x1="120" y1="70" x2="120" y2="105" marker-end="url(#ah)"/>
+  <line class="arr" x1="320" y1="70" x2="320" y2="105" marker-end="url(#ah)"/>
+  <line class="arr" x1="530" y1="70" x2="530" y2="105" marker-end="url(#ah)"/>
+  <line class="arr" x1="120" y1="105" x2="530" y2="105"/>
+
+  <!-- make_env_cfg -->
+  <rect class="box" x="220" y="110" width="200" height="40"/>
+  <text class="lbl" x="320" y="134">make_env_cfg()</text>
+  <line class="arr" x1="320" y1="105" x2="320" y2="110"/>
+
+  <!-- env cfg -->
+  <line class="arr" x1="320" y1="150" x2="320" y2="175" marker-end="url(#ah)"/>
+  <rect class="box-env" x="170" y="180" width="300" height="45"/>
+  <text class="lbl" x="320" y="200">ManagerBasedRlEnvCfg</text>
+  <text class="lbl-sm" x="320" y="215">scene + 6 manager configs</text>
+
+  <!-- fan out to managers -->
+  <line class="arr" x1="320" y1="225" x2="320" y2="250"/>
+  <line class="arr" x1="70" y1="250" x2="680" y2="250"/>
+
+  <!-- 6 manager boxes -->
+  <line class="arr" x1="70" y1="250" x2="70" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="10" y="275" width="120" height="65"/>
+  <text class="lbl" x="70" y="296">Actions</text>
+  <text class="lbl-sm" x="70" y="310">WheelVoltage</text>
+  <text class="lbl-sm" x="70" y="322">ActionCfg</text>
+  <text class="lbl-rate" x="70" y="336">100 Hz</text>
+
+  <line class="arr" x1="195" y1="250" x2="195" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="140" y="275" width="110" height="65"/>
+  <text class="lbl" x="195" y="296">Observations</text>
+  <text class="lbl-sm" x="195" y="310">actor: 32 or 40</text>
+  <text class="lbl-sm" x="195" y="322">critic: 59 or 68</text>
+  <text class="lbl-rate" x="195" y="336">100 Hz</text>
+
+  <line class="arr" x1="315" y1="250" x2="315" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="260" y="275" width="110" height="65"/>
+  <text class="lbl" x="315" y="296">Rewards</text>
+  <text class="lbl-sm" x="315" y="310">StationKeep</text>
+  <text class="lbl-sm" x="315" y="322">Reward</text>
+  <text class="lbl-rate" x="315" y="336">100 Hz</text>
+
+  <line class="arr" x1="430" y1="250" x2="430" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="380" y="275" width="100" height="65"/>
+  <text class="lbl" x="430" y="296">Terminations</text>
+  <text class="lbl-sm" x="430" y="310">fell_over</text>
+  <text class="lbl-sm" x="430" y="322">runaway</text>
+  <text class="lbl-rate" x="430" y="336">100 Hz</text>
+
+  <line class="arr" x1="540" y1="250" x2="540" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="490" y="275" width="100" height="65"/>
+  <text class="lbl" x="540" y="296">Commands</text>
+  <text class="lbl-sm" x="540" y="310">vel + yaw_rate</text>
+  <text class="lbl-sm" x="540" y="322">(both zero)</text>
+  <text class="lbl-rate" x="540" y="336">resampled</text>
+
+  <line class="arr" x1="650" y1="250" x2="650" y2="270" marker-end="url(#ah)"/>
+  <rect class="box-manager" x="600" y="275" width="100" height="65"/>
+  <text class="lbl" x="650" y="296">Events</text>
+  <text class="lbl-sm" x="650" y="310">reset, push</text>
+  <text class="lbl-sm" x="650" y="322">curriculum</text>
+  <text class="lbl-rate" x="650" y="336">per-step</text>
+
+  <!-- actuator hook, separate -->
+  <line class="arr" x1="70" y1="340" x2="70" y2="375" marker-end="url(#ah)"/>
+  <rect class="box-hook" x="10" y="380" width="250" height="55"/>
+  <text class="lbl" x="135" y="400">Actuator Hook (hooks.py)</text>
+  <text class="lbl-sm" x="135" y="414">compute(): pipeline.tick → torques</text>
+  <text class="lbl-sm" x="135" y="427">update(): sense.tick → sensor filters</text>
+  <text class="lbl-rate" x="70" y="430">500 Hz</text>
+
+  <!-- scene -->
+  <rect class="box" x="340" y="390" width="200" height="40"/>
+  <text class="lbl" x="440" y="414">SceneCfg</text>
+  <text class="lbl-sm" x="440" y="426">EntityCfg + TerrainCfg</text>
+  <line class="arr" x1="260" y1="407" x2="340" y2="407" marker-end="url(#ah)"/>
+  <text class="lbl-sm" x="300" y="400">owns</text>
+
+  <!-- sim cfg -->
+  <rect class="box" x="340" y="450" width="200" height="40"/>
+  <text class="lbl" x="440" y="474">SimulationCfg</text>
+  <text class="lbl-sm" x="440" y="486">timestep, solver iters, nconmax</text>
+
+  <!-- note -->
+  <text class="lbl-sm" x="410" y="515" style="font-size:8.5px;opacity:0.5">mjlab instantiates ManagerBasedRlEnv from this config at env = ManagerBasedRlEnv(cfg)</text>
+</svg>
+<figcaption>Three YAML files merge into one cfg. mjlab splits it into six managers plus the actuator hook.</figcaption>
+</figure>
+
+<h2>The config merge</h2>
+
+<p><code>make_env_cfg()</code> runs at task registration time. It reads the three YAML files and merges them into one <code>ManagerBasedRlEnvCfg</code>. The merge order matters:</p>
+
+<div class="card card-config">
+<p><span class="tag tag-config">sim_default.yaml</span> The robot. Geometry, motor constants, IMU parameters, servo model, engine-specific solver settings. This is the plant.</p>
+<p><span class="tag tag-config">train_sk.yaml</span> The <code>sim:</code> block overrides parts of sim_default (pitch filter on, action delay range). The merge is recursive, so nested keys are patched, not replaced.</p>
+</div>
+
+<div class="card card-config">
+<p><span class="tag tag-config">randomization.yaml</span> DR ranges for every plant parameter. Masses, friction, motor constants, battery voltage, sensor biases, push forces.</p>
+<p><span class="tag tag-config">train_sk.yaml</span> The <code>rand:</code> block overrides parts of randomization (pins commands to zero, narrows the height band). One-level merge per top-level key.</p>
+</div>
+
+<div class="card card-config">
+<p><span class="tag tag-config">train_sk.yaml</span> directly provides: reward weights and schedule, PPO hyperparameters, curriculum warmup fraction, observation config (history depth, height_action flag).</p>
+<p><span class="tag tag-config">train_legs.yaml</span> uses <code>inherit: train_sk</code> and overrides only legs-specific keys: <code>obs.height_action: true</code>, sag and CoM randomisation, a tighter schedule.</p>
+</div>
+
+<h2>The six managers</h2>
+
+<p>Each manager is a named dict in the cfg. mjlab creates the manager, which creates each term from its cfg, and calls them at the right moment during <code>env.step()</code>.</p>
+
+<div class="card card-manager">
+<h3>Action Manager <span class="tag tag-rate">100 Hz</span></h3>
+<p><code>actions = {"wheels": WheelVoltageActionCfg(n_actions=2 or 3)}</code></p>
+<p>Called once per policy step. <code>process_actions()</code> clips the policy output to [-1, 1] and calls <code>pipeline.mix()</code> to store the mixed voltage command. This is where the neural network's output enters the system.</p>
+<p>The action term finds the <code>ActuationPipeline</code> through <code>wheel_actuator(entity).pipeline</code>, which looks up the actuator hook on the robot entity.</p>
+</div>
+
+<div class="card card-manager">
+<h3>Observation Manager <span class="tag tag-rate">100 Hz</span></h3>
+<p>Two observation groups, each a dict of terms:</p>
+<table>
+  <tr><th>Group</th><th>Terms</th><th>Width</th><th>Who sees it</th></tr>
+  <tr><td><code>actor</code></td><td>StationKeepObs</td><td>32 or 40</td><td>The policy network</td></tr>
+  <tr><td><code>critic</code></td><td>StationKeepObs + PrivilegedState + PlantParams</td><td>59 or 68</td><td>The value function (training only)</td></tr>
+</table>
+<p>Called after all substeps. <code>StationKeepObs.compute()</code> calls <code>sense.observe()</code> on the actuator hook's <code>SensePipeline</code>, which assembles the frame-stacked, scaled observation vector.</p>
+</div>
+
+<div class="card card-manager">
+<h3>Reward Manager <span class="tag tag-rate">100 Hz</span></h3>
+<p><code>rewards = {"station_keep": RewardTermCfg(func=StationKeepReward, weight=1.0, params={...})}</code></p>
+<p>Called before observations within each step. Computes the product-form reward from true pitch (not sensed), odometry position error, and yaw error. Reads the curriculum level from the shared <code>DomainRandomizer</code> and applies the reward schedule.</p>
+<p>The <code>params</code> dict carries <code>sim_cfg</code>, the reward weights, and the schedule. These are baked at construction time.</p>
+</div>
+
+<div class="card card-manager">
+<h3>Termination Manager <span class="tag tag-rate">100 Hz</span></h3>
+<table>
+  <tr><th>Term</th><th>Condition</th></tr>
+  <tr><td><code>time_out</code></td><td>Episode reaches <code>episode_length_s</code> (truncation, not failure)</td></tr>
+  <tr><td><code>fell_over</code></td><td>|pitch| or |roll| exceeds the fall angle</td></tr>
+  <tr><td><code>runaway</code></td><td>|wheel speed| exceeds 125 rad/s</td></tr>
+  <tr><td><code>pos_runaway</code></td><td>|pos_err| exceeds the guard distance</td></tr>
+</table>
+</div>
+
+<div class="card card-manager">
+<h3>Command Manager <span class="tag tag-rate">resampled</span></h3>
+<p><code>commands = {"base_velocity": VelocityYawCommandCfg(cmd_vel_range=[0,0], cmd_yaw_rate_range=[0,0])}</code></p>
+<p>Draws a velocity and yaw-rate command, held for 2 to 4 seconds, then resampled. In the current training configs both ranges are [0, 0], so the command is always "stay still." The observation and reward terms read the command through <code>env.command_manager.get_command("base_velocity")</code>.</p>
+</div>
+
+<div class="card card-manager">
+<h3>Event Manager <span class="tag tag-rate">reset + step</span></h3>
+<table>
+  <tr><th>Term</th><th>Mode</th><th>What it does</th></tr>
+  <tr><td><code>reset_robot</code></td><td>reset</td><td>Draws DR parameters, writes them into the MuJoCo model (masses, friction, wheel radii), sets the initial pose, resets the servo and both pipelines</td></tr>
+  <tr><td><code>push</code></td><td>step</td><td>Owns its own per-env timing. Fires a horizontal force at a random offset point, holds it for the push duration, clears it when expired. Clears on reset so forces never leak across episodes.</td></tr>
+  <tr><td><code>curriculum</code></td><td>step</td><td>Ramps the push force cap and init-state spread from 0 to full over <code>warmup_fraction</code> of training. Writes <code>dr.curriculum</code> which the reward schedule also reads.</td></tr>
+</table>
+</div>
+
+<h2>The actuator hook (not a manager)</h2>
+
+<div class="card card-hook">
+<h3>WheelVoltageActuator <span class="tag tag-hook">hooks.py</span> <span class="tag tag-rate">500 Hz</span></h3>
+<p>Registered on the robot entity through <code>EntityArticulationInfoCfg.actuators</code>. Not a manager term. mjlab calls it at the physics substep rate (5 times per policy step).</p>
+<p>This is the only code that runs at 500 Hz. It exists because the motor law and sensor filters need the substep rate, and the actuator hook is the only framework entry point that runs there.</p>
+
+<table>
+  <tr><th>Method</th><th>When</th><th>What it does</th></tr>
+  <tr><td><code>compute(cmd)</code></td><td>Before each substep</td><td>Reads <code>cmd.vel</code> (wheel speeds from MuJoCo), calls <code>pipeline.tick(omega)</code> (delay line, battery sag, motor law), returns torques. Also writes hip servo targets when the height action is on.</td></tr>
+  <tr><td><code>update(dt)</code></td><td>After each substep</td><td>Reads joint state from MuJoCo (<code>qpos</code>, <code>qvel</code>, quaternion), packs it into a sensor dict, calls <code>sense.tick()</code> (pitch filter, encoder LPF, sensor noise). The sense pipeline is here because there is no other 500 Hz hook.</td></tr>
+  <tr><td><code>reset(env_ids)</code></td><td>On episode reset</td><td>Resets both pipelines: redraws action delay, zeros the delay ring, re-latches battery voltage.</td></tr>
+</table>
+
+<p>The actuator hook <strong>creates and owns</strong> both the <code>ActuationPipeline</code> and the <code>SensePipeline</code>. Other terms access them through the <code>wheel_actuator(entity)</code> lookup function, which finds this object on the robot entity.</p>
+</div>
+
+<h2>One policy step, in order</h2>
+
+<p>When the trainer calls <code>env.step(action)</code>, mjlab runs these in sequence:</p>
+
+<pre>
+1. event manager     (step mode)    push timing, curriculum level
+2. action manager    (100 Hz)       process_actions → pipeline.mix(action)
+   ┌─── substep 1 of 5 ──────────────────────────────────────────┐
+   │ 3a. actuator compute  (500 Hz)  pipeline.tick → torques     │
+   │ 3b. MuJoCo physics              apply torques, step 2 ms    │
+   │ 3c. actuator update   (500 Hz)  sense.tick → sensor filters │
+   └─────────────────────────────────────────────────────────────┘
+   ... substeps 2 through 5 repeat 3a-3b-3c ...
+4. reward manager    (100 Hz)       station_keep_reward(true_pitch, ...)
+5. observation mgr   (100 Hz)       sense.observe → [1024, 32 or 40]
+6. termination mgr   (100 Hz)       fell_over, runaway, pos_runaway
+7. command manager                  resample if hold timer expired
+</pre>
+
+<h2>What gets baked at construction</h2>
+
+<p>Some config values are read once when <code>ManagerBasedRlEnv(cfg)</code> is called and cannot be changed afterward. Others are drawn per episode by the event manager.</p>
+
+<table>
+  <tr><th>Baked at construction</th><th>Drawn per episode (events.py)</th></tr>
+  <tr><td>Action delay range (min/max lag)</td><td>Action delay (exact ticks, from the range)</td></tr>
+  <tr><td>Pitch filter coefficients</td><td>Motor constants (kt, ke, Coulomb, viscous)</td></tr>
+  <tr><td>Sensor noise standard deviations</td><td>Masses, friction, wheel radii, battery voltage</td></tr>
+  <tr><td>Reward weights and schedule</td><td>Init state (pitch, height, velocity)</td></tr>
+  <tr><td>Solver iterations and contact limits</td><td>Push force, timing, direction</td></tr>
+  <tr><td>Encoder velocity filter cutoff</td><td>Leg sag, fore-aft CoM shift (legs config)</td></tr>
+</table>
+
+<p>This is why <code>make_env_cfg()</code> takes optional <code>sim_cfg</code> and <code>rand_cfg</code> arguments. Evaluation with <code>--clean</code> passes ablated configs that strip pushes, noise, and DR. The ablation must happen before construction, not after, because the baked values would not change.</p>
+
+<h2>File map</h2>
+
+<table>
+  <tr><th>File</th><th>What it provides to the cfg</th></tr>
+  <tr><td><code>sk_env_cfg.py</code></td><td>Builds the entire <code>ManagerBasedRlEnvCfg</code>. The one file that wires everything together.</td></tr>
+  <tr><td><code>hooks.py</code></td><td><code>WheelVoltageActuatorCfg</code> — the 500 Hz actuator hook (motor law + sensors).</td></tr>
+  <tr><td><code>action.py</code></td><td><code>WheelVoltageActionCfg</code> — the 100 Hz action term (policy entry point).</td></tr>
+  <tr><td><code>reward.py</code></td><td><code>StationKeepReward</code> — the reward callable.</td></tr>
+  <tr><td><code>terminations.py</code></td><td><code>fell_over</code>, <code>WheelRunaway</code>, <code>PositionRunaway</code> — termination callables.</td></tr>
+  <tr><td><code>observations.py</code></td><td><code>StationKeepObs</code>, <code>PrivilegedState</code>, <code>PlantParams</code> — observation terms.</td></tr>
+  <tr><td><code>events.py</code></td><td><code>ResetRobot</code>, <code>Push</code>, <code>RampCurriculum</code> — event terms.</td></tr>
+  <tr><td><code>commands.py</code></td><td><code>VelocityYawCommandCfg</code> — velocity/yaw command term.</td></tr>
+  <tr><td><code>__init__.py</code></td><td>Task registration: <code>Wlbot-StationKeep</code> and <code>Wlbot-Legs</code>.</td></tr>
+</table>
+
+</body></html>

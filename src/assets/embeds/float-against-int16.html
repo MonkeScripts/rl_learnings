@@ -1,0 +1,644 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Float Against Int16</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600&display=swap">
+
+<style>
+:root {
+  --paper:   #F1F2F0;
+  --card:    #FAFAF8;
+  --ink:     #171A19;
+  --ink-2:   #414744;
+  --muted:   #6E7370;
+  --rule:    #D4D7D2;
+  --hair:    #E3E5E1;
+
+  --flt:     #2C6E63;
+  --flt-dim: #A9C6C0;
+  --int:     #A9542F;
+  --int-dim: #DFC0AE;
+  --limit:   #8C3B36;
+  --on-fill: #FBFCFA;
+
+  --w: 72ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:   #101312;
+    --card:    #181C1B;
+    --ink:     #E9ECE8;
+    --ink-2:   #B7BEBA;
+    --muted:   #838A86;
+    --rule:    #2A302E;
+    --hair:    #1F2523;
+
+    --flt:     #4FA595;
+    --flt-dim: #2A4A45;
+    --int:     #D4835A;
+    --int-dim: #4B3327;
+    --limit:   #D5706A;
+    --on-fill: #101312;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:   #101312;
+  --card:    #181C1B;
+  --ink:     #E9ECE8;
+  --ink-2:   #B7BEBA;
+  --muted:   #838A86;
+  --rule:    #2A302E;
+  --hair:    #1F2523;
+
+  --flt:     #4FA595;
+  --flt-dim: #2A4A45;
+  --int:     #D4835A;
+  --int-dim: #4B3327;
+  --limit:   #D5706A;
+  --on-fill: #101312;
+}
+
+* { box-sizing: border-box; }
+
+/* Chinese gets its own faces. Fraunces and Karla have no CJK coverage, so
+   without this the page falls back silently to whatever the OS supplies and
+   the two languages stop looking like one document. */
+html[lang="zh"] body { font-family: "Noto Sans SC", Karla, system-ui, sans-serif; }
+html[lang="zh"] h1,
+html[lang="zh"] h2,
+html[lang="zh"] .approach h3 { font-family: "Noto Serif SC", Fraunces, Georgia, serif; letter-spacing: 0; }
+html[lang="zh"] h3 { font-family: "Noto Sans SC", Karla, sans-serif; }
+html[lang="zh"] .rowlbl { font-family: "Noto Sans SC", Karla, sans-serif; }
+
+#lang {
+  align-self: flex-start;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.72rem; letter-spacing: 0.09em;
+  padding: 0.3rem 0.7rem;
+  color: var(--ink-2);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+}
+#lang:hover { color: var(--ink); border-color: var(--ink-2); }
+#lang:focus-visible { outline: 2px solid var(--flt); outline-offset: 2px; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Karla, system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(1.9rem, 4vw, 3.6rem) clamp(1rem, 3.5vw, 2.6rem) 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.4rem, 4vw, 3.4rem);
+}
+
+.prose { max-width: var(--w); }
+
+/* ---- masthead ---------------------------------------------------------- */
+
+.mast { display: flex; flex-direction: column; gap: 1rem; }
+.kicker {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.71rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2.1rem, 5.4vw, 3.3rem);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
+  margin: 0;
+  text-wrap: balance;
+}
+.stand {
+  font-size: clamp(1.03rem, 2vw, 1.18rem);
+  color: var(--ink-2);
+  max-width: 58ch;
+  margin: 0;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: 0.3rem 1.8rem;
+  padding-top: 1rem; border-top: 1px solid var(--rule);
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.75rem; color: var(--muted);
+}
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+/* ---- headings ---------------------------------------------------------- */
+
+h2 {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 3vw, 1.78rem);
+  line-height: 1.16;
+  letter-spacing: -0.014em;
+  margin: 0 0 0.85rem;
+  text-wrap: balance;
+}
+h3 {
+  font-family: Karla, sans-serif;
+  font-weight: 700; font-size: 0.95rem;
+  margin: 0 0 0.45rem;
+}
+p { margin: 0 0 0.95rem; }
+p:last-child { margin-bottom: 0; }
+section { display: flex; flex-direction: column; }
+
+code, .m {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.87em;
+}
+
+/* ---- the two cards ----------------------------------------------------- */
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.3rem;
+  margin-top: 0.5rem;
+}
+.approach {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-top: 3px solid var(--rule);
+  padding: 1.3rem 1.4rem 1.45rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+  min-width: 0;
+}
+.approach.a { border-top-color: var(--flt); }
+.approach.b { border-top-color: var(--int); }
+.approach .tag {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase;
+}
+.approach.a .tag { color: var(--flt); }
+.approach.b .tag { color: var(--int); }
+.approach h3 {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 600; font-size: 1.22rem; letter-spacing: -0.01em;
+  margin: 0;
+}
+.approach p { font-size: 0.92rem; color: var(--ink-2); margin: 0; }
+.approach dl {
+  margin: 0.35rem 0 0; display: grid;
+  grid-template-columns: auto 1fr; gap: 0.32rem 0.9rem;
+  font-size: 0.83rem;
+}
+.approach dt {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); white-space: nowrap; padding-top: 0.16em;
+}
+.approach dd { margin: 0; color: var(--ink-2); }
+
+/* ---- chart ------------------------------------------------------------- */
+
+.scroller { overflow-x: auto; margin: 0.5rem 0 0.9rem; padding-bottom: 0.3rem; }
+.scroller svg { display: block; width: 100%; min-width: 720px; height: auto; }
+
+.ax    { font-family: "DM Mono", ui-monospace, monospace; font-size: 10px; fill: var(--muted); }
+.rowlbl{ font-family: Karla, sans-serif; font-size: 12.5px; fill: var(--ink); }
+.rowsub{ font-family: "DM Mono", ui-monospace, monospace; font-size: 9.5px; fill: var(--muted); }
+.val   { font-family: "DM Mono", ui-monospace, monospace; font-size: 11px; font-weight: 500; }
+.val.a { fill: var(--flt); }
+.val.b { fill: var(--int); }
+.grid  { stroke: var(--hair); stroke-width: 1; }
+.limit { stroke: var(--limit); stroke-width: 1.5; stroke-dasharray: 5 3; }
+.limlbl{ font-family: "DM Mono", ui-monospace, monospace; font-size: 10px; fill: var(--limit); }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem;
+  font-size: 0.85rem; color: var(--ink-2);
+}
+.legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; }
+
+.cap { font-size: 0.83rem; color: var(--muted); max-width: 70ch; }
+
+/* ---- table ------------------------------------------------------------- */
+
+.tablewrap { overflow-x: auto; margin: 0.4rem 0 0; }
+table { border-collapse: collapse; width: 100%; min-width: 580px; font-size: 0.88rem; }
+th {
+  text-align: left;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0 0.9rem 0.5rem 0;
+  border-bottom: 2px solid var(--rule);
+  color: var(--muted); white-space: nowrap;
+}
+th.ca { color: var(--flt); }
+th.cb { color: var(--int); }
+td {
+  padding: 0.55rem 0.9rem 0.55rem 0;
+  border-bottom: 1px solid var(--hair);
+  color: var(--ink-2); vertical-align: top;
+}
+td:first-child { color: var(--ink); width: 34%; }
+td.n {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap;
+}
+tr.head td {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.68rem; letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--muted); padding-top: 1.15rem; border-bottom-color: var(--rule);
+}
+.win { color: var(--flt); font-weight: 700; }
+.lose { color: var(--int); }
+
+/* ---- verdict ----------------------------------------------------------- */
+
+.verdict {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--flt);
+  padding: 1.2rem 1.35rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.verdict p { font-size: 0.93rem; color: var(--ink-2); margin: 0; }
+.verdict strong { color: var(--ink); }
+
+.causes { display: flex; flex-direction: column; gap: 0; margin-top: 0.3rem; }
+.causes > div {
+  padding: 1rem 0; border-bottom: 1px solid var(--hair);
+  max-width: var(--w);
+}
+.causes > div:first-child { border-top: 1px solid var(--rule); }
+.causes h3 { margin-bottom: 0.3rem; }
+.causes p { font-size: 0.9rem; margin: 0; }
+
+footer {
+  border-top: 1px solid var(--rule); padding-top: 1rem;
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.73rem; color: var(--muted); line-height: 1.75;
+}
+</style>
+
+<div class="page">
+
+<header class="mast">
+  <button id="lang" type="button">中文</button>
+  <div class="kicker">Balance robot · policy runtime</div>
+  <h1>Float against int16</h1>
+  <p class="stand">We built the same neural network two ways on an ESP32 and measured both on the robot. The quantized one is 3.5 times slower and cannot hold the control rate.</p>
+  <div class="meta">
+    <span><b>ESP32</b> 240 MHz, 32 KB I-cache</span>
+    <span><b>40 → 64 → 64 → 2</b> tanh network</span>
+    <span><b>100 Hz</b> policy rate</span>
+    <span><b>2026-09-10</b></span>
+  </div>
+</header>
+
+<!-- ==================== the two approaches ==================== -->
+<section>
+  <div class="prose">
+    <h2>The two approaches</h2>
+    <p>Both run the identical trained actor at 100 Hz on a task below the 500 Hz control tick, take the same 40-number observation, and produce the same two voltages. Everything after the arithmetic is shared.</p>
+  </div>
+
+  <div class="pair">
+    <div class="approach a">
+      <div class="tag">Approach A</div>
+      <h3>Hand-emitted float C</h3>
+      <p>A code generator reads the published actor and writes out three matrix loops with <span class="m">tanhf</span> between them. Weights are float32 forced into DRAM. No library, no interpreter, no build step beyond the C compiler.</p>
+      <dl>
+        <dt>Weights</dt><dd>27,656 B of DRAM</dd>
+        <dt>Code</dt><dd>382 B on the inference path</dd>
+        <dt>Export needs</dt><dd>numpy and onnx</dd>
+        <dt>Firmware needs</dt><dd>nothing</dd>
+      </dl>
+    </div>
+    <div class="approach b">
+      <div class="tag">Approach B</div>
+      <h3>esp-ppq int16 through esp-dl</h3>
+      <p>esp-ppq quantizes the actor to 16-bit weights and activations, calibrated on real observations from a flight capture, and folds both tanh layers into 2049-entry lookup tables. esp-dl loads the graph and executes it node by node.</p>
+      <dl>
+        <dt>Graph</dt><dd>23,584 B of flash</dd>
+        <dt>Code</dt><dd>esp-dl interpreter and kernels</dd>
+        <dt>Export needs</dt><dd>esp-ppq and torch, 751 MB</dd>
+        <dt>Firmware needs</dt><dd>esp-dl 3.3.11</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== timing ==================== -->
+<section>
+  <div class="prose">
+    <h2>Timing, measured on the robot</h2>
+    <p>Four figures per approach, all from the recorder's own per-inference clock except the first, which comes from a console profiler running 200 passes back to back with the code already in cache.</p>
+  </div>
+
+  <div class="scroller">
+    <svg viewBox="0 0 920 316" role="img" aria-label="Paired horizontal bars comparing float and int16 inference times against a 10 millisecond policy period. Float arithmetic 435 microseconds, int16 1201. Float minimum window 1364, int16 8652. Float median window 3075, int16 10722, which crosses the period line. Float 95th percentile 3801, int16 13474.">
+
+      <!-- x grid -->
+      <path class="grid" d="M210 44 V262 M377.5 44 V262 M545 44 V262 M712.5 44 V262 M880 44 V262"/>
+      <text class="ax" x="210" y="280" text-anchor="middle">0</text>
+      <text class="ax" x="377.5" y="280" text-anchor="middle">5 000</text>
+      <text class="ax" x="545" y="280" text-anchor="middle">10 000</text>
+      <text class="ax" x="712.5" y="280" text-anchor="middle">15 000</text>
+      <text class="ax" x="880" y="280" text-anchor="middle">20 000</text>
+      <text class="ax" x="545" y="298" text-anchor="middle">microseconds per inference</text>
+
+      <!-- the budget -->
+      <path class="limit" d="M545 36 V266"/>
+      <text class="limlbl" x="539" y="30" text-anchor="end">10 ms policy period: the whole budget</text>
+
+      <!-- group 1: arithmetic -->
+      <text class="rowlbl" x="196" y="64" text-anchor="end">Arithmetic</text>
+      <text class="rowsub" x="196" y="77" text-anchor="end">hot cache, best of 200</text>
+      <rect x="210" y="52" width="14.6" height="14" fill="var(--flt)"/>
+      <text class="val a" x="232" y="63">435</text>
+      <rect x="210" y="70" width="40.2" height="14" fill="var(--int)"/>
+      <text class="val b" x="258" y="81">1 201</text>
+
+      <!-- group 2: minimum window -->
+      <text class="rowlbl" x="196" y="118" text-anchor="end">Inference window</text>
+      <text class="rowsub" x="196" y="131" text-anchor="end">minimum over the run</text>
+      <rect x="210" y="106" width="45.7" height="14" fill="var(--flt)"/>
+      <text class="val a" x="263" y="117">1 364</text>
+      <rect x="210" y="124" width="289.8" height="14" fill="var(--int)"/>
+      <text class="val b" x="507" y="135">8 652</text>
+
+      <!-- group 3: median window -->
+      <text class="rowlbl" x="196" y="172" text-anchor="end">Inference window</text>
+      <text class="rowsub" x="196" y="185" text-anchor="end">median</text>
+      <rect x="210" y="160" width="103" height="14" fill="var(--flt)"/>
+      <text class="val a" x="320" y="171">3 075</text>
+      <rect x="210" y="178" width="359.2" height="14" fill="var(--int)"/>
+      <text class="val b" x="577" y="189">10 722</text>
+
+      <!-- group 4: p95 window -->
+      <text class="rowlbl" x="196" y="226" text-anchor="end">Inference window</text>
+      <text class="rowsub" x="196" y="239" text-anchor="end">95th percentile</text>
+      <rect x="210" y="214" width="127.3" height="14" fill="var(--flt)"/>
+      <text class="val a" x="345" y="225">3 801</text>
+      <rect x="210" y="232" width="451.4" height="14" fill="var(--int)"/>
+      <text class="val b" x="669" y="243">13 474</text>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--flt)"></i> Float C</span>
+    <span><i style="background:var(--int)"></i> int16 through esp-dl</span>
+    <span><i style="background:var(--limit)"></i> the 10 ms budget one inference has to fit inside</span>
+  </div>
+
+  <p class="cap" style="margin-top:0.9rem">Half the int16 inferences take longer than the period they are supposed to fit in. That is what the dashed line means, and it is why the policy interval slipped from 10.0 ms to 11.0 ms: the task cannot finish before the next observation is due.</p>
+</section>
+
+<!-- ==================== side by side ==================== -->
+<section>
+  <div class="prose">
+    <h2>Side by side</h2>
+    <p>Flight figures come from two captures, 90 seconds on float and 60 on int16, with the policy holding the wheels for most of each.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Measure</th>
+          <th class="ca">Float C</th>
+          <th class="cb">int16 esp-dl</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="head"><td colspan="3">Speed</td></tr>
+        <tr><td>Arithmetic, hot cache</td><td class="n win">435 µs</td><td class="n lose">1,201 µs</td></tr>
+        <tr><td>Inference window, median</td><td class="n win">3,075 µs</td><td class="n lose">10,722 µs</td></tr>
+        <tr><td>Inference window, minimum</td><td class="n win">1,364 µs</td><td class="n lose">8,652 µs</td></tr>
+        <tr><td>Cost of a cold cache</td><td class="n">929 µs</td><td class="n">7,451 µs</td></tr>
+
+        <tr class="head"><td colspan="3">Did it hold the rate</td></tr>
+        <tr><td>Policy interval, median</td><td class="n win">10.0 ms</td><td class="n lose">11.0 ms</td></tr>
+        <tr><td>Intervals over 15 ms</td><td class="n win">0</td><td class="n lose">50</td></tr>
+        <tr><td>Action age at the wheels, p99</td><td class="n win">8 ms</td><td class="n lose">13 ms</td></tr>
+        <tr><td>Action age, worst</td><td class="n">12 ms</td><td class="n">17 ms</td></tr>
+
+        <tr class="head"><td colspan="3">Accuracy</td></tr>
+        <tr><td>Worst error on the action</td><td class="n win">3.3e-07</td><td class="n lose">9.0e-03</td></tr>
+        <tr><td>Worst error on motor command</td><td class="n win">0.003 mV</td><td class="n lose">72.3 mV</td></tr>
+        <tr><td>Gate it is held to</td><td>bit-exact replay at 2e-04</td><td>on-device vectors at 6.7e-03</td></tr>
+
+        <tr class="head"><td colspan="3">What it costs to keep</td></tr>
+        <tr><td>Memory it occupies</td><td class="n">27,656 B DRAM</td><td class="n win">23,584 B flash</td></tr>
+        <tr><td>Export toolchain</td><td class="win">numpy, onnx</td><td class="lose">esp-ppq and torch, 751 MB</td></tr>
+        <tr><td>Firmware dependency</td><td class="win">none</td><td class="lose">esp-dl 3.3.11</td></tr>
+        <tr><td>Ways it can be wrong</td><td>rounding only</td><td>calibration range, quantization, graph read</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="cap" style="margin-top:1rem">The one column int16 wins is memory, and it wins it in the wrong currency. Its graph sits in flash, which is 59% empty on this board. The float weights sit in DRAM, which is the scarce resource. That trade is real and it is the only argument left on this chip.</p>
+</section>
+
+<!-- ==================== why ==================== -->
+<section>
+  <div class="prose">
+    <h2>Why the quantized one lost</h2>
+    <p>Three causes, and none of them is a tuning problem.</p>
+  </div>
+
+  <div class="causes">
+    <div>
+      <h3>The chip already has a float unit</h3>
+      <p>16-bit arithmetic pays off where a vector unit does eight of them at once. The original ESP32 has no 16-bit vector instructions and does have a single-precision float unit, so each quantized operation is at best the same speed and carries quantize and requantize steps the float version never runs.</p>
+    </div>
+    <div>
+      <h3>An interpreter around a very small network</h3>
+      <p>esp-dl walks a graph: it dispatches per node, tracks tensors, and requantizes between layers. Spread over a large convolutional model that overhead disappears. Spread over three matrix layers it is most of the work, which is how 435 µs of arithmetic became 1,201.</p>
+    </div>
+    <div>
+      <h3>Far more code through the same small cache</h3>
+      <p>The float path is 382 bytes of code. esp-dl brings tens of kilobytes of interpreter and kernels, and all of it streams through a 32 KB instruction cache that the control tick, the motor commutation and the radio evict between every inference. That is why a cold cache costs 929 µs on one path and 7,451 on the other.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== verdict ==================== -->
+<section>
+  <div class="prose">
+    <h2>Where it leaves us</h2>
+  </div>
+  <div class="verdict">
+    <p><strong>The robot goes back to the float path.</strong> int16 through esp-dl is slower at every measurement we took, and slow enough that the policy stopped running at the rate it trained at.</p>
+    <p>The two changes actually worth making are the ones the profiler pointed at before quantization entered the picture. Approximating tanh in the code generator is worth 255 µs of the 435, since those 128 library calls cost more than all 6,784 multiply-accumulates put together. Moving the forward pass into RAM addresses the 929 µs of cache misses. Neither adds a dependency and neither costs the bit-exact replay gate.</p>
+    <p>The esp-dl work stays in the repository behind its own switch. The ESP32-S3 and P4 have the 16-bit vector kernels this chip lacks, so the same measurement on either could come out the other way. On this board it does not.</p>
+  </div>
+</section>
+
+<footer>
+  <span>Float capture timing2.csv, 8,769 inferences over 90.0 s, policy owned the wheels 87.7 s</span><br>
+  <span>int16 capture t.csv, 5,307 inferences over 60.0 s, owned 53.1 s · both on policy sk_ident_r128_s0@4500</span>
+</footer>
+
+</div>
+
+<script>
+// Two languages, one document. The map is keyed on the English text exactly as
+// it renders, so nothing in the markup above needs an id or a data attribute:
+// a string that is not in the map simply stays put, which is what we want for
+// every number, unit and identifier on the page.
+const ZH = {
+  "Balance robot · policy runtime": "平衡机器人 · 策略运行时",
+  "Float against int16": "浮点与 int16 之争",
+  "We built the same neural network two ways on an ESP32 and measured both on the robot. The quantized one is 3.5 times slower and cannot hold the control rate.":
+    "我们在 ESP32 上用两种方式实现了同一个神经网络，并在机器人上分别做了实测。量化那版慢 3.5 倍，而且撑不住控制频率。",
+  "ESP32 240 MHz, 32 KB I-cache": '<b>ESP32</b> 240 MHz，32 KB 指令缓存',
+  "40 → 64 → 64 → 2 tanh network": '<b>40 → 64 → 64 → 2</b> tanh 网络',
+  "100 Hz policy rate": '<b>100 Hz</b> 策略频率',
+
+  "The two approaches": "两种做法",
+  "Both run the identical trained actor at 100 Hz on a task below the 500 Hz control tick, take the same 40-number observation, and produce the same two voltages. Everything after the arithmetic is shared.":
+    "两者跑的是同一个训练好的 actor，都以 100 Hz 运行在低于 500 Hz 控制节拍的任务里，吃同样的 40 维观测，输出同样的两路电压。算术之外的一切都是共用的。",
+  "Approach A": "做法 A",
+  "Hand-emitted float C": "手写生成的浮点 C",
+  "A code generator reads the published actor and writes out three matrix loops with tanhf between them. Weights are float32 forced into DRAM. No library, no interpreter, no build step beyond the C compiler.":
+    '代码生成器读取发布的 actor，写出三层矩阵循环，层与层之间夹一个 <span class="m">tanhf</span>。权重是 float32，强制放进 DRAM。没有库，没有解释器，除了 C 编译器没有别的构建步骤。',
+  "Weights": "权重", "Code": "代码", "Export needs": "导出依赖", "Firmware needs": "固件依赖",
+  "27,656 B of DRAM": "27,656 B DRAM",
+  "382 B on the inference path": "推理路径上 382 B",
+  "numpy and onnx": "numpy 和 onnx",
+  "nothing": "无",
+  "Approach B": "做法 B",
+  "esp-ppq int16 through esp-dl": "esp-ppq int16，由 esp-dl 执行",
+  "esp-ppq quantizes the actor to 16-bit weights and activations, calibrated on real observations from a flight capture, and folds both tanh layers into 2049-entry lookup tables. esp-dl loads the graph and executes it node by node.":
+    "esp-ppq 把 actor 量化成 16 位权重和激活，标定数据取自一次真实飞行采集的观测，并把两层 tanh 折叠成 2049 项的查找表。esp-dl 加载这张图，逐节点执行。",
+  "Graph": "图",
+  "23,584 B of flash": "23,584 B 闪存",
+  "esp-dl interpreter and kernels": "esp-dl 解释器与算子",
+  "esp-ppq and torch, 751 MB": "esp-ppq 和 torch，751 MB",
+
+  "Timing, measured on the robot": "机上实测的耗时",
+  "Four figures per approach, all from the recorder's own per-inference clock except the first, which comes from a console profiler running 200 passes back to back with the code already in cache.":
+    "每种做法四个数。除第一行外都来自飞行记录仪逐次推理的计时；第一行来自串口分析器，连跑 200 遍、代码已在缓存里，取最快的一次。",
+  "microseconds per inference": "每次推理的微秒数",
+  "10 ms policy period: the whole budget": "10 ms 策略周期：全部预算",
+  "Arithmetic": "算术",
+  "hot cache, best of 200": "热缓存，200 次取最优",
+  "Inference window": "推理窗口",
+  "minimum over the run": "整段运行的最小值",
+  "median": "中位数",
+  "95th percentile": "95 分位",
+  "Float C": '<i style="background:var(--flt)"></i> 浮点 C',
+  "int16 through esp-dl": '<i style="background:var(--int)"></i> int16，经 esp-dl',
+  "the 10 ms budget one inference has to fit inside": '<i style="background:var(--limit)"></i> 一次推理必须塞进的 10 ms 预算',
+  "Half the int16 inferences take longer than the period they are supposed to fit in. That is what the dashed line means, and it is why the policy interval slipped from 10.0 ms to 11.0 ms: the task cannot finish before the next observation is due.":
+    "int16 有一半的推理，比它本该塞进去的那个周期还长。虚线说的就是这件事，也是策略间隔从 10.0 ms 滑到 11.0 ms 的原因：下一帧观测到期之前，这个任务干不完。",
+
+  "Side by side": "逐项对比",
+  "Flight figures come from two captures, 90 seconds on float and 60 on int16, with the policy holding the wheels for most of each.":
+    "飞行数据来自两次采集，浮点 90 秒、int16 60 秒，两次里策略大部分时间都握着轮子。",
+  "Measure": "指标", "int16 esp-dl": "int16 esp-dl",
+  "Speed": "速度",
+  "Arithmetic, hot cache": "算术，热缓存",
+  "Inference window, median": "推理窗口，中位数",
+  "Inference window, minimum": "推理窗口，最小值",
+  "Cost of a cold cache": "冷缓存的代价",
+  "Did it hold the rate": "有没有守住频率",
+  "Policy interval, median": "策略间隔，中位数",
+  "Intervals over 15 ms": "超过 15 ms 的间隔",
+  "Action age at the wheels, p99": "动作到轮子时的年龄，p99",
+  "Action age, worst": "动作年龄，最差",
+  "Accuracy": "精度",
+  "Worst error on the action": "动作上的最大误差",
+  "Worst error on motor command": "电机指令上的最大误差",
+  "Gate it is held to": "把关的门限",
+  "bit-exact replay at 2e-04": "逐位复现，门限 2e-04",
+  "on-device vectors at 6.7e-03": "机上测试向量，门限 6.7e-03",
+  "What it costs to keep": "养着它的代价",
+  "Memory it occupies": "占用的内存",
+  "27,656 B DRAM": "27,656 B DRAM",
+  "23,584 B flash": "23,584 B 闪存",
+  "Export toolchain": "导出工具链",
+  "numpy, onnx": "numpy、onnx",
+  "Firmware dependency": "固件依赖",
+  "none": "无",
+  "Ways it can be wrong": "可能出错的地方",
+  "rounding only": "只有舍入",
+  "calibration range, quantization, graph read": "标定范围、量化、图的读取",
+  "The one column int16 wins is memory, and it wins it in the wrong currency. Its graph sits in flash, which is 59% empty on this board. The float weights sit in DRAM, which is the scarce resource. That trade is real and it is the only argument left on this chip.":
+    "int16 只赢了内存这一项，而且赢在了错的货币上。它的图放在闪存里，这块板子的闪存还空着 59%。浮点权重占的是 DRAM，那才是紧俏的东西。这笔交易是真的，也是这颗芯片上它仅剩的理由。",
+
+  "Why the quantized one lost": "量化那版为什么输了",
+  "Three causes, and none of them is a tuning problem.": "三个原因，没有一个是调参能解决的。",
+  "The chip already has a float unit": "这颗芯片本来就有浮点单元",
+  "16-bit arithmetic pays off where a vector unit does eight of them at once. The original ESP32 has no 16-bit vector instructions and does have a single-precision float unit, so each quantized operation is at best the same speed and carries quantize and requantize steps the float version never runs.":
+    "16 位算术的好处来自向量单元一次做八个。初代 ESP32 没有 16 位向量指令，却有单精度浮点单元，所以每个量化操作最好也只是打平，还额外背了浮点版根本不跑的量化与再量化。",
+  "An interpreter around a very small network": "一个很小的网络，外面套着解释器",
+  "esp-dl walks a graph: it dispatches per node, tracks tensors, and requantizes between layers. Spread over a large convolutional model that overhead disappears. Spread over three matrix layers it is most of the work, which is how 435 µs of arithmetic became 1,201.":
+    "esp-dl 走的是图：逐节点分派、跟踪张量、层间再量化。摊到一个大卷积模型上，这点开销就看不见了。摊到三层矩阵上，它就是主要工作量，435 µs 的算术因此变成了 1,201。",
+  "Far more code through the same small cache": "同样小的缓存，挤进多得多的代码",
+  "The float path is 382 bytes of code. esp-dl brings tens of kilobytes of interpreter and kernels, and all of it streams through a 32 KB instruction cache that the control tick, the motor commutation and the radio evict between every inference. That is why a cold cache costs 929 µs on one path and 7,451 on the other.":
+    "浮点路径是 382 字节代码。esp-dl 带来几十 KB 的解释器和算子，全都要穿过 32 KB 指令缓存，而控制节拍、电机换相和无线在每两次推理之间就把它挤出去。所以冷缓存在一条路径上花 929 µs，在另一条上花 7,451。",
+
+  "Where it leaves us": "结论",
+  "The robot goes back to the float path. int16 through esp-dl is slower at every measurement we took, and slow enough that the policy stopped running at the rate it trained at.":
+    "<strong>机器人回到浮点路径。</strong>int16 走 esp-dl 在我们测的每一项上都更慢，慢到策略已经跑不出它训练时的频率。",
+  "The two changes actually worth making are the ones the profiler pointed at before quantization entered the picture. Approximating tanh in the code generator is worth 255 µs of the 435, since those 128 library calls cost more than all 6,784 multiply-accumulates put together. Moving the forward pass into RAM addresses the 929 µs of cache misses. Neither adds a dependency and neither costs the bit-exact replay gate.":
+    "真正值得做的两件事，是量化进场之前分析器就已经指出的那两件。在代码生成器里用近似换掉 tanh，能从 435 µs 里省下 255 µs，因为那 128 次库调用比全部 6,784 次乘加加起来还贵。把前向过程搬进 RAM，对付的是 929 µs 的缓存缺失。两件都不新增依赖，也都不用赔上逐位复现的门限。",
+  "The esp-dl work stays in the repository behind its own switch. The ESP32-S3 and P4 have the 16-bit vector kernels this chip lacks, so the same measurement on either could come out the other way. On this board it does not.":
+    "esp-dl 那套东西留在仓库里，藏在它自己的开关后面。ESP32-S3 和 P4 有这颗芯片缺的 16 位向量算子，同样的测量在那两颗上可能是相反的结论。在这块板子上不是。",
+
+  "Float capture timing2.csv, 8,769 inferences over 90.0 s, policy owned the wheels 87.7 s":
+    "浮点采集 timing2.csv，90.0 s 内 8,769 次推理，策略握轮 87.7 s",
+  "int16 capture t.csv, 5,307 inferences over 60.0 s, owned 53.1 s · both on policy sk_ident_r128_s0@4500":
+    "int16 采集 t.csv，60.0 s 内 5,307 次推理，握轮 53.1 s · 两者都是策略 sk_ident_r128_s0@4500"
+};
+
+const SEL = "h1, .stand, .kicker, .meta span, h2, .prose p, .approach .tag," +
+            " .approach h3, .approach p, .approach dt, .approach dd, .cap," +
+            " .legend span, th, td, .causes h3, .causes p, .verdict p," +
+            " footer span, svg text";
+
+const key = el => el.textContent.replace(/\s+/g, " ").trim();
+const btn = document.getElementById("lang");
+let en = null;   // filled on the first switch, so English is never re-derived
+
+function setLang(lang) {
+  const els = document.querySelectorAll(SEL);
+  if (en === null) {
+    en = new Map();
+    els.forEach(el => en.set(el, el.innerHTML));
+  }
+  els.forEach(el => {
+    const zh = ZH[key(el)];
+    if (lang === "zh") { if (zh) el.innerHTML = zh; }
+    else { const was = en.get(el); if (was !== undefined) el.innerHTML = was; }
+  });
+  document.documentElement.lang = lang;
+  btn.textContent = lang === "zh" ? "English" : "中文";
+  try { localStorage.setItem("lang", lang); } catch (e) { /* private window */ }
+}
+
+// The map is keyed on English, so switching to Chinese twice would find
+// nothing the second time. Track the state instead of reading the DOM back.
+let cur = "en";
+btn.addEventListener("click", () => setLang(cur = cur === "en" ? "zh" : "en"));
+// The site passes ?lang=zh or ?lang=en from the page language; that wins over the stored choice.
+let urlLang = null;
+try { urlLang = new URLSearchParams(location.search).get("lang"); } catch (e) { /* no URL API */ }
+if (urlLang === "zh") setLang(cur = "zh");
+else if (urlLang !== "en") {
+  try {
+    if (localStorage.getItem("lang") === "zh") setLang(cur = "zh");
+  } catch (e) { /* storage blocked; English is a fine place to start */ }
+}
+</script>
+
+</body></html>

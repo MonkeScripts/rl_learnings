@@ -1,0 +1,661 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Where the 3 Milliseconds Go</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&display=swap">
+
+<style>
+:root {
+  --paper:      #F0F2EE;
+  --surface:    #F8F9F6;
+  --ink:        #171D1B;
+  --ink-2:      #3D4744;
+  --muted:      #6D7874;
+  --rule:       #D4D8D1;
+  --rule-soft:  #E2E5DF;
+
+  --zoom:       #232B29;
+  --cadence:    #99A39D;
+  --sched:      #6C8091;
+  --cache:      #2E7D74;
+  --tanh:       #A8721F;
+  --mac:        #92432F;
+  --on-fill:    #FBFCFA;
+
+  --measured:   #2E7D74;
+  --derived:    #A8721F;
+
+  --step:  1.5rem;
+  --maxw:  70ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:     #111615;
+    --surface:   #191F1D;
+    --ink:       #E8ECE7;
+    --ink-2:     #BEC5C0;
+    --muted:     #8A938F;
+    --rule:      #2B3330;
+    --rule-soft: #222A28;
+
+    --zoom:      #E4E9E5;
+    --cadence:   #7E8A85;
+    --sched:     #93A6B5;
+    --cache:     #4FB0A3;
+    --tanh:      #D6A34A;
+    --mac:       #CE7460;
+    --on-fill:   #101413;
+
+    --measured:  #4FB0A3;
+    --derived:   #D6A34A;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:     #111615;
+  --surface:   #191F1D;
+  --ink:       #E8ECE7;
+  --ink-2:     #BEC5C0;
+  --muted:     #8A938F;
+  --rule:      #2B3330;
+  --rule-soft: #222A28;
+
+  --zoom:      #E4E9E5;
+  --cadence:   #7E8A85;
+  --sched:     #93A6B5;
+  --cache:     #4FB0A3;
+  --tanh:      #D6A34A;
+  --mac:       #CE7460;
+  --on-fill:   #101413;
+
+  --measured:  #4FB0A3;
+  --derived:   #D6A34A;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4.5rem) clamp(1.1rem, 4vw, 3rem) 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.25rem;
+}
+
+.prose { max-width: var(--maxw); }
+
+/* ---- masthead --------------------------------------------------------- */
+
+.masthead { display: flex; flex-direction: column; gap: 1.15rem; }
+
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+h1 {
+  font-family: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(2.1rem, 5.2vw, 3.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.standfirst {
+  font-size: clamp(1.02rem, 2vw, 1.16rem);
+  color: var(--ink-2);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.specimen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--rule);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.specimen span b {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* ---- section headings ------------------------------------------------- */
+
+h2 {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.4rem, 2.8vw, 1.72rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  margin: 0 0 0.85rem;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+  letter-spacing: 0.002em;
+}
+
+p { margin: 0 0 1rem; }
+p:last-child { margin-bottom: 0; }
+
+section { display: flex; flex-direction: column; }
+
+/* ---- the diagram ------------------------------------------------------ */
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.scroller {
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+}
+
+.scroller svg {
+  display: block;
+  width: 100%;
+  min-width: 700px;
+  height: auto;
+}
+
+.tier-cap {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  fill: var(--muted);
+}
+.tier-val {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+.seg-name {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11.5px;
+  fill: var(--on-fill);
+}
+.seg-val {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13.5px;
+  font-weight: 600;
+  fill: var(--on-fill);
+}
+.foot {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  fill: var(--muted);
+}
+.guide { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  gap: 0.55rem 1.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-soft);
+}
+.legend div {
+  display: grid;
+  grid-template-columns: 11px 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  font-size: 0.83rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.legend i {
+  width: 11px; height: 11px;
+  border-radius: 2px;
+  margin-top: 0.34em;
+}
+.legend b { color: var(--ink); font-weight: 600; }
+
+.caption {
+  font-size: 0.83rem;
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+/* ---- instrument pair -------------------------------------------------- */
+
+.instruments {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 0.4rem;
+}
+.instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-left: 1.05rem;
+  border-left: 2px solid var(--rule);
+}
+.instrument.a { border-left-color: var(--sched); }
+.instrument.b { border-left-color: var(--cache); }
+.instrument .k {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.instrument p { font-size: 0.92rem; margin: 0; }
+.instrument .sees { font-size: 0.86rem; color: var(--ink-2); }
+.instrument .sees em { font-style: normal; color: var(--ink); font-weight: 600; }
+
+/* ---- tables ----------------------------------------------------------- */
+
+.tablewrap { overflow-x: auto; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 0.88rem;
+}
+caption {
+  text-align: left;
+  font-size: 0.83rem;
+  color: var(--muted);
+  padding-bottom: 0.7rem;
+}
+th {
+  text-align: left;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0.9rem 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+td {
+  padding: 0.6rem 0.9rem 0.6rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+  color: var(--ink-2);
+}
+td:first-child { color: var(--ink); }
+.num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--ink);
+}
+th.num { text-align: right; }
+
+.tag {
+  display: inline-block;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.42rem;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.tag.m { color: var(--measured); }
+.tag.d { color: var(--derived); }
+
+code, .mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.9em;
+}
+code {
+  background: var(--surface);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: 0.06em 0.32em;
+}
+
+/* ---- verdict ---------------------------------------------------------- */
+
+.levers { display: flex; flex-direction: column; gap: 0; margin-top: 0.4rem; }
+.lever {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem 1.5rem;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.lever:first-child { border-top: 1px solid var(--rule); }
+.lever h3 { margin: 0; }
+.lever .worth {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 1.02rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lever p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.89rem;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+.w1 { color: var(--cache); }
+.w2 { color: var(--tanh); }
+.w3 { color: var(--mac); }
+
+.note {
+  background: var(--surface);
+  border: 1px solid var(--rule-soft);
+  border-left: 2px solid var(--cadence);
+  padding: 1.05rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.note b { color: var(--ink); font-weight: 600; }
+
+footer {
+  border-top: 1px solid var(--rule);
+  padding-top: 1.2rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroller svg rect { transition: none; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Balance robot · policy port</div>
+    <h1>Where the 3 milliseconds go</h1>
+    <p class="standfirst">Two instruments measure the station-keeping policy's inference cost, and they disagree by a factor of three. The gap between them is the finding.</p>
+    <div class="specimen">
+      <span><b>ESP32</b> 240 MHz, 32 KB I-cache</span>
+      <span><b>40 → 64 → 64 → 2</b> tanh MLP</span>
+      <span><b>sk_ident_r128_s0@4500</b></span>
+      <span><b>8 769</b> inferences, 90 s</span>
+      <span><b>2026-09-09</b></span>
+    </div>
+  </header>
+
+  <section class="figure">
+    <div class="prose">
+      <h2>One decomposition, five zooms</h2>
+      <p>Each row takes the dark segment from the row above and opens it up. Read it downward: the policy period contains the publish latency, which contains the inference window, which contains the compute, which contains the arithmetic.</p>
+    </div>
+
+    <div class="scroller">
+      <svg viewBox="0 0 900 476" role="img" aria-label="Nested decomposition of the policy inference time, from a 10000 microsecond policy period down to 435 microseconds of arithmetic split between tanh calls, multiply-accumulates and divides.">
+
+        <!-- ============ tier 1: policy period ============ -->
+        <text class="tier-cap" x="194" y="46" text-anchor="end">POLICY PERIOD</text>
+        <text class="tier-val" x="194" y="62" text-anchor="end">10 000 µs</text>
+        <rect x="210" y="30" width="256.8" height="40" fill="var(--zoom)"/>
+        <rect x="466.8" y="30" width="385.2" height="40" fill="var(--cadence)"/>
+        <text class="seg-name" x="226" y="47">publish latency</text>
+        <text class="seg-val"  x="226" y="63">4 000</text>
+        <text class="seg-name" x="482.8" y="47">output ageing until the next inference</text>
+        <text class="seg-val"  x="482.8" y="63">6 000</text>
+        <path class="guide" d="M210 70 L210 120 M466.8 70 L852 120"/>
+
+        <!-- ============ tier 2: publish latency ============ -->
+        <text class="tier-cap" x="194" y="136" text-anchor="end">PUBLISH LATENCY</text>
+        <text class="tier-val" x="194" y="152" text-anchor="end">4 000 µs</text>
+        <rect x="210" y="120" width="493.6" height="40" fill="var(--zoom)"/>
+        <rect x="703.6" y="120" width="148.4" height="40" fill="var(--cadence)"/>
+        <text class="seg-name" x="226" y="137">inference window</text>
+        <text class="seg-val"  x="226" y="153">3 075</text>
+        <text class="seg-name" x="719.6" y="137">wake + publish</text>
+        <text class="seg-val"  x="719.6" y="153">925</text>
+        <path class="guide" d="M210 160 L210 210 M703.6 160 L852 210"/>
+
+        <!-- ============ tier 3: inference window ============ -->
+        <text class="tier-cap" x="194" y="226" text-anchor="end">INFERENCE WINDOW</text>
+        <text class="tier-val" x="194" y="242" text-anchor="end">3 075 µs</text>
+        <rect x="210" y="210" width="284.8" height="40" fill="var(--zoom)"/>
+        <rect x="494.8" y="210" width="357.2" height="40" fill="var(--sched)"/>
+        <text class="seg-name" x="226" y="227">compute</text>
+        <text class="seg-val"  x="226" y="243">1 364</text>
+        <text class="seg-name" x="510.8" y="227">preempted by the 500 Hz control tick</text>
+        <text class="seg-val"  x="510.8" y="243">1 711</text>
+        <path class="guide" d="M210 250 L210 300 M494.8 250 L852 300"/>
+
+        <!-- ============ tier 4: compute ============ -->
+        <text class="tier-cap" x="194" y="316" text-anchor="end">COMPUTE</text>
+        <text class="tier-val" x="194" y="332" text-anchor="end">1 364 µs</text>
+        <rect x="210" y="300" width="204.8" height="40" fill="var(--zoom)"/>
+        <rect x="414.8" y="300" width="437.2" height="40" fill="var(--cache)"/>
+        <text class="seg-name" x="226" y="317">arithmetic</text>
+        <text class="seg-val"  x="226" y="333">435</text>
+        <text class="seg-name" x="430.8" y="317">not arithmetic · flash instruction cache</text>
+        <text class="seg-val"  x="430.8" y="333">929</text>
+        <path class="guide" d="M210 340 L210 390 M414.8 340 L852 390"/>
+
+        <!-- ============ tier 5: arithmetic ============ -->
+        <text class="tier-cap" x="194" y="406" text-anchor="end">ARITHMETIC</text>
+        <text class="tier-val" x="194" y="422" text-anchor="end">435 µs</text>
+        <rect x="210" y="390" width="376.3" height="40" fill="var(--tanh)"/>
+        <rect x="586.3" y="390" width="249.4" height="40" fill="var(--mac)"/>
+        <rect x="835.7" y="390" width="16.3" height="40" fill="var(--cadence)"/>
+        <text class="seg-name" x="226" y="407">128 tanh calls</text>
+        <text class="seg-val"  x="226" y="423">255</text>
+        <text class="seg-name" x="602.3" y="407">6 784 multiply-accumulates</text>
+        <text class="seg-val"  x="602.3" y="423">169</text>
+        <path d="M843.8 432 L843.8 444" stroke="var(--rule)" stroke-width="1" fill="none"/>
+        <text class="foot" x="852" y="458" text-anchor="end">40 divides · 11 µs</text>
+      </svg>
+    </div>
+
+    <div class="legend">
+      <div><i style="background:var(--zoom)"></i><span><b>Opened on the next row.</b> Always the leftmost segment.</span></div>
+      <div><i style="background:var(--cadence)"></i><span><b>Fixed by the training rate.</b> The policy trained at 100 Hz, so the period is not yours to change.</span></div>
+      <div><i style="background:var(--sched)"></i><span><b>Scheduling, by design.</b> The policy task sits below the control tick so it can never delay the balance loop.</span></div>
+      <div><i style="background:var(--cache)"></i><span><b>The finding.</b> Time the arithmetic cannot account for.</span></div>
+      <div><i style="background:var(--tanh)"></i><span><b>Transcendentals.</b> 1.99 µs per call, about 80 multiply-accumulates each.</span></div>
+      <div><i style="background:var(--mac)"></i><span><b>The matrix work.</b> The only part int16 quantization would touch.</span></div>
+    </div>
+
+    <p class="caption">Segment widths are to scale within each row. Every row restarts at full width, so a segment's width means its share of that row, never of the row above.</p>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>The two instruments</h2>
+      <p>Neither one measures “the inference cost” on its own. They measure different things, and knowing which is which is the whole trick.</p>
+    </div>
+
+    <div class="instruments">
+      <div class="instrument a">
+        <div class="k">Instrument 1 · the flight recorder</div>
+        <h3>The <span class="mono">us</span> column</h3>
+        <p>The policy task takes a timestamp when it wakes and another after the forward pass, and the difference rides out on every recorded row. One value per inference, 8 769 of them in a 90 second run.</p>
+        <p class="sees"><em>Sees:</em> real conditions. Cold caches, the control tick landing mid-inference, whatever else the robot was doing.</p>
+        <p class="sees"><em>Cannot see:</em> the split. It is one wall-clock number, and a 500 Hz tick that interrupts the inference is counted inside it.</p>
+      </div>
+      <div class="instrument b">
+        <div class="k">Instrument 2 · the console profiler</div>
+        <h3>Console key <span class="mono">B</span></h3>
+        <p>Disarmed, it runs the forward pass, then 128 bare tanh calls, then the 40 divides that open the pass, 200 times each. It reports the fastest run of each and subtracts to get the matrix work.</p>
+        <p class="sees"><em>Sees:</em> the parts. Which line of the network costs what.</p>
+        <p class="sees"><em>Cannot see:</em> real conditions. Running 200 passes back to back leaves the code resident in cache, which is the one thing a real inference never gets.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>How the numbers were made</h2>
+      <p>Only two of these were read off an instrument directly. The rest are subtractions, and one is an attribution rather than a measurement.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <caption>Every figure in the diagram, and where it came from.</caption>
+        <thead>
+          <tr>
+            <th>Quantity</th>
+            <th class="num">µs</th>
+            <th>Source</th>
+            <th>Kind</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Policy period</td>
+            <td class="num">10 000</td>
+            <td>Fixed at 100 Hz to match the training config's <span class="mono">policy_hz</span></td>
+            <td><span class="tag m">given</span></td>
+          </tr>
+          <tr>
+            <td>Publish latency</td>
+            <td class="num">4 000</td>
+            <td>Period minus the median recorded age of 6 000 µs</td>
+            <td><span class="tag d">derived</span></td>
+          </tr>
+          <tr>
+            <td>Inference window</td>
+            <td class="num">3 075</td>
+            <td>Median of the <span class="mono">us</span> column</td>
+            <td><span class="tag m">measured</span></td>
+          </tr>
+          <tr>
+            <td>Wake and publish</td>
+            <td class="num">925</td>
+            <td>Publish latency minus the window</td>
+            <td><span class="tag d">derived</span></td>
+          </tr>
+          <tr>
+            <td>Compute</td>
+            <td class="num">1 364</td>
+            <td>Minimum of the <span class="mono">us</span> column over all 8 769 rows</td>
+            <td><span class="tag m">measured</span></td>
+          </tr>
+          <tr>
+            <td>Preemption</td>
+            <td class="num">1 711</td>
+            <td>Median window minus that minimum</td>
+            <td><span class="tag d">derived</span></td>
+          </tr>
+          <tr>
+            <td>Arithmetic</td>
+            <td class="num">435</td>
+            <td>Console profiler, best forward pass of 200</td>
+            <td><span class="tag m">measured</span></td>
+          </tr>
+          <tr>
+            <td>Not arithmetic</td>
+            <td class="num">929</td>
+            <td>Compute minus arithmetic, attributed to the instruction cache</td>
+            <td><span class="tag d">inferred</span></td>
+          </tr>
+          <tr>
+            <td>128 tanh calls</td>
+            <td class="num">255</td>
+            <td>Console profiler, best of 200</td>
+            <td><span class="tag m">measured</span></td>
+          </tr>
+          <tr>
+            <td>40 divides</td>
+            <td class="num">11</td>
+            <td>Console profiler, best of 200</td>
+            <td><span class="tag m">measured</span></td>
+          </tr>
+          <tr>
+            <td>6 784 multiply-accumulates</td>
+            <td class="num">169</td>
+            <td>Forward pass minus tanh minus divides</td>
+            <td><span class="tag d">derived</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>Why the fastest run, and not the average</h2>
+      <p>Every timing sample on this chip is the true cost plus whatever interrupted it. Interruptions only ever add, so the distribution has a hard floor and a long tail. An average is an average of interruptions and moves with system load; the minimum over enough samples is the closest thing to the cost itself.</p>
+      <p>That logic runs in both instruments and is why they can be compared. The recorder's minimum of 1 364 µs is a real inference with as little interference as 8 769 tries could find. The profiler's 435 µs is the same arithmetic with the code already in cache. Both are floors, so the 929 µs between them is real and needs a cause.</p>
+      <h2 style="margin-top:2rem">Why the gap points at the cache</h2>
+      <p>Every piece of the inference path lives in flash and is reached through a 32 KB instruction cache: the forward pass at <span class="mono">0x400e4a68</span>, <span class="mono">tanhf</span> at <span class="mono">0x4018c148</span>, <span class="mono">expm1f</span> just past it, and the software float divide out at <span class="mono">0x401a8d58</span>. Those span roughly a megabyte.</p>
+      <p>The profiler runs 200 passes back to back, so it pays for that once. A real inference runs once every 10 milliseconds, and in the gap the control tick, the motor commutation and the radio all execute their own flash code. This robot has been bitten by exactly this before: in September the weights themselves sat in flash and thrashed the cache until they were forced into RAM. That fix moved the data. The code was never moved.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="prose">
+      <h2>What each lever is actually worth</h2>
+      <p>Against a real inference of 1 364 µs, not against the 435 µs the profiler sees.</p>
+    </div>
+    <div class="levers">
+      <div class="lever">
+        <h3>Move the forward pass into RAM</h3>
+        <div class="worth w1">up to 929 µs</div>
+        <p>Changes no arithmetic whatsoever, costs about 340 bytes, and is the experiment that confirms or kills the cache attribution. Reflash, recapture, and compare the <span class="mono">us</span> minimum against 1 364.</p>
+      </div>
+      <div class="lever">
+        <h3>Approximate tanh in the code generator</h3>
+        <div class="worth w2">255 µs</div>
+        <p>The largest single piece of the arithmetic, and it also removes three calls out into distant flash, so it helps the cache term too. This one changes the numbers the network produces, so the golden replay tolerance of 2e-4 has to be decided first rather than discovered afterwards.</p>
+      </div>
+      <div class="lever">
+        <h3>Quantize to int16 with esp-dl</h3>
+        <div class="worth w3">169 µs</div>
+        <p>Twelve percent of a real inference. In exchange: quantization error in a control loop, a flatbuffers loader, a graph interpreter, a second binary in the partition table, and the loss of a bit-exact replay gate. The two larger terms would still be there afterwards.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>What would change these numbers</h2>
+    <div class="note">
+      <p><b>The 929 µs is an attribution, not a reading.</b> It is what remains after subtracting one instrument from another. The cache is the best explanation available, and the RAM experiment is what would settle it.</p>
+      <p><b>The profiler had a fixture bug on its first run.</b> It fed the observation assembler an all-zero input, and <span class="mono">tanhf</span> returns early for tiny arguments without ever reaching <span class="mono">expm1f</span>. That timed the cheap branch and made a step read faster than the forward pass inside it. It now runs on the inputs from the median-cost row of the capture.</p>
+      <p><b>Faster is not automatically better here.</b> The policy trained with an action delay drawn from 5 to 30 ms and the robot already flies at 6 to 9. Removing 2 ms moves it below anything it saw in training, at the fast edge rather than toward the middle.</p>
+    </div>
+  </section>
+
+  <footer>
+    Capture <span class="mono">timing2.csv</span> · 8 769 rows over 90.0 s · policy owned the wheels for 87.7 s<br>
+    Console profiler run disarmed, best of 200 · counts emitted from the layer shapes at export time
+  </footer>
+
+</div>
+
+</body></html>

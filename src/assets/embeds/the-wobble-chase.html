@@ -1,0 +1,385 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Wobble Chase</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f4f6f7; --surface:#ffffff; --ink:#17212b; --muted:#5a6b7a; --rule:#d3dce3; --accent:#0d6b86;
+  --good:#1d7a4c; --bad:#b4372c; --warn:#8f5d00; --open:#2f5f8a;
+  --good-bg:#e3f3ea; --bad-bg:#f9e4e1; --warn-bg:#f6ecd6; --open-bg:#e3edf6; --row:#f0f4f6;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10171d; --surface:#172129; --ink:#e3eaf0; --muted:#93a4b3; --rule:#2a3843; --accent:#5cc0dc;
+  --good:#5fcf97; --bad:#f08b7f; --warn:#e2b35a; --open:#8bbbe6;
+  --good-bg:#15301f; --bad-bg:#3a1c19; --warn-bg:#33290f; --open-bg:#16293b; --row:#1b2730;
+}}
+:root[data-theme="dark"]{
+  --bg:#10171d; --surface:#172129; --ink:#e3eaf0; --muted:#93a4b3; --rule:#2a3843; --accent:#5cc0dc;
+  --good:#5fcf97; --bad:#f08b7f; --warn:#e2b35a; --open:#8bbbe6;
+  --good-bg:#15301f; --bad-bg:#3a1c19; --warn-bg:#33290f; --open-bg:#16293b; --row:#1b2730;
+}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 "IBM Plex Sans",system-ui,sans-serif;padding-inline:20px;padding-block:40px 80px}
+.wrap{max-width:1040px;margin-inline:auto;display:flex;flex-direction:column;gap:44px}
+header{display:flex;flex-direction:column;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:26px}
+.eyebrow{font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:750 clamp(34px,6vw,58px)/1.02 "Archivo",system-ui,sans-serif;font-stretch:112%;margin:0;text-wrap:balance}
+h2{font:700 25px/1.2 "Archivo",system-ui,sans-serif;font-stretch:108%;margin:0;text-wrap:balance}
+h3{font:600 17px/1.3 "IBM Plex Sans",system-ui,sans-serif;margin:0}
+p{margin:0;max-width:68ch} .lede{font-size:18px;max-width:64ch}
+section{display:flex;flex-direction:column;gap:16px}
+.sub{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+a{color:var(--accent);text-underline-offset:3px} a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--rule)}
+thead th{font:500 11.5px/1.3 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--row);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;white-space:nowrap}
+td.id{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;white-space:nowrap}
+.best{font-weight:600;color:var(--good)} .worst{color:var(--bad);font-weight:600}
+.chip{display:inline-block;font:500 11.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;padding:5px 8px;border-radius:3px;white-space:nowrap}
+.holds{background:var(--good-bg);color:var(--good)} .dropped{background:var(--bad-bg);color:var(--bad)}
+.partly{background:var(--warn-bg);color:var(--warn)} .open{background:var(--open-bg);color:var(--open)}
+code{font:400 13px/1.5 "IBM Plex Mono",ui-monospace,monospace;background:var(--row);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+pre{margin:0;overflow-x:auto;background:var(--surface);border:1px solid var(--rule);padding:14px 16px;font:400 13px/1.55 "IBM Plex Mono",ui-monospace,monospace}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 16px;color:var(--ink)}
+.note.warnnote{border-left-color:var(--warn)}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:70ch}
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+figcaption{font-size:14px;color:var(--muted);max-width:72ch}
+svg{max-width:100%;height:auto;display:block}
+.ax{stroke:var(--rule);stroke-width:1} .tick{fill:var(--muted);font:500 11px "IBM Plex Mono",ui-monospace,monospace}
+.lab{fill:var(--ink);font:500 12px "IBM Plex Sans",system-ui,sans-serif} .rowlab{fill:var(--ink);font:600 13px "IBM Plex Sans",system-ui,sans-serif}
+.dot{fill:var(--muted)} .avg{fill:var(--accent)} .avg6{fill:none;stroke:var(--accent);stroke-width:2}
+.ringgood{fill:none;stroke:var(--good);stroke-width:2.5} .ringbad{fill:none;stroke:var(--bad);stroke-width:2.5}
+.lgood{fill:var(--good);font:600 12px "IBM Plex Sans",system-ui,sans-serif} .lbad{fill:var(--bad);font:600 12px "IBM Plex Sans",system-ui,sans-serif}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+footer{border-top:1px solid var(--rule);padding-top:18px;font-size:13.5px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">wlbot / branch lean_mdp / 2026-09-15 to 2026-09-20</div>
+  <h1>The Wobble Chase</h1>
+  <p class="lede">A record of every run and test made while trying to reduce the balancing robot's wobble after sk_lean3. The short version: five policy experiments, one new physics engine and two analysis passes later, sk_lean3 model_4500 is still the best policy on the bench, and the simulator's wobble numbers turned out not to rank policies the way the robot does.</p>
+  <nav aria-label="Sections">
+    <a href="#board">Claims board</a><a href="#runs">Run lineage</a><a href="#lean3">sk_lean3 baseline</a><a href="#lean4">Per-wheel runs</a>
+    <a href="#lean5">sk_lean5</a><a href="#matched">Matched iterations</a><a href="#wobble">Wobble sweep</a><a href="#lr">Learning rate</a>
+    <a href="#avg">Averaging</a><a href="#bench">Bench verdicts</a><a href="#newton">Newton engine</a><a href="#wrong">Wrong turns</a><a href="#next">Open questions</a><a href="#where">Where things live</a>
+  </nav>
+</header>
+
+<section id="board">
+  <h2>Claims board</h2>
+  <p>Each belief held at some point during the chase, and where the evidence left it. All simulation numbers are n=1000, seed 12345 unless a row says otherwise.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Claim</th><th>Status</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>The wobble is a local minimum that a wider network can escape</td><td><span class="chip dropped">dropped</span></td><td>128x128 runs matched 64x64 on every gate. The one wobble improvement credited to width (13.5 to 9.2 deg at 30 ms) sits inside checkpoint scatter.</td></tr>
+      <tr><td>The mixer action beats per-wheel</td><td><span class="chip partly">bench only</span></td><td>The user's hardware test says so. In simulation, per-wheel at 18,500 iterations scores as well as any mixer checkpoint. Per-wheel was never tested without the wider network.</td></tr>
+      <tr><td>Per-wheel cannot learn heading in 5000 iterations</td><td><span class="chip dropped">dropped</span></td><td>True for sk_lean4 (stages 250 iterations apart). False for sk_lean4b and 4c, which learned heading by 5000 on the spaced schedule.</td></tr>
+      <tr><td>Stage spacing in the reward schedule matters</td><td><span class="chip holds">holds</span></td><td>sk_lean4 spins at 1.6 rad/s with no disturbance. The same architecture on a spaced schedule holds heading to 0.003 rad/s.</td></tr>
+      <tr><td>Training longer smooths the policy</td><td><span class="chip dropped">dropped</span></td><td>sk_lean5 checkpoints from 5000 to 9999 are one policy within noise. sk_lean4c was flat from 5000 to 18,500.</td></tr>
+      <tr><td>The adaptive learning rate is what makes long runs bad</td><td><span class="chip dropped">dropped</span></td><td>The adaptive 64x64 runs use 2.6 to 13 times the old learning rate and still move the weights no further per 100 iterations than the fixed 5e-4 runs did.</td></tr>
+      <tr><td>Late training is a random walk because the step never shrinks</td><td><span class="chip holds">holds</span></td><td>Net weight displacement over summed step length matches 1/sqrt(n) in all six runs examined, fixed and adaptive.</td></tr>
+      <tr><td>Averaging late checkpoints gives a calmer policy</td><td><span class="chip partly">sim only</span></td><td>Half the wobble and half the yaw rate on mjlab, Newton and the wobble probe. Not better than model_4500 on the bench.</td></tr>
+      <tr><td>The simulated wobble probe predicts the bench</td><td><span class="chip dropped">dropped</span></td><td>It rated sk_lean5 model_5500 calm (wobbles badly on the robot) and the averaged policy calmest of all (lost to model_4500).</td></tr>
+      <tr><td>The long-delay weakness belongs to MuJoCo</td><td><span class="chip dropped">dropped</span></td><td>Newton with the Kamino solver shows the same loss of survival as held delay grows, bin for bin.</td></tr>
+      <tr><td>Wobble at 40 to 45 ms is out of the training distribution (3 to 30 ms)</td><td><span class="chip open">untested</span></td><td>No run has widened the delay range yet.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="runs">
+  <h2>Run lineage</h2>
+  <p>All runs: 1024 envs, 128-step rollouts, seed 0, product-form reward with a slew penalty, 32-input actor, plant-aware critic, action delay drawn from 3 to 30 ms. Schedule columns give the iteration at which heading, half slew and full slew switch on.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Run</th><th>Date</th><th>Action</th><th>Net</th><th class="n">Iters</th><th>Schedule</th><th class="n">Pushes full</th><th>LR</th><th>Asked</th><th>Outcome</th></tr></thead>
+    <tbody>
+      <tr><td class="id">sk_lean</td><td>09-15</td><td>mixer</td><td>64x64</td><td class="n">5000</td><td>none</td><td class="n">2500</td><td>fixed 5e-4</td><td>Does a three-term reward work?</td><td>Survived (0.876 at 2500) but chattered: clean yaw rate 0.80.</td></tr>
+      <tr><td class="id">sk_lean2</td><td>09-15</td><td>mixer</td><td>64x64</td><td class="n">5000</td><td>750 / 1500 / 2250</td><td class="n">2500</td><td>adaptive</td><td>Does a ramped slew fix the chatter?</td><td>Yes. Shove 0.933, clean yaw rate 0.262, latch FAIL 2.74 V.</td></tr>
+      <tr><td class="id">sk_lean3</td><td>09-16</td><td>mixer</td><td>64x64</td><td class="n">5000</td><td>250 / 500 / 1000</td><td class="n">2500</td><td>adaptive</td><td>Front-load the schedule</td><td>First clean gate PASS. Latch fixed. Wobble at 77 mm / 30 ms still fails.</td></tr>
+      <tr><td class="id">sk_lean4</td><td>09-16</td><td>per-wheel</td><td>128x128</td><td class="n">5000</td><td>250 / 500 / 1000</td><td class="n">2500</td><td>adaptive</td><td>Is the wobble a capacity limit?</td><td>0.65 reward per step against 1.0. Never evaluated until 09-20: it never learned heading.</td></tr>
+      <tr><td class="id">sk_lean4b</td><td>09-17</td><td>per-wheel</td><td>128x128</td><td class="n">20k, stopped 14k</td><td>500 / 1500 / 3000</td><td class="n">10,000</td><td>adaptive</td><td>Does the wide net converge with time?</td><td>Value loss 175 to 1070, surrogate negative by 11,000. Best at 10,000.</td></tr>
+      <tr><td class="id">sk_lean4c</td><td>09-18</td><td>per-wheel</td><td>128x128</td><td class="n">20,000</td><td>500 / 1500 / 3000</td><td class="n">10,000</td><td>adaptive, vf 0.5</td><td>Fix the critic</td><td>Value loss stable at 700 to 800. Flat from 5000 to 18,500. No better on the robot.</td></tr>
+      <tr><td class="id">sk_lean5_s0</td><td>09-18</td><td>mixer</td><td>64x64</td><td class="n">killed 800</td><td>500 / 1000 / 2000</td><td class="n">5000</td><td>adaptive</td><td>Does sk_lean3 improve past 5000?</td><td>Killed to avoid stacking slew on an unrecovered heading dip. The alarm keyed on reward, which falls by design.</td></tr>
+      <tr><td class="id">sk_lean5_s1</td><td>09-18</td><td>mixer</td><td>64x64</td><td class="n">killed 50</td><td>500 / 1500 / 2500</td><td class="n">5000</td><td>adaptive</td><td>Same</td><td>Killed to free the GPU for Newton.</td></tr>
+      <tr><td class="id">sk_lean5_s2</td><td>09-18</td><td>mixer</td><td>64x64</td><td class="n">10,000</td><td>500 / 1500 / 2500</td><td class="n">5000</td><td>adaptive</td><td>Same</td><td>No gain after 5000. model_5500 wobbles badly on the robot.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="lean3">
+  <h2>sk_lean3, the baseline everything was measured against</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Row</th><th class="n">model_4500</th><th class="n">model_4999</th></tr></thead>
+    <tbody>
+      <tr><td>Shove regime survival / vel RMSE / yaw-rate RMSE</td><td class="n">0.938 / 0.185 / 0.70</td><td class="n">0.927 / 0.147 / 0.97</td></tr>
+      <tr><td>Survival by held delay, 0-14 / 16-24 / 26-34 ms</td><td class="n">0.969 / 0.945 / 0.862</td><td class="n">0.960 / 0.913 / 0.881</td></tr>
+      <tr><td>Clean survival / vel / yaw rate</td><td class="n">1.000 / 0.071 / 0.106, PASS</td><td class="n">1.000 / 0.044 / 0.187, PASS</td></tr>
+      <tr><td>Latch probe, worst fixed point</td><td class="n">0.21 V, PASS</td><td class="n">not run</td></tr>
+      <tr><td>Wobble 85 mm / 12 ms (n=4): pitch p-p / gyro p-p</td><td class="n">5.0 deg / 67 dps</td><td class="n">not run</td></tr>
+      <tr><td>Wobble 77 mm / 30 ms (n=4)</td><td class="n">13.5 deg / 315 dps, FAIL</td><td class="n">see sweep</td></tr>
+      <tr><td>Crossplay MuJoCo / PyBullet (n=100)</td><td class="n">0.950 / 0.950</td><td class="n">not run</td></tr>
+      <tr><td>Newton gate, all DR written</td><td class="n">not run</td><td class="n">0.924 / 0.160 / 1.10</td></tr>
+    </tbody>
+  </table></div>
+  <p>The one failing row after sk_lean3 was wobble at 77 mm with 30 ms of held delay. The bench shows its wobble at 40 to 45 ms, outside the 3 to 30 ms the policy trains on. That row started the chase.</p>
+</section>
+
+<section id="lean4">
+  <h2>The per-wheel, 128x128 runs</h2>
+  <p>Commit f94036f removed the mixer and widened the network in one change, so none of these runs separates the two. The original readings compared them with sk_lean3 at different iteration counts and different push strengths.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Row</th><th class="n">sk_lean4b @10000</th><th class="n">sk_lean4c @18500</th><th class="n">sk_lean3 @4500</th></tr></thead>
+    <tbody>
+      <tr><td>Shove survival / vel / yaw rate</td><td class="n">0.938 / 0.167 / 0.72</td><td class="n">0.956 / 0.146 / 0.64</td><td class="n">0.938 / 0.185 / 0.70</td></tr>
+      <tr><td>Survival by held delay</td><td class="n">0.975 / 0.930 / 0.867</td><td class="n">not recorded</td><td class="n">0.969 / 0.945 / 0.862</td></tr>
+      <tr><td>Clean gate, yaw rate</td><td class="n">PASS, 0.106</td><td class="n">not recorded</td><td class="n">PASS, 0.106</td></tr>
+      <tr><td>Latch</td><td class="n">PASS 0.44 V</td><td class="n">not recorded</td><td class="n">PASS 0.21 V</td></tr>
+      <tr><td>Wobble 77 mm / 12 ms (n=4)</td><td class="n">7.2 deg / 187</td><td class="n">not recorded</td><td class="n">3.5 deg / 56</td></tr>
+      <tr><td>Wobble 77 mm / 30 ms (n=4)</td><td class="n">9.2 deg / 269</td><td class="n">not recorded</td><td class="n">13.5 deg / 315</td></tr>
+      <tr><td>Crossplay MJ / PB</td><td class="n">0.950 / 0.920</td><td class="n">not recorded</td><td class="n">0.950 / 0.950</td></tr>
+      <tr><td>On the robot</td><td class="n">not tried</td><td class="n">no better than sk_lean3</td><td class="n">reference</td></tr>
+    </tbody>
+  </table></div>
+  <p>sk_lean4c late checkpoints on the shove gate: 17,500 at 0.924 / 0.196 / 0.78, 18,000 at 0.937 / 0.169 / 0.74, 18,500 at 0.956 / 0.146 / 0.64, 19,000 at 0.948 / 0.153 / 0.71. The spread across those four is the same size as the spread later found in sk_lean5.</p>
+  <div class="sub">
+    <h3>Why the mixer was restored (2026-09-18)</h3>
+    <p>Four parallel investigations gave these reasons. The mixer's two outputs line up with the two tasks the observation already separates, balance and heading, so exploration noise on one does not disturb the other. A push recovery is a change in the balance channel alone, which costs half the slew penalty of the same recovery written as two wheel commands. The per-wheel policy had learned the mixer anyway (left and right commands correlated at 0.86) but its differential channel carried 56% of its energy above 5 Hz. The mixer in the code has no 8 V / 4 V split: both channels scale to 16 V and the wheel voltages clip at 8 V after mixing. Code: commit adf22f0.</p>
+  </div>
+</section>
+
+<section id="lean5">
+  <h2>sk_lean5_s2: sk_lean3's recipe for 10,000 iterations</h2>
+  <p>Finished in 7 h 46 min with no kill rule fired. Heading came on at 500 and reward per step fell from 0.65 to 0.49, as it must when a weight switches on, while episode length kept rising (841, 857, 889). Slew at 1500 and 2500 dented nothing. From 5000 to the end reward per step stayed between 0.97 and 1.00, and the surrogate loss was negative on 41% of iterations.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Checkpoint</th><th class="n">Survival</th><th class="n">Vel RMSE</th><th class="n">Yaw-rate RMSE</th><th class="n">Pos RMSE</th><th class="n">Pitch rate by delay</th></tr></thead>
+    <tbody>
+      <tr><td class="id">5000</td><td class="n">0.948</td><td class="n">0.147</td><td class="n">0.77</td><td class="n">0.031</td><td class="n">0.75 / 1.06 / 1.48</td></tr>
+      <tr><td class="id">7000</td><td class="n">0.939</td><td class="n">0.162</td><td class="n">0.82</td><td class="n">0.031</td><td class="n"></td></tr>
+      <tr><td class="id">8500</td><td class="n">0.955</td><td class="n">0.143</td><td class="n">0.98</td><td class="n">0.027</td><td class="n">0.97 / 1.28 / 1.57</td></tr>
+      <tr><td class="id">9000</td><td class="n">0.930</td><td class="n">0.148</td><td class="n">1.07</td><td class="n">0.030</td><td class="n"></td></tr>
+      <tr><td class="id">9500</td><td class="n">0.941</td><td class="n">0.153</td><td class="n">0.83</td><td class="n">0.031</td><td class="n">0.96 / 1.19 / 1.46</td></tr>
+      <tr><td class="id">9999</td><td class="n">0.929</td><td class="n">0.165</td><td class="n">0.99</td><td class="n">0.033</td><td class="n"></td></tr>
+    </tbody>
+  </table></div>
+  <p>The standard error on survival at n=1000 is about 0.008, so these six are samples of one policy. The rest of the ladder, model_9500 then model_5000 in brackets: clean gate PASS with yaw rate 0.143 [PASS, 0.071]; latch FAIL at 2.02 V [PASS, 1.06 V]; crossplay MJ / PB 0.970 / 0.970 [0.960 / 0.940]; Newton gate 0.948 / 0.159 / 0.96 [0.959 / 0.150 / 0.92], clean PASS on both.</p>
+  <p class="note">At the same iteration count this run's model_5000 beat sk_lean3's model_4999 on the mjlab gate (0.948 against 0.927, yaw rate 0.77 against 0.97). The recipe and seed are identical. The differences are later slew stages and a push ramp twice as long. It is one pair of runs, and the bench later preferred sk_lean3.</p>
+</section>
+
+<section id="matched">
+  <h2>Per-wheel against mixer at matched iterations</h2>
+  <p>sk_lean4, the only per-wheel run with sk_lean3's length, schedule and value coefficient, had never been put through a gate. It was evaluated on 2026-09-20 with the per-wheel code extracted from commit f09ab27, because the mixer code misreads per-wheel checkpoints.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Row</th><th class="n">sk_lean3 4999</th><th class="n">sk_lean5 5000</th><th class="n">sk_lean4 4999</th><th class="n">sk_lean4b 5000</th><th class="n">sk_lean4c 5000</th></tr></thead>
+    <tbody>
+      <tr><td>Action, net, stage iterations</td><td class="n">mixer 64, 250/500/1000</td><td class="n">mixer 64, 500/1500/2500</td><td class="n">per-wheel 128, 250/500/1000</td><td class="n">per-wheel 128, 500/1500/3000</td><td class="n">same, vf 0.5</td></tr>
+      <tr><td>Shove survival / vel / yaw rate</td><td class="n">0.927 / 0.147 / 0.97</td><td class="n">0.948 / 0.147 / 0.77</td><td class="n"><span class="worst">0.908 / 0.186 / 2.75</span></td><td class="n">0.908 / 0.169 / 0.67</td><td class="n">0.905 / 0.176 / 0.83</td></tr>
+      <tr><td>Survival by held delay</td><td class="n">0.960 / 0.913 / 0.881</td><td class="n">0.969 / 0.953 / 0.895</td><td class="n">0.953 / 0.907 / 0.806</td><td class="n">0.944 / 0.907 / 0.827</td><td class="n">0.946 / 0.882 / 0.852</td></tr>
+      <tr><td>Clean vel / yaw rate</td><td class="n">0.044 / 0.187</td><td class="n">0.047 / 0.071</td><td class="n"><span class="worst">0.071 / 1.79</span></td><td class="n">0.051 / 0.063</td><td class="n">0.082 / 0.189</td></tr>
+      <tr><td>Clean heading drift, median rad/s</td><td class="n">0.003</td><td class="n">0.003</td><td class="n"><span class="worst">1.60</span></td><td class="n">0.003</td><td class="n">0.004</td></tr>
+      <tr><td>Clean gate</td><td class="n">PASS</td><td class="n">PASS</td><td class="n">FAIL</td><td class="n">PASS</td><td class="n">FAIL on vel</td></tr>
+      <tr><td>Latch</td><td class="n">0.21 V at 4500</td><td class="n">1.06 V</td><td class="n">FAIL 2.94 V</td><td class="n">not run</td><td class="n">not run</td></tr>
+    </tbody>
+  </table></div>
+  <p>sk_lean4 at 5000 spins in place at 1.6 rad/s with nothing pushing it. A policy that balances and forfeits the 30% heading factor earns about 0.65 of the reward, which is the figure its training log showed. sk_lean4b and 4c learned heading by 5000 on the spaced schedule, so the failure belongs to per-wheel/128 under 250-iteration stage spacing. Their survival is not comparable with sk_lean3's, because a 20,000-iteration run is still at half push strength at 5000.</p>
+</section>
+
+<section id="wobble">
+  <h2>Wobble sweep at 12 episodes per cell</h2>
+  <p>PyBullet, nominal motor friction, pitch peak to peak in degrees. The default probe runs 4 episodes per cell, which was too few: it made sk_lean5 model_9500 look like an improvement over model_5000.</p>
+  <figure>
+    <svg viewBox="0 0 720 232" role="img" aria-label="Mean wobble at 40 to 45 ms of held delay for each checkpoint of sk_lean3 and sk_lean5, with weight-averaged policies and bench results marked. Checkpoints of one run spread over about 10 degrees, and the policy best on the bench is not the calmest in simulation.">
+      <line class="ax" x1="110" y1="205" x2="690" y2="205"/>
+      <g class="tick" text-anchor="middle">
+        <line class="ax" x1="110" y1="30" x2="110" y2="205"/><text x="110" y="222">0</text>
+        <line class="ax" x1="255" y1="30" x2="255" y2="205"/><text x="255" y="222">10</text>
+        <line class="ax" x1="400" y1="30" x2="400" y2="205"/><text x="400" y="222">20</text>
+        <line class="ax" x1="545" y1="30" x2="545" y2="205"/><text x="545" y="222">30</text>
+        <line class="ax" x1="690" y1="30" x2="690" y2="205"/><text x="690" y="222">40 deg</text>
+      </g>
+      <text class="rowlab" x="8" y="66">sk_lean3</text><text class="tick" x="8" y="92">averages</text>
+      <text class="rowlab" x="8" y="154">sk_lean5</text><text class="tick" x="8" y="180">averages</text>
+      <circle class="dot" cx="331.9" cy="62" r="5"/><circle class="dot" cx="459.5" cy="62" r="5"/><circle class="dot" cx="388.4" cy="62" r="5"/><circle class="dot" cx="429" cy="62" r="5"/>
+      <circle class="ringgood" cx="388.4" cy="62" r="9"/><text class="lgood" x="388.4" y="44" text-anchor="middle">4500: best on the bench</text>
+      <path class="avg6" d="M384.1,82 L390.1,88 L384.1,94 L378.1,88 Z"/>
+      <path class="avg" d="M260.8,81 L267.8,88 L260.8,95 L253.8,88 Z"/><circle class="ringbad" cx="260.8" cy="88" r="11"/>
+      <text class="lbad" x="244" y="92" text-anchor="end">avg of 21: lost to 4500</text>
+      <circle class="dot" cx="613.2" cy="150" r="5"/><circle class="dot" cx="585.6" cy="150" r="5"/><circle class="dot" cx="413.1" cy="150" r="5"/><circle class="dot" cx="545" cy="150" r="5"/><circle class="dot" cx="616.1" cy="143" r="5"/><circle class="dot" cx="455.1" cy="150" r="5"/><circle class="dot" cx="582.7" cy="157" r="5"/>
+      <circle class="ringbad" cx="413.1" cy="150" r="9"/><text class="lbad" x="413.1" y="132" text-anchor="middle">5500: wobbles on the bench</text>
+      <path class="avg6" d="M482.7,170 L488.7,176 L482.7,182 L476.7,176 Z"/>
+      <path class="avg" d="M394.2,169 L401.2,176 L394.2,183 L387.2,176 Z"/><text class="lab" x="380" y="180" text-anchor="end">avg of 21</text>
+    </svg>
+    <figcaption>Mean pitch peak to peak over the four cells at 40 and 45 ms (77 and 85 mm). Grey dots are single checkpoints, filled diamonds are averages of 21 checkpoints, hollow diamonds averages of 6. Checkpoints of one run span 10 degrees or more, and the two bench results land where the simulation did not expect them.</figcaption>
+  </figure>
+  <div class="scroll"><table>
+    <thead><tr><th>Policy</th><th class="n">77/12</th><th class="n">77/30</th><th class="n">77/40</th><th class="n">77/45</th><th class="n">85/12</th><th class="n">85/30</th><th class="n">85/40</th><th class="n">85/45</th><th class="n">Mean 40-45</th></tr></thead>
+    <tbody>
+      <tr><td class="id">lean3 3500</td><td class="n">1.5</td><td class="n">11.0</td><td class="n">12.7</td><td class="n">13.6</td><td class="n">1.5</td><td class="n">3.8</td><td class="n">14.1</td><td class="n">21.0</td><td class="n">15.3</td></tr>
+      <tr><td class="id">lean3 4000</td><td class="n">2.5</td><td class="n">11.7</td><td class="n">19.9</td><td class="n">18.2</td><td class="n">2.6</td><td class="n">9.8</td><td class="n">27.2</td><td class="n">31.3</td><td class="n">24.1</td></tr>
+      <tr><td class="id">lean3 4500</td><td class="n">2.4</td><td class="n">9.5</td><td class="n">15.0</td><td class="n">20.4</td><td class="n">3.1</td><td class="n">10.7</td><td class="n">18.0</td><td class="n">23.4</td><td class="n">19.2</td></tr>
+      <tr><td class="id">lean3 4999</td><td class="n"></td><td class="n">18.1</td><td class="n">21.9</td><td class="n">28.3</td><td class="n"></td><td class="n">13.5</td><td class="n">17.8</td><td class="n">20.0</td><td class="n">22.0</td></tr>
+      <tr><td class="id">lean3 avg 4500-4999</td><td class="n">2.0</td><td class="n">17.7</td><td class="n">19.4</td><td class="n">23.2</td><td class="n">1.7</td><td class="n">9.5</td><td class="n">17.2</td><td class="n">16.0</td><td class="n">18.9</td></tr>
+      <tr><td class="id">lean3 avg 3000-4999</td><td class="n best">1.1</td><td class="n best">2.3</td><td class="n best">7.8</td><td class="n best">10.0</td><td class="n best">1.1</td><td class="n best">2.5</td><td class="n best">6.8</td><td class="n">17.2</td><td class="n best">10.4</td></tr>
+      <tr><td class="id">lean5 3000</td><td class="n"></td><td class="n">18.6</td><td class="n">31.8</td><td class="n">39.0</td><td class="n"></td><td class="n">21.1</td><td class="n">28.5</td><td class="n">39.4</td><td class="n">34.7</td></tr>
+      <tr><td class="id">lean5 5000</td><td class="n"></td><td class="n">16.7</td><td class="n">35.5</td><td class="n">39.8</td><td class="n"></td><td class="n">9.2</td><td class="n">25.2</td><td class="n">30.6</td><td class="n">32.8</td></tr>
+      <tr><td class="id">lean5 5500</td><td class="n">3.0</td><td class="n">8.8</td><td class="n">17.9</td><td class="n">20.5</td><td class="n">2.7</td><td class="n">7.8</td><td class="n">19.0</td><td class="n">26.0</td><td class="n">20.9</td></tr>
+      <tr><td class="id">lean5 7000</td><td class="n"></td><td class="n">15.0</td><td class="n">26.4</td><td class="n">38.1</td><td class="n"></td><td class="n">13.7</td><td class="n">25.7</td><td class="n">29.9</td><td class="n">30.0</td></tr>
+      <tr><td class="id">lean5 8500</td><td class="n"></td><td class="n">16.4</td><td class="n">42.1</td><td class="n">41.7</td><td class="n"></td><td class="n">11.0</td><td class="n">21.6</td><td class="n">34.2</td><td class="n">34.9</td></tr>
+      <tr><td class="id">lean5 9500</td><td class="n"></td><td class="n">15.0</td><td class="n">25.8</td><td class="n">31.1</td><td class="n"></td><td class="n">8.4</td><td class="n">15.7</td><td class="n">22.7</td><td class="n">23.8</td></tr>
+      <tr><td class="id">lean5 9999</td><td class="n"></td><td class="n">18.7</td><td class="n">29.4</td><td class="n">34.3</td><td class="n"></td><td class="n">14.3</td><td class="n">28.1</td><td class="n">38.7</td><td class="n">32.6</td></tr>
+      <tr><td class="id">lean5 avg 9500-9999</td><td class="n">10.9</td><td class="n">14.7</td><td class="n">20.0</td><td class="n">32.2</td><td class="n">3.5</td><td class="n">10.6</td><td class="n">22.8</td><td class="n">27.7</td><td class="n">25.7</td></tr>
+      <tr><td class="id">lean5 avg 8000-9999</td><td class="n">4.8</td><td class="n">11.1</td><td class="n">18.7</td><td class="n">21.3</td><td class="n">2.5</td><td class="n">7.8</td><td class="n">15.8</td><td class="n">22.6</td><td class="n">19.6</td></tr>
+    </tbody>
+  </table></div>
+  <p>Column heads read height in mm / held delay in ms. Empty cells were not run. sk_lean4 model_4999 on the 4-episode probe read 9.9 deg at 77/30 and 57.9 deg at 77/45, but that robot is spinning, so its pitch figures do not compare.</p>
+</section>
+
+<section id="lr">
+  <h2>The learning rate question</h2>
+  <p>Before sk_lean2 the learning rate was fixed at 5e-4. Since then rsl_rl's adaptive schedule has been on with a KL target of 0.01. It adjusts after every mini-batch, which with 10 epochs and 32 mini-batches is 320 times per iteration: multiply by 1.5 when KL is under 0.005, divide by 1.5 when it is over 0.02, clamp between 1e-5 and 1e-2. The logged value is the last of the 320.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Run</th><th class="n">Median LR, 2nd half</th><th class="n">At 1e-2 ceiling</th><th class="n">Actor step per 100 iters</th><th class="n">Late ep-length noise</th><th class="n">Net / summed steps</th><th class="n">1/sqrt(n)</th></tr></thead>
+    <tbody>
+      <tr><td class="id">sk_push (fixed)</td><td class="n">5.0e-4</td><td class="n">0%</td><td class="n">0.119</td><td class="n">24.7</td><td class="n">0.24</td><td class="n">0.22</td></tr>
+      <tr><td class="id">sk_jerk2 (fixed)</td><td class="n">5.0e-4</td><td class="n">0%</td><td class="n">0.126</td><td class="n">25.6</td><td class="n">0.23</td><td class="n">0.22</td></tr>
+      <tr><td class="id">sk_lean2</td><td class="n">2.0e-3</td><td class="n">0%</td><td class="n">0.093</td><td class="n">24.2</td><td class="n">0.25</td><td class="n">0.22</td></tr>
+      <tr><td class="id">sk_lean3</td><td class="n">6.7e-3</td><td class="n">13%</td><td class="n">0.100</td><td class="n">32.4</td><td class="n">0.21</td><td class="n">0.22</td></tr>
+      <tr><td class="id">sk_lean5_s2</td><td class="n">1.3e-3</td><td class="n">0%</td><td class="n">0.085</td><td class="n">23.6</td><td class="n">0.18</td><td class="n">0.16</td></tr>
+      <tr><td class="id">sk_lean4c (128x128)</td><td class="n">5.8e-4</td><td class="n">0%</td><td class="n">0.047</td><td class="n">21.7</td><td class="n">0.12</td><td class="n">0.11</td></tr>
+    </tbody>
+  </table></div>
+  <p>Actor step is the relative change in actor weights between checkpoints 100 iterations apart, over the last 40% of each run. The adaptive runs use far larger learning rates and still move the weights no further than the fixed runs, because the KL target caps each update.</p>
+  <p>The last two columns are the finding. A walk of n independent steps ends up 1/sqrt(n) of its path length from where it started, and every run matches that figure closely. After the plateau the weights wander with no direction under both schemes. A fixed rate never shrinks the step. The adaptive rule holds the policy change per update constant, so when the learning signal fades it raises the rate to keep moving, which is sk_lean3's climb to the ceiling. A longer run is a longer walk.</p>
+  <p class="note warnnote">Practical consequence: checkpoints 100 to 500 iterations apart differ by 6 degrees of wobble and 0.3 of yaw-rate RMSE. Any comparison between runs that rests on one checkpoint from each is unreliable.</p>
+</section>
+
+<section id="avg">
+  <h2>Averaging the late checkpoints</h2>
+  <p>If late checkpoints are noise around a centre, the mean of their weights should sit nearer the centre than any of them. The average is the element-wise mean of every tensor in <code>actor_state_dict</code>. It works here because the files are consecutive snapshots of one converged run, so each hidden unit does the same job in all of them. Members sit 0.16 of the weight norm from a 21-checkpoint average and 0.07 to 0.10 from a 6-checkpoint one. Each average was evaluated from scratch.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Row</th><th class="n">lean3 members</th><th class="n">lean3 avg of 6</th><th class="n">lean3 avg of 21</th><th class="n">lean5 members</th><th class="n">lean5 avg of 21</th></tr></thead>
+    <tbody>
+      <tr><td>Shove survival</td><td class="n">0.927-0.938</td><td class="n">0.961</td><td class="n best">0.953</td><td class="n">0.929-0.955</td><td class="n">0.952</td></tr>
+      <tr><td>Shove vel / yaw rate</td><td class="n">0.147-0.185 / 0.70-0.97</td><td class="n">0.141 / 0.75</td><td class="n best">0.134 / 0.41</td><td class="n">0.143-0.165 / 0.77-1.07</td><td class="n">0.138 / 0.84</td></tr>
+      <tr><td>Pitch rate by held delay</td><td class="n">0.75 / 1.22 / 1.47</td><td class="n">0.61 / 0.89 / 1.17</td><td class="n best">0.55 / 0.72 / 1.00</td><td class="n">0.96 / 1.19 / 1.46</td><td class="n">0.82 / 1.04 / 1.31</td></tr>
+      <tr><td>Clean yaw rate / pos error</td><td class="n">0.106-0.187 / 0.017</td><td class="n">0.041 / 0.013</td><td class="n best">0.020 / 0.011</td><td class="n">0.071-0.143</td><td class="n">0.228, clean FAIL</td></tr>
+      <tr><td>Mean wobble, 40-45 ms</td><td class="n">15.3-24.1</td><td class="n">18.9</td><td class="n best">10.4</td><td class="n">20.9-34.9</td><td class="n">19.6</td></tr>
+    </tbody>
+  </table></div>
+  <p>The 21-checkpoint sk_lean3 average on the rest of the ladder: latch PASS at 0.69 V. Newton gate 0.967 / 0.130 / 0.49, with survival by held delay 0.974 / 0.966 / 0.950 where model_4999 read 0.946 / 0.916 / 0.883. Newton clean gate PASS with yaw rate 0.013. PyBullet crossplay 0.920 at n=100 against 0.950 for model_4500, inside the 0.027 standard error. Wide windows beat narrow ones in both runs.</p>
+  <p>An averaged policy is a set of weights training never visited, so the latch probe and the gates apply to it as to any checkpoint.</p>
+</section>
+
+<section id="bench">
+  <h2>Bench verdicts against what the simulation said</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Policy</th><th>Simulation</th><th>On the robot</th></tr></thead>
+    <tbody>
+      <tr><td class="id">sk_lean3 model_4500</td><td>Unremarkable. Wobble 19.2 deg, in the middle of its own run's scatter.</td><td><span class="chip holds">best</span> "s3 4500 is still the best"</td></tr>
+      <tr><td class="id">sk_lean4c model_18500</td><td>Best shove gate of any policy: 0.956 / 0.146 / 0.64.</td><td><span class="chip dropped">no better</span> "the one with mixer is better"</td></tr>
+      <tr><td class="id">sk_lean5 model_5500</td><td>Calm. Wobble 20.9 deg, 3.0 deg at 77 mm / 12 ms.</td><td><span class="chip dropped">bad</span> "it wobbles too much"</td></tr>
+      <tr><td class="id">sk_lean3 avg 3000-4999</td><td>Calmest policy measured: wobble 10.4 deg, yaw rate halved, better on two engines.</td><td><span class="chip dropped">not better</span> lost to model_4500</td></tr>
+    </tbody>
+  </table></div>
+  <p>The probe and the gates missed in both directions, so optimising the simulated wobble figure is not the same as optimising what the robot does. One untested explanation fits both misses. Policies that look calm in simulation make small corrections near upright, and on hardware small corrections can fall inside effects the simulation lacks at low amplitude: gear backlash, motor stiction, leg and servo compliance, delay jitter. A twitchier policy such as model_4500 would punch through them. The wobble probe's 4x friction rows are the nearest existing test and have not been run on the policies in question.</p>
+</section>
+
+<section id="newton">
+  <h2>Newton with the Kamino solver as a third engine</h2>
+  <p>Built to separate what belongs to the policy from what belongs to MuJoCo. <code>wlbot_isaac/envs/newton_env.py</code> wraps the solver directly and loads the mjlab MJCF with its loop closures. Isaac Lab's ManagerBasedRLEnv is not used, because its MJCF importer needs the full isaacsim runtime. The first crossplay read 0 of 1000 surviving, and every cause was in the wrapper.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Defect</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><code>body_qd</code> read as (angular, linear). Newton stores (linear, angular) with the centre-of-mass velocity.</td><td>The gyro channel was the body's sideways velocity.</td></tr>
+      <tr><td>Reset restored the default pose and dropped the robot from 0.12 m</td><td>Wrong leg angles and free fall at spawn. Now joint state, then <code>eval_fk</code>, then <code>ResetConfig.preserve()</code>.</td></tr>
+      <tr><td>Kamino reads only <code>control.joint_f</code> and <code>joint_target_q</code>, and imports MJCF motors as PASSIVE</td><td>No actuation at all until the wheels were set to EFFORT.</td></tr>
+      <tr><td>Push wrench written as (torque, force)</td><td>Shoves arrived as torques.</td></tr>
+      <tr><td>Kamino's re-derived wheel angle folds back</td><td>Odometry jumped by centimetres. The encoder is now integrated wheel speed.</td></tr>
+      <tr><td>Push expiry re-drew every idle env's countdown, and duration was counted down twice</td><td>Most robots were never shoved, and shoves lasted half as long.</td></tr>
+      <tr><td>Mass, friction and wheel-radius draws never written to the model</td><td>Newton looked easier than MuJoCo (0.959 against 0.927).</td></tr>
+      <tr><td>Friction mixing averaged wheel and ground</td><td>Nominal 0.9 where MuJoCo uses the wheel's 0.8. Now "multiply".</td></tr>
+    </tbody>
+  </table></div>
+  <div class="sub">
+    <h3>The one real engine difference: the knee</h3>
+    <p>With the hip held, Kamino's loop joint gives 1 to 2 mm under the roughly 12 N rod load at touchdown. <code>wlbot/model/linkage.py</code> puts the four-bar's two assembly branches 11.7 mm apart at 85 mm of leg height (17.4 mm at 75 mm) with about 1.8 mm of closure error between them, so at 83 mm and above the knee jumps toward the other branch and the leg folds. At 85 mm the linkage is still 0.096 rad of hip short of its singularity, so this is a branch jump and the toggle point is not involved. The env holds the knee at its kinematic angle with the hip servo's gains. The hold is idle on a healthy linkage and puts no net force on the robot. <code>WLBOT_KNEE_HOLD=0</code> reproduces the fold. A sphere wheel collider was tried before the hold existed and wrongly credited with fixing a touchdown kick that was the knee. It was removed.</p>
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>sk_lean3 model_4999</th><th class="n">MuJoCo</th><th class="n">Newton</th></tr></thead>
+    <tbody>
+      <tr><td>Shove survival / vel / yaw rate</td><td class="n">0.927 / 0.147 / 0.97</td><td class="n">0.924 / 0.160 / 1.10</td></tr>
+      <tr><td>Survival by held delay</td><td class="n">0.960 / 0.913 / 0.881</td><td class="n">0.946 / 0.916 / 0.883</td></tr>
+      <tr><td>Pitch rate by held delay</td><td class="n">0.75 / 1.22 / 1.47</td><td class="n">0.89 / 1.41 / 1.65</td></tr>
+      <tr><td>Median pos error / sideways offset at failure</td><td class="n">0.219 / 0.079 m</td><td class="n">0.488 / 0.182 m</td></tr>
+      <tr><td>Clean survival / vel / yaw rate</td><td class="n">1.000 / 0.0436 / 0.187</td><td class="n">1.000 / 0.0446 / 0.093</td></tr>
+      <tr><td>Clean pos error / heading drift</td><td class="n">0.0166 / 0.0031</td><td class="n">0.0168 / 0.0032</td></tr>
+    </tbody>
+  </table></div>
+  <p>Open-loop parity against <code>passive_reference.json</code> passes with the MuJoCo test's tolerances. Speed on an RTX 5080: Kamino's solve is 21, 27 and 70 ms per 500 Hz substep at 256, 1024 and 4096 envs and takes 85 to 95% of the step. About 13 to 20 ms of that is launch overhead a CUDA graph would remove. The remaining 14 microseconds per env per substep is solver work, which caps this GPU near 14,000 env-steps per second against mjlab's 52,000. A 1000-episode gate takes 3 minutes. A 5000-iteration training run would take about 17 hours. Decision: train on mjlab and use Newton as a judge.</p>
+</section>
+
+<section id="wrong">
+  <h2>Wrong turns worth remembering</h2>
+  <ul>
+    <li>Two changes went into one commit (per-wheel and 128x128), and no later run separated them.</li>
+    <li>Runs were compared at different iteration counts and different push strengths. A 20,000-iteration run is at half push strength at 5000.</li>
+    <li>sk_lean4 was judged on its training reward and never gated for four days.</li>
+    <li>The sk_lean5_s0 kill alarm keyed on reward, which falls by construction when a weight switches on. Episode length was rising at the time.</li>
+    <li>A 4-episode wobble probe made model_9500 look like proof that longer training smooths the policy. At 12 episodes it was scatter.</li>
+    <li>"Per-wheel takes twice as long to learn heading" was concluded from sk_lean4 alone and reversed an hour later by sk_lean4b and 4c.</li>
+    <li>On Newton, sphere wheels were credited with a fix that belonged to the knee hold, because the two were never tested apart.</li>
+    <li>model_5500 was exported partly on the strength of a survival gate that the bench does not agree with.</li>
+  </ul>
+</section>
+
+<section id="next">
+  <h2>Open questions</h2>
+  <ul>
+    <li>Whether model_4500's wobble matters for what the robot has to do, or whether it has been treated as a gate out of habit.</li>
+    <li>What differs on the bench between model_4500 and a policy that wobbles. A capture of the robot standing still under each (pitch, gyro, both action channels) would show the oscillation frequency and action amplitude, and whether the simulation can reproduce either. This is a plant-model question.</li>
+    <li>The 4x motor friction rows of the wobble probe on model_4500, model_5500 and the averaged policy.</li>
+    <li>Widening the training delay range to cover 40 to 45 ms. Untried, and any result would still be judged by a probe that has missed twice.</li>
+    <li>Annealing the step over the last third of a run (decay the KL target or the LR ceiling), so a run converges and checkpoints become comparable.</li>
+    <li>Per-wheel against 128x128, still unseparated. Low priority.</li>
+  </ul>
+</section>
+
+<section id="where">
+  <h2>Where things live</h2>
+  <div class="two">
+    <div class="scroll"><table>
+      <thead><tr><th>Commit</th><th>What</th></tr></thead>
+      <tbody>
+        <tr><td class="id">f94036f</td><td>Per-wheel action and 128x128 (the confounded change)</td></tr>
+        <tr><td class="id">adf22f0</td><td>Back to the mixer and 64x64</td></tr>
+        <tr><td class="id">d4b420b</td><td>Reward schedule 0.1 / 0.3 / 0.5</td></tr>
+        <tr><td class="id">2ef748a</td><td>Newton engine: env, gate report, parity test</td></tr>
+        <tr><td class="id">6a03759</td><td>Newton: plant draws written into the model</td></tr>
+        <tr><td class="id">dcf7f9d</td><td>TRAINING_LOG: sk_lean5_s2, matched iterations, LR, averaging</td></tr>
+      </tbody>
+    </table></div>
+    <div class="scroll"><table>
+      <thead><tr><th>File</th><th>What</th></tr></thead>
+      <tbody>
+        <tr><td class="id">logs/rsl_rl/sk_lean3_r128_s0/2026-09-16_11-01-32/model_4500.pt</td><td>Best on the bench</td></tr>
+        <tr><td class="id">.../avg_3000-4999.pt</td><td>Averaged policy. ONNX beside it as model_avg_3000-4999.onnx</td></tr>
+        <tr><td class="id">logs/rsl_rl/sk_lean5_s2/2026-09-18_20-26-41/</td><td>The 10,000-iteration run</td></tr>
+        <tr><td class="id">wlbot_isaac/</td><td>Newton env, gates, tests, installer (.venv-isaac)</td></tr>
+        <tr><td class="id">TRAINING_LOG.md</td><td>Entries dated 2026-09-18 and 2026-09-20</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+<pre>pixi run -e gpu   eval-gpu    -- &lt;ckpt.pt&gt; -n 1000 --seed 12345 [--clean]
+pixi run -e isaac eval-isaac  -- &lt;ckpt.pt&gt; -n 1000 --seed 12345 [--clean]
+pixi run          eval-wobble -- &lt;ckpt.pt&gt; -n 12 --delays 12 30 40 45 --coulomb 1.0
+pixi run          check-latch -- &lt;ckpt.pt&gt;
+pixi run -e hf    publish     -- &lt;model.onnx&gt; --path &lt;run&gt;/&lt;file&gt;   # --path skips the model_&lt;iter&gt; name check</pre>
+  <p>To rebuild the averaged policy: load model_3000 through model_4900 plus model_4999, take the mean of every tensor in <code>actor_state_dict</code>, and write it into a copy of model_4999. Per-wheel checkpoints (sk_lean4, 4b, 4c) need the per-wheel code: <code>git archive f09ab27</code> into a scratch directory and run the gate from there with the gpu environment's Python.</p>
+</section>
+
+<footer>Simulation figures are n=1000 at seed 12345 on the mjlab gate unless stated. Wobble figures are PyBullet at nominal motor friction. Bench verdicts are the user's observations on the robot. Every run used seed 0, so no result here has a seed-to-seed error bar.</footer>
+</div>
+
+</body></html>

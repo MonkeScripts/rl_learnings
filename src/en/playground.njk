@@ -1,0 +1,21 @@
+---
+layout: base.njk
+permalink: /playground/
+title: Widget playground
+widgets: [ppo-clip, gamma-horizon, rl-loop]
+---
+<main class="day-layout" style="grid-template-columns:minmax(0,1fr)">
+  <article class="day" style="margin:0 auto">
+    <header class="day-head"><p class="eyebrow">Playground</p><h1>Widget playground</h1>
+    <p class="meta">Every interactive piece on one page, for review. Not linked from the course.</p></header>
+    <div class="prose">
+      <h2>PPO clip explorer (Day 9)</h2>
+      <p>Set A &gt; 0 and press <em>Take 10 gradient steps</em> with the clip on, then off. With the clip on, r stalls at 1+ε. With it off, nothing stops it.</p>
+      <ppo-clip></ppo-clip>
+      <h2>γ to horizon (Days 1, 6)</h2>
+      <gamma-horizon></gamma-horizon>
+      <h2>RL loop stepper (Day 1)</h2>
+      <rl-loop></rl-loop>
+    </div>
+  </article>
+</main>

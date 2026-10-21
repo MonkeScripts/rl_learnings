@@ -1,0 +1,1296 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>One Plant, Two Engines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F3F5F7;
+    --surface: #FFFFFF;
+    --surface-2: #E9EDF1;
+    --ink: #1B2430;
+    --muted: #5B6674;
+    --rule: #D3DAE1;
+    --accent: #C4561A;        /* the recommended path */
+    --accent-ink: #FFFFFF;
+    --steel: #3B6EA5;         /* option A, the other path */
+    --drift: #A93A2C;         /* things that went wrong */
+    --code-bg: #EEF1F4;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12171D;
+      --surface: #1A2129;
+      --surface-2: #222B35;
+      --ink: #E6EAEE;
+      --muted: #9AA5B1;
+      --rule: #2C3640;
+      --accent: #E4763C;
+      --accent-ink: #12171D;
+      --steel: #74A6DC;
+      --drift: #E06A5C;
+      --code-bg: #161C23;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12171D;
+    --surface: #1A2129;
+    --surface-2: #222B35;
+    --ink: #E6EAEE;
+    --muted: #9AA5B1;
+    --rule: #2C3640;
+    --accent: #E4763C;
+    --accent-ink: #12171D;
+    --steel: #74A6DC;
+    --drift: #E06A5C;
+    --code-bg: #161C23;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--steel); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .page {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+  @media (min-width: 1000px) {
+    .page { grid-template-columns: 210px minmax(0, 1fr); gap: 3.5rem; }
+    nav.toc { position: sticky; top: 1.5rem; align-self: start; }
+  }
+
+  /* ---- masthead ---- */
+  header.mast { grid-column: 1 / -1; border-bottom: 1px solid var(--rule); padding-bottom: 1.75rem; }
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .standfirst {
+    font-size: 1.2rem;
+    line-height: 1.45;
+    max-width: 62ch;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  /* ---- toc ---- */
+  nav.toc { font-family: var(--display); font-size: 13.5px; }
+  nav.toc .label { margin-bottom: 0.6rem; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+  nav.toc li a {
+    display: block;
+    padding: 0.32rem 0 0.32rem 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+  }
+  nav.toc li a:hover { color: var(--ink); border-left-color: var(--accent); }
+
+  /* ---- article ---- */
+  article { min-width: 0; }
+  section { margin: 0 0 3.6rem; }
+  section > p, section > ul, section > ol, .prose { max-width: 66ch; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.65rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  h2 .num {
+    display: inline-block;
+    min-width: 2.2ch;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 2rem 0 0.6rem;
+  }
+  p { margin: 0 0 1rem; }
+  ul, ol { margin: 0 0 1.1rem; padding-left: 1.3rem; }
+  li { margin: 0 0 0.45rem; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 600; }
+  code, .file {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: var(--code-bg);
+    padding: 0.08em 0.35em;
+    border-radius: 3px;
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.5;
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 0.9rem 1rem;
+    margin: 0;
+    overflow-x: auto;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .two-code { display: grid; grid-template-columns: 1fr; gap: 0.8rem; margin: 0 0 1.2rem; }
+  @media (min-width: 760px) { .two-code { grid-template-columns: 1fr 1fr; } }
+  .two-code .cap {
+    font-family: var(--display);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.4rem;
+  }
+
+  /* ---- callouts ---- */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 0.9rem 1.1rem;
+    margin: 0 0 1.5rem;
+    max-width: 66ch;
+  }
+  .callout.drift { border-left-color: var(--drift); }
+  .callout.steel { border-left-color: var(--steel); }
+  .callout .k {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.35rem;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ---- tables ---- */
+  .tablewrap { overflow-x: auto; margin: 0 0 1.4rem; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  td .file { white-space: nowrap; }
+  tr.pick td { background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+  .pill {
+    display: inline-block;
+    font-family: var(--display);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 0.12em 0.5em;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    vertical-align: 0.1em;
+  }
+  .pill.b { color: var(--accent); }
+  .pill.a { color: var(--steel); }
+  .pill.bad { color: var(--drift); }
+
+  /* ---- figures ---- */
+  figure { margin: 1.6rem 0 2rem; }
+  figure svg { display: block; width: 100%; height: auto; max-width: 100%; color: var(--ink); }
+  figcaption { font-size: 14.5px; color: var(--muted); margin-top: 0.6rem; max-width: 70ch; }
+  figure .frame { background: var(--surface); border: 1px solid var(--rule); padding: 0.75rem; overflow-x: auto; }
+
+  /* ---- keeps grid ---- */
+  .keeps { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 0 0 1.5rem; }
+  @media (min-width: 820px) { .keeps { grid-template-columns: 1fr 1fr 1fr; } }
+  .keeps > div { background: var(--surface); border: 1px solid var(--rule); padding: 0.9rem 1rem; }
+  .keeps h4 { font-family: var(--mono); font-weight: 500; font-size: 14px; margin: 0 0 0.5rem; }
+  .keeps ul { padding-left: 1.1rem; margin: 0; font-size: 15px; }
+  .keeps .own { border-top: 3px solid var(--accent); }
+
+  /* ---- glossary ---- */
+  dl.gloss { max-width: 70ch; margin: 0; }
+  dl.gloss dt { font-family: var(--display); font-weight: 600; margin: 0.9rem 0 0.15rem; }
+  dl.gloss dd { margin: 0; color: var(--ink); }
+
+  /* ---- references ---- */
+  .refs h3 { margin-top: 1.6rem; }
+  .refs ol { font-size: 15px; padding-left: 1.4rem; }
+  .refs li { margin-bottom: 0.4rem; overflow-wrap: anywhere; }
+  .refs .note { color: var(--muted); }
+
+  .steps { counter-reset: step; list-style: none; padding: 0; max-width: 70ch; }
+  .steps li { counter-increment: step; position: relative; padding-left: 2.6rem; margin-bottom: 0.9rem; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 0.05rem;
+    width: 1.8rem; height: 1.8rem;
+    font-family: var(--display); font-weight: 700; font-size: 13px;
+    display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink);
+  }
+  .small { font-size: 14.5px; color: var(--muted); }
+  .src {
+    font-family: var(--display);
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0.35rem 0 1.3rem;
+  }
+  .src a { color: inherit; }
+  .snip { margin: 0 0 0.35rem; }
+  .snip .cap {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.4rem 0 0.4rem;
+  }
+  .snip.ours pre { border-left: 3px solid var(--accent); }
+  hr.sep { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+</style><style>/* learning_rl: phone-width fix */.two-code>*{min-width:0}@media (max-width:600px){:has(> svg[viewBox]){overflow-x:auto}svg[viewBox]{min-width:620px}code{overflow-wrap:anywhere}table{display:block;overflow-x:auto}th,td{padding:.45rem .55rem}}</style>
+
+<div class="page">
+  <header class="mast">
+    <p class="eyebrow">wlbot · architecture note · 14 September 2026 · branch rl_toys</p>
+    <h1>One Plant, Two Engines</h1>
+    <p class="standfirst">The robot's plant model is written twice, once for the CPU oracle and once for the GPU trainer. This page explains why that happened, what it costs, what other robotics projects do about the same problem, and a plan to write it once.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="eyebrow label">On this page</p>
+    <ol>
+      <li><a href="#problem">1. The problem</a></li>
+      <li><a href="#reframe">2. What is really duplicated</a></li>
+      <li><a href="#options">3. Two ways to write it once</a></li>
+      <li><a href="#field">4. What the field does</a></li>
+      <li><a href="#proposal">5. The proposed architecture</a></li>
+      <li><a href="#migration">6. How we get there</a></li>
+      <li><a href="#costs">7. Costs and open questions</a></li>
+      <li><a href="#glossary">8. Words used here</a></li>
+      <li><a href="#refs">9. References</a></li>
+      <li><a href="#built">10. What was built</a></li>
+    </ol>
+  </nav>
+
+  <article>
+
+    <div class="callout">
+      <p class="k">Status</p>
+      <p><strong>Built.</strong> Option B landed on branch <span class="file">rl_toys</span> on 14 September 2026 as eleven commits, <span class="file">40a993e</span> through <span class="file">d2c8d58</span>, one per step with the pipelines split in three. Section 10 records what was built and where it departed from the plan. Nothing has been pushed.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <section id="problem">
+      <h2><span class="num">1</span> The problem</h2>
+      <p>You change the reward in one file and forget the other. The GPU trains for six hours on the new reward. The CPU oracle still scores the old one. Every evaluation you run afterwards compares two different tasks and nothing tells you.</p>
+      <p>That is not hypothetical. The repository has eight pieces of plant logic that exist twice: once as plain numpy for one robot, once as torch for a thousand robots at a time. The two copies are kept equal by a set of parity tests, which means every change is two edits and one test run, forever.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 760 250" role="img" aria-label="Left, today: editing the reward file requires a second edit by hand to its torch twin; if that is forgotten the CPU oracle scores reward version two while the GPU trainer keeps training on version one. Right, after: one file that both engines call, so there is no second file to forget.">
+          <defs>
+            <marker id="arrF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker>
+            <marker id="arrFd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--drift)"/></marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">
+            <text x="200" y="30">today</text>
+            <text x="565" y="30">after</text>
+          </g>
+
+          <!-- today -->
+          <text x="105" y="58" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" fill="currentColor">you edit this</text>
+          <rect x="40" y="68" width="130" height="30" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="105" y="87" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10" fill="currentColor">envs/rewards.py</text>
+          <rect x="230" y="68" width="130" height="30" fill="none" style="stroke:var(--drift)" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <text x="295" y="87" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10" fill="currentColor">tasks/mdp/rewards.py</text>
+          <line x1="172" y1="83" x2="226" y2="83" style="stroke:var(--drift)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrFd)"/>
+          <text x="199" y="76" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" style="fill:var(--drift)">by hand</text>
+          <line x1="105" y1="98" x2="105" y2="146" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="295" y1="98" x2="295" y2="146" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <rect x="40" y="148" width="130" height="44" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="105" y="166" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">CPU oracle</text>
+          <text x="105" y="182" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">scores reward v2</text>
+          <rect x="230" y="148" width="130" height="44" fill="none" style="stroke:var(--drift)" stroke-width="1.2"/>
+          <text x="295" y="166" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">GPU trainer</text>
+          <text x="295" y="182" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" style="fill:var(--drift)">trains on reward v1</text>
+          <text x="200" y="226" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11.5" style="fill:var(--drift)">Two different tasks, and nothing reports it.</text>
+
+          <!-- after -->
+          <text x="565" y="58" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" fill="currentColor">you edit this, once</text>
+          <rect x="470" y="68" width="190" height="30" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="565" y="87" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10" fill="currentColor">wlbot/envs/rewards.py</text>
+          <line x1="520" y1="98" x2="478" y2="146" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <line x1="610" y1="98" x2="652" y2="146" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrF)"/>
+          <rect x="400" y="148" width="150" height="44" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="475" y="166" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">CPU oracle</text>
+          <text x="475" y="182" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">scores reward v2</text>
+          <rect x="580" y="148" width="150" height="44" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="655" y="166" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">GPU trainer</text>
+          <text x="655" y="182" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">trains on reward v2</text>
+          <text x="565" y="226" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">There is no second file to forget.</text>
+        </svg>
+        </div>
+        <figcaption>The fear, drawn. Today the second edit is a manual step with no error if skipped. After, both engines call the one file. Throughout this page, orange marks code that lives once in wlbot and red marks a failure path.</figcaption>
+      </figure>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>What it models</th><th>CPU copy, in <span class="file">wlbot/</span></th><th class="n">lines</th><th>GPU copy, in <span class="file">wlbot_mjlab/</span></th><th class="n">lines</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>What the policy sees</td><td><span class="file">obs.py</span></td><td class="n">169</td><td><span class="file">tasks/mdp/odometry.py</span></td><td class="n">131</td></tr>
+            <tr><td>The reward</td><td><span class="file">envs/rewards.py</span></td><td class="n">111</td><td><span class="file">tasks/mdp/rewards.py</span></td><td class="n">54</td></tr>
+            <tr><td>Firmware pitch estimator</td><td><span class="file">firmware/pitch_filter.py</span></td><td class="n">219</td><td><span class="file">tasks/mdp/pitch_filter.py</span></td><td class="n">104</td></tr>
+            <tr><td>Firmware yaw estimator</td><td><span class="file">firmware/yaw_filter.py</span></td><td class="n">217</td><td><span class="file">tasks/mdp/yaw_filter.py</span></td><td class="n">144</td></tr>
+            <tr><td>Motor, battery, leg servo</td><td><span class="file">sim/actuators.py</span></td><td class="n">105</td><td><span class="file">actuators/wheel_voltage.py</span></td><td class="n">183</td></tr>
+            <tr><td>Sensor noise and filters</td><td><span class="file">sim/noise.py</span></td><td class="n">104</td><td><span class="file">sensors/sensor_state.py</span></td><td class="n">243</td></tr>
+            <tr><td>Domain randomization</td><td><span class="file">sim/randomization.py</span></td><td class="n">149</td><td><span class="file">tasks/mdp/randomization.py</span></td><td class="n">206</td></tr>
+            <tr><td>Action and observation delay</td><td><span class="file">sim/latency.py</span></td><td class="n">36</td><td>inside <span class="file">wheel_voltage.py</span></td><td class="n">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small">The GPU copies add up to 1,065 lines that restate what the CPU copies already say.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 760 470" role="img" aria-label="Two columns of eight files each, the numpy copies on the left and the torch copies on the right, joined row by row by dashed lines labelled parity. Every model exists in both columns.">
+          <defs>
+            <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="currentColor">
+            <text x="190" y="30" text-anchor="middle">wlbot/  ·  numpy  ·  one robot at a time</text>
+            <text x="570" y="30" text-anchor="middle">wlbot_mjlab/  ·  torch  ·  1024 robots at once</text>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor" opacity="0.7">
+            <text x="190" y="50" text-anchor="middle">used by the PyBullet env, the single-robot MuJoCo backend, crossplay</text>
+            <text x="570" y="50" text-anchor="middle">used by mjlab training and evaluation</text>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="40" y="74" width="300" height="32"/><rect x="420" y="74" width="300" height="32"/>
+            <rect x="40" y="118" width="300" height="32"/><rect x="420" y="118" width="300" height="32"/>
+            <rect x="40" y="162" width="300" height="32"/><rect x="420" y="162" width="300" height="32"/>
+            <rect x="40" y="206" width="300" height="32"/><rect x="420" y="206" width="300" height="32"/>
+            <rect x="40" y="250" width="300" height="32"/><rect x="420" y="250" width="300" height="32"/>
+            <rect x="40" y="294" width="300" height="32"/><rect x="420" y="294" width="300" height="32"/>
+            <rect x="40" y="338" width="300" height="32"/><rect x="420" y="338" width="300" height="32"/>
+            <rect x="40" y="382" width="300" height="32"/><rect x="420" y="382" width="300" height="32"/>
+          </g>
+          <g font-family="JetBrains Mono, Consolas, monospace" font-size="11" fill="currentColor">
+            <text x="52" y="94">obs.py</text>                    <text x="432" y="94">tasks/mdp/odometry.py</text>
+            <text x="52" y="138">envs/rewards.py</text>           <text x="432" y="138">tasks/mdp/rewards.py</text>
+            <text x="52" y="182">firmware/pitch_filter.py</text>  <text x="432" y="182">tasks/mdp/pitch_filter.py</text>
+            <text x="52" y="226">firmware/yaw_filter.py</text>    <text x="432" y="226">tasks/mdp/yaw_filter.py</text>
+            <text x="52" y="270">sim/actuators.py</text>          <text x="432" y="270">actuators/wheel_voltage.py</text>
+            <text x="52" y="314">sim/noise.py</text>              <text x="432" y="314">sensors/sensor_state.py</text>
+            <text x="52" y="358">sim/randomization.py</text>      <text x="432" y="358">tasks/mdp/randomization.py</text>
+            <text x="52" y="402">sim/latency.py</text>            <text x="432" y="402">actuators/wheel_voltage.py</text>
+          </g>
+          <g stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.7">
+            <line x1="340" y1="90" x2="362" y2="90"/><line x1="398" y1="90" x2="420" y2="90"/>
+            <line x1="340" y1="134" x2="362" y2="134"/><line x1="398" y1="134" x2="420" y2="134"/>
+            <line x1="340" y1="178" x2="362" y2="178"/><line x1="398" y1="178" x2="420" y2="178"/>
+            <line x1="340" y1="222" x2="362" y2="222"/><line x1="398" y1="222" x2="420" y2="222"/>
+            <line x1="340" y1="266" x2="362" y2="266"/><line x1="398" y1="266" x2="420" y2="266"/>
+            <line x1="340" y1="310" x2="362" y2="310"/><line x1="398" y1="310" x2="420" y2="310"/>
+            <line x1="340" y1="354" x2="362" y2="354"/><line x1="398" y1="354" x2="420" y2="354"/>
+            <line x1="340" y1="398" x2="362" y2="398"/><line x1="398" y1="398" x2="420" y2="398"/>
+          </g>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" fill="currentColor" opacity="0.7" text-anchor="middle">
+            <text x="380" y="93">parity</text><text x="380" y="137">parity</text><text x="380" y="181">parity</text><text x="380" y="225">parity</text>
+            <text x="380" y="269">parity</text><text x="380" y="313">parity</text><text x="380" y="357">parity</text><text x="380" y="401">parity</text>
+          </g>
+          <text x="380" y="450" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="12.5" fill="currentColor">Every change to a model is two edits and one parity test. The right column restates the left in 1,065 lines.</text>
+        </svg>
+        </div>
+        <figcaption>Today. Each dashed line is a test that has to keep passing. It catches drift after the fact; it does not prevent it.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="reframe">
+      <h2><span class="num">2</span> What is really duplicated</h2>
+      <p>It is tempting to describe this as "numpy versus torch" or "PyBullet versus MuJoCo". Neither is the real split. Three facts from the code show that:</p>
+      <ul>
+        <li><strong>The numpy models already run against MuJoCo.</strong> The single-robot MuJoCo backend in <span class="file">wlbot_mjlab/sim/mujoco_backend.py</span> imports the numpy motor, battery, servo and push models. Engine-agnostic is already true.</li>
+        <li><strong>Every constant is already shared.</strong> The torch copies import the reward weights, the observation names and scales, the estimator constants and the action scale from wlbot. Only the step-by-step math is written twice.</li>
+        <li><strong>The torch copies are already written in the style the unified code needs.</strong> They keep a boolean mask per robot instead of an <code>if</code>, and they can reset a subset of robots. That style runs unchanged with one robot.</li>
+      </ul>
+      <p>So the real axis is <strong>one robot at a time versus a thousand at once</strong>. The numpy code holds one number per quantity and branches with <code>if</code>. The torch code holds a column of numbers, one per robot, and branches with a mask. The engines are innocent bystanders. What wlbot is missing is not engine independence, it is a batch dimension.</p>
+
+      <h3>The same step, in both styles</h3>
+      <p>One tick of the firmware pitch estimator. The accelerometer correction only applies when the reading is trustworthy.</p>
+      <div class="two-code">
+        <div>
+          <p class="cap">One robot, today</p>
+<pre><code>pitch += gyro * dt
+if acc_ok:
+    pitch += (dt / (tau + dt)) * (acc_angle - pitch)
+else:
+    rejected += 1</code></pre>
+        </div>
+        <div>
+          <p class="cap">Any number of robots, proposed</p>
+<pre><code>pitch = pitch + gyro * dt
+pull  = (dt / (tau + dt)) * (acc_angle - pitch)
+pitch = torch.where(acc_ok, pitch + pull, pitch)
+rejected = rejected + (~acc_ok)</code></pre>
+        </div>
+      </div>
+      <p>On the right, <code>acc_ok</code> is a column of true and false values, one per robot, and <code>where</code> picks per robot. With one robot the column has one entry and the code does exactly what the left does. That is the whole trick, and it is why one implementation can serve both.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 760 240" role="img" aria-label="Left, one robot: three single cells for pitch, gyro and acc_ok go into a box labelled the same step and one cell comes out. Right, 1024 robots: three tall columns of cells go into the identical box and a tall column comes out. Only the number of rows differs.">
+          <defs>
+            <marker id="arrE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">
+            <text x="200" y="30">n = 1  ·  the CPU oracle</text>
+            <text x="590" y="30">n = 1024  ·  the GPU trainer</text>
+          </g>
+
+          <!-- left: single row -->
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" fill="currentColor" text-anchor="middle">
+            <text x="104" y="62">pitch</text><text x="142" y="62">gyro</text><text x="180" y="62">acc_ok</text>
+            <text x="380" y="62">pitch′</text>
+          </g>
+          <g fill="currentColor" opacity="0.18">
+            <rect x="90" y="70" width="28" height="11"/><rect x="128" y="70" width="28" height="11"/><rect x="166" y="70" width="28" height="11"/>
+            <rect x="366" y="70" width="28" height="11"/>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="0.8">
+            <rect x="90" y="70" width="28" height="11"/><rect x="128" y="70" width="28" height="11"/><rect x="166" y="70" width="28" height="11"/>
+            <rect x="366" y="70" width="28" height="11"/>
+          </g>
+          <text x="142" y="97" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" fill="currentColor" opacity="0.7">1 row</text>
+          <line x1="204" y1="76" x2="228" y2="76" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrE)"/>
+          <rect x="230" y="46" width="110" height="60" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="285" y="72" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="currentColor">the same step</text>
+          <text x="285" y="88" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10" fill="currentColor">pitch filter tick</text>
+          <line x1="340" y1="76" x2="364" y2="76" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrE)"/>
+
+          <!-- right: columns -->
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" fill="currentColor" text-anchor="middle">
+            <text x="454" y="62">pitch</text><text x="492" y="62">gyro</text><text x="530" y="62">acc_ok</text>
+            <text x="730" y="62">pitch′</text>
+          </g>
+          <g fill="currentColor" opacity="0.18">
+            <rect x="440" y="70" width="28" height="9"/><rect x="440" y="81" width="28" height="9"/><rect x="440" y="92" width="28" height="9"/><rect x="440" y="103" width="28" height="9"/><rect x="440" y="114" width="28" height="9"/><rect x="440" y="125" width="28" height="9"/><rect x="440" y="136" width="28" height="9"/><rect x="440" y="147" width="28" height="9"/>
+            <rect x="478" y="70" width="28" height="9"/><rect x="478" y="81" width="28" height="9"/><rect x="478" y="92" width="28" height="9"/><rect x="478" y="103" width="28" height="9"/><rect x="478" y="114" width="28" height="9"/><rect x="478" y="125" width="28" height="9"/><rect x="478" y="136" width="28" height="9"/><rect x="478" y="147" width="28" height="9"/>
+            <rect x="516" y="70" width="28" height="9"/><rect x="516" y="81" width="28" height="9"/><rect x="516" y="92" width="28" height="9"/><rect x="516" y="103" width="28" height="9"/><rect x="516" y="114" width="28" height="9"/><rect x="516" y="125" width="28" height="9"/><rect x="516" y="136" width="28" height="9"/><rect x="516" y="147" width="28" height="9"/>
+            <rect x="716" y="70" width="28" height="9"/><rect x="716" y="81" width="28" height="9"/><rect x="716" y="92" width="28" height="9"/><rect x="716" y="103" width="28" height="9"/><rect x="716" y="114" width="28" height="9"/><rect x="716" y="125" width="28" height="9"/><rect x="716" y="136" width="28" height="9"/><rect x="716" y="147" width="28" height="9"/>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="0.8">
+            <rect x="440" y="70" width="28" height="86"/><rect x="478" y="70" width="28" height="86"/><rect x="516" y="70" width="28" height="86"/>
+            <rect x="716" y="70" width="28" height="86"/>
+          </g>
+          <text x="492" y="172" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="9" fill="currentColor" opacity="0.7">1,024 rows</text>
+          <line x1="554" y1="113" x2="578" y2="113" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrE)"/>
+          <rect x="580" y="83" width="110" height="60" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="635" y="109" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="currentColor">the same step</text>
+          <text x="635" y="125" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10" fill="currentColor">pitch filter tick</text>
+          <line x1="690" y1="113" x2="714" y2="113" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrE)"/>
+
+          <text x="380" y="222" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="12" fill="currentColor">Same function, same lines. Only the number of rows in the state differs.</text>
+        </svg>
+        </div>
+        <figcaption>The batch dimension. The code never asks how many robots there are. Each quantity is a column, and the column is one row long on the oracle and 1,024 rows long on the trainer.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="options">
+      <h2><span class="num">3</span> Two ways to write it once</h2>
+      <p>Both options keep one copy of every model in wlbot, written in the batched style above. They differ in which array library runs it on the CPU.</p>
+
+      <h3><span class="pill a">A</span> One source, two array libraries</h3>
+      <p>Each model takes an array module as a parameter. On the CPU it is numpy, on the GPU it is torch. numpy 2 adopted the Python array API standard, so most function names now match torch, and the idea is that the same source runs under either. SciPy and scikit-learn use this pattern for library code that has to accept whatever arrays a user hands them.</p>
+
+      <h3><span class="pill b">B</span> One source, torch everywhere</h3>
+      <p>Each model is a torch class with state shaped <code>[n, …]</code> and a <code>device</code> argument. The CPU oracle runs it with n&nbsp;=&nbsp;1 on the CPU device. The GPU trainer runs it with n&nbsp;=&nbsp;1024 on CUDA. This is how NVIDIA Isaac Lab and mjlab write their actuator and noise models, and both unit-test those classes at one environment on the CPU alongside CUDA.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 760 230" role="img" aria-label="Left, option A: one source file feeds two boxes, numpy on the CPU and torch on the GPU, joined by a dashed line meaning a self-test must prove they agree. Right, option B: one source file feeds one torch box, which is then run on two devices, cpu with one robot and cuda with 1024.">
+          <defs>
+            <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker>
+            <marker id="arrGs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--steel)"/></marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">
+            <text x="200" y="30">A  ·  one source, two libraries</text>
+            <text x="560" y="30">B  ·  one source, one library, two devices</text>
+          </g>
+
+          <!-- A -->
+          <rect x="110" y="50" width="180" height="28" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="200" y="68" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" fill="currentColor">one source file</text>
+          <line x1="170" y1="78" x2="112" y2="118" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrG)"/>
+          <line x1="230" y1="78" x2="288" y2="118" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrG)"/>
+          <rect x="40" y="120" width="140" height="30" fill="none" style="stroke:var(--steel)" stroke-width="1.4"/>
+          <text x="110" y="139" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">numpy on the CPU</text>
+          <rect x="220" y="120" width="140" height="30" fill="none" style="stroke:var(--steel)" stroke-width="1.4"/>
+          <text x="290" y="139" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">torch on the GPU</text>
+          <line x1="182" y1="135" x2="218" y2="135" style="stroke:var(--steel)" stroke-width="1.2" stroke-dasharray="3 3" marker-start="url(#arrGs)" marker-end="url(#arrGs)"/>
+          <text x="200" y="180" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10.5" style="fill:var(--steel)">a self-test must prove these agree, forever</text>
+          <text x="200" y="198" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor" opacity="0.75">plus a compatibility layer and a two-backend random shim</text>
+
+          <!-- B -->
+          <rect x="470" y="50" width="180" height="28" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="560" y="68" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11" fill="currentColor">one source file</text>
+          <line x1="560" y1="78" x2="560" y2="118" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrG)"/>
+          <rect x="470" y="120" width="180" height="30" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="560" y="139" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">torch, one implementation</text>
+          <line x1="530" y1="150" x2="482" y2="178" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrG)"/>
+          <line x1="590" y1="150" x2="638" y2="178" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrG)"/>
+          <rect x="410" y="180" width="140" height="26" fill="none" stroke="currentColor" stroke-width="1"/>
+          <text x="480" y="197" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10" fill="currentColor">device=cpu, n=1</text>
+          <rect x="570" y="180" width="140" height="26" fill="none" stroke="currentColor" stroke-width="1"/>
+          <text x="640" y="197" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="10" fill="currentColor">device=cuda, n=1024</text>
+        </svg>
+        </div>
+        <figcaption>The difference between the options. Under A the same text runs through two libraries, so agreement is something a test asserts. Under B the same objects run on two devices, so agreement is structural.</figcaption>
+      </figure>
+
+      <h3>Scored on the thing you actually fear</h3>
+      <p>The question is not which is faster or lighter. It is how many places the same law can be written differently.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Where drift can happen</th><th><span class="pill a">A</span></th><th><span class="pill b">B</span></th><th>Today</th></tr></thead>
+          <tbody>
+            <tr><td>Step law written twice</td><td>no</td><td>no</td><td>yes, 8 models</td></tr>
+            <tr><td>Same source behaving differently under two array libraries</td><td><strong>yes</strong></td><td>no</td><td>no</td></tr>
+            <tr><td>Random draws needing two implementations</td><td><strong>yes</strong></td><td>no</td><td>yes</td></tr>
+            <tr><td>Order of operations written twice</td><td>closable</td><td>closable</td><td>yes</td></tr>
+            <tr><td>Test you must keep forever to stay honest</td><td>numpy-vs-torch self-test</td><td>none</td><td>6 parity tests</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The second row is the important one. Under A the code is one file, but it runs under two libraries that agree on names and quietly disagree on details. A method that exists on torch tensors and not on numpy arrays works on the GPU and raises on the CPU. A 0-d value promotes to float32 under torch and float64 under numpy. A test would catch all of it, but you would maintain that test and that discipline for the life of the repo. It is the same shape of problem you are trying to remove, in miniature.</p>
+
+      <div class="callout steel">
+        <p class="k">A correction made along the way</p>
+        <p>An earlier version of this analysis claimed the raw <code>torch</code> module could stand in as the array namespace with no adapter layer. The research pass showed that is wrong. SciPy and scikit-learn both go through <code>array_api_compat</code>, which patches about 90 torch names to fix scalar promotion, <code>axis</code> versus <code>dim</code>, and functions that return tuples. Raw torch misses 23 of the standard's functions. The standard also deliberately has no random number generation; scikit-learn draws in numpy and copies to the device, which would not work for our 500&nbsp;Hz sensor noise on 1,024 robots. Option A would need the compatibility layer, strict-mode tests, and a two-backend random shim.</p>
+      </div>
+
+      <h3>What B costs</h3>
+      <p>Torch has a fixed overhead per operation that numpy does not. Two measurements, both on this machine's CPU:</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>One motor-law tick, ten elementary operations</th><th class="n">µs</th></tr></thead>
+          <tbody>
+            <tr><td>Python floats</td><td class="n">0.16</td></tr>
+            <tr><td>numpy on Python floats, which is today's CPU path</td><td class="n">1.8</td></tr>
+            <tr><td>numpy arrays of length 1, option A</td><td class="n">4.1</td></tr>
+            <tr class="pick"><td>torch tensors of length 1, option B</td><td class="n">12.0</td></tr>
+            <tr><td>numpy arrays of length 7</td><td class="n">4.0</td></tr>
+            <tr><td>torch tensors of length 7</td><td class="n">11.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The research agent measured a smaller gap on 12-element float32 tensors with one thread: about 0.5 to 0.8&nbsp;µs per operation for torch, two to three times numpy, and at a batch of 1,024 torch wins. Either way a hundred-operation physics substep costs well under a millisecond, the policy loop runs at 100&nbsp;Hz, and a whole CPU environment step should land at roughly twice today's cost because the physics engine and the Gymnasium loop are unchanged. Crossplay at a hundred thousand steps would gain about a minute. The CPU torch package is already installed in the default environment for reading checkpoints, so nothing new is pulled in.</p>
+
+      <p><strong>Recommendation: B.</strong> Its cost is measured and small. Its precedent is direct. And it makes the CPU oracle and the GPU trainer execute the identical code path, not merely identical source: every rounding rule, every dtype promotion, every masked branch is the same object in both. A parity test can only sample that agreement. B makes it structural.</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="field">
+      <h2><span class="num">4</span> What the field does</h2>
+      <p>Four research passes looked at how established robotics RL projects split engine code from plant code, and how they stop the observation pipeline from drifting between training, validation and the robot. Sources are in section 9.</p>
+
+      <h3>The plan has three independent precedents</h3>
+      <ul>
+        <li><strong>Isaac Lab and mjlab are option B.</strong> Their actuator classes take <code>num_envs</code> and <code>device</code> and hold <code>[num_envs, …]</code> state. The noise models are the same shape. Both frameworks run and test those classes at one environment on the CPU. Their reward and observation terms read only an engine-neutral data container, which is why Isaac Lab could swap its physics engine for Newton without rewriting a single term. <a href="#ref-isaac">[refs]</a></li>
+        <li><strong>MuJoCo Playground is the same idea by a different mechanism.</strong> Noise, randomization, delays and reward are written as single-robot JAX functions. An outer <code>vmap</code> runs them at a batch of 1 or 4,096. One implementation, two scales. <a href="#ref-playground">[refs]</a></li>
+        <li><strong>Upkie's C++ spine is the sim-versus-robot half.</strong> One observer pipeline sits behind two interfaces, Bullet and the real hardware, so the observation dictionary is identical by construction. <a href="#ref-upkie">[refs]</a></li>
+      </ul>
+      <p>What has no exact precedent is using the trainer's plant code as the CPU oracle. Nobody runs their training-time observation code on a robot either. We do not need to, because the firmware consumes only the ONNX file.</p>
+
+      <h3>The precedent, in their own code</h3>
+      <p>These are verbatim excerpts from the main branches on 14 September 2026, with line numbers. Each one shows a piece of the shape option B proposes: a constructor that takes the number of robots and a device, state allocated as <code>[num_envs, …]</code>, a step written as plain tensor math, and the engine kept behind a data container.</p>
+
+      <div class="snip">
+        <p class="cap">1 · the constructor takes num_envs and device</p>
+<pre><code>def __init__(
+    self,
+    cfg: ActuatorBaseCfg,
+    joint_names: list[str],
+    joint_ids: slice | torch.Tensor,
+    num_envs: int,
+    device: str,
+    stiffness: torch.Tensor | float = 0.0,
+    damping: torch.Tensor | float = 0.0,
+    ...
+self.computed_effort = torch.zeros(self._num_envs, self.num_joints, device=self._device)
+self.applied_effort = torch.zeros_like(self.computed_effort)</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_base.py#L113-L121">actuator_base.py lines 113–121</a> and <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_base.py#L219-L220">219–220</a>. Every actuator model in the framework inherits this.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">2 · the step is plain tensor math, no engine in sight</p>
+<pre><code>def compute(
+    self, control_action: ArticulationActions, joint_pos: torch.Tensor, joint_vel: torch.Tensor
+) -&gt; ArticulationActions:
+    # compute errors
+    error_pos = control_action.joint_positions - joint_pos
+    error_vel = control_action.joint_velocities - joint_vel
+    # calculate the desired joint torques
+    self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
+    # clip the torques based on the motor limits
+    self.applied_effort = self._clip_effort(self.computed_effort)</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_pd.py#L186-L195">actuator_pd.py lines 186–195</a>, <code>IdealPDActuator.compute</code>. The DC motor and the learned actuator nets are subclasses of this same class.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">3 · the delay line is per-robot state on the same device</p>
+<pre><code>self.positions_delay_buffer = DelayBuffer(cfg.max_delay, self._num_envs, device=self._device)</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_pd.py#L329">actuator_pd.py line 329</a>, <code>DelayedPDActuator.__init__</code>. This is our <code>VecDelayLine</code>, in their codebase.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">4 · sensor noise has the identical shape</p>
+<pre><code>class NoiseModel:
+    """Base class for noise models."""
+
+    def __init__(self, noise_model_cfg: noise_cfg.NoiseModelCfg, num_envs: int, device: str):
+        ...
+        self._num_envs = num_envs
+        self._device = device
+...
+self._bias = torch.zeros((num_envs, 1), device=self._device)</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/utils/noise/noise_model.py#L107-L120">noise_model.py lines 107–120</a> and <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/utils/noise/noise_model.py#L157">157</a>. mjlab's copy is byte-for-byte the same idea: <a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/utils/noise/noise_model.py#L15-L20">noise_model.py lines 15–20</a> and <a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/utils/noise/noise_model.py#L58">58</a>.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">5 · the same class is tested at one robot on the CPU and on CUDA</p>
+<pre><code>@pytest.mark.parametrize("num_envs", [1, 2])
+@pytest.mark.parametrize("num_joints", [1, 2])
+@pytest.mark.parametrize("device", ["cuda:0", "cpu"])
+@pytest.mark.parametrize("usd_default", [False, True])
+def test_ideal_pd_actuator_init_minimum(num_envs, num_joints, device, usd_default):</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/test/actuators/test_ideal_pd_actuator.py#L22-L26">test_ideal_pd_actuator.py lines 22–26</a>. This is the exact claim behind option B: one implementation, n&nbsp;=&nbsp;1 on the CPU, n&nbsp;&gt;&nbsp;1 on the GPU, same test.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">6 · reward and observation terms read a data container, never the engine</p>
+<pre><code>def base_lin_vel(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -&gt; torch.Tensor:
+    """Root linear velocity in the asset's root frame."""
+    # extract the used quantities (to enable type-hinting)
+    asset: RigidObject = env.scene[asset_cfg.name]
+    return asset.data.root_lin_vel_b</code></pre>
+        <p class="src">Isaac Lab, <a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/envs/mdp/observations.py#L54-L58">envs/mdp/observations.py lines 54–58</a>. Because terms only touch <code>asset.data</code>, the physics engine underneath could be swapped for Newton without rewriting them. Our adapters play the role of <code>asset.data</code>.</p>
+      </div>
+
+      <div class="snip">
+        <p class="cap">7 · mjlab: the engine adapter is four lines</p>
+<pre><code>def initialize(
+    self,
+    mj_model: mujoco.MjModel,
+    model: mjwarp.Model,
+    data: mjwarp.Data,
+    device: str,
+) -&gt; None:
+    """...
+      device: Device for tensor operations (e.g., "cuda", "cpu").
+    """</code></pre>
+<pre><code>def _apply_actuator_controls(self) -&gt; None:
+    self._builtin_group.apply_controls(self._data)
+    self._fused_actuator_group.apply_controls(self._data)
+    for act in self._custom_actuators:
+      command = act.get_command(self._data)
+      command = act.apply_delay(command)
+      self._data.write_ctrl(act.compute(command), act.ctrl_ids)</code></pre>
+        <p class="src">mjlab, <a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/actuator/actuator.py#L269-L285">actuator/actuator.py lines 269–285</a> and <a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/entity/entity.py#L1335-L1341">entity/entity.py lines 1335–1341</a>. Read the command, apply the delay, compute, write to the engine. That loop is the whole of what our two adapters would do around the actuation pipeline.</p>
+      </div>
+
+      <div class="snip ours">
+        <p class="cap">8 · and our own torch twin already has this shape</p>
+<pre><code>class VecWheelVoltageActuator:
+    ...
+    def __init__(self, cfg, num_envs, device="cpu", dtype=torch.float32,
+                 generator=None):
+        ...
+        self.kt_over_R = pw(wm["kt_over_R"])      # [num_envs, 2]
+    ...
+    def torque(self, v_cmd, omega, vbat):</code></pre>
+<pre><code>class VecPitchFilter:
+    def __init__(self, num_envs, tau_s, acc_gate_g, device="cpu",
+                 dtype=torch.float32, acc_lateral_gate_g=None):
+    ...
+    def reset(self, env_ids, seed_deg):
+        self.pitch[env_ids] = seed_deg.to(self.pitch.dtype)</code></pre>
+        <p class="src">This repository, <span class="file">wlbot_mjlab/actuators/wheel_voltage.py</span> lines 22–49 and <span class="file">wlbot_mjlab/tasks/mdp/pitch_filter.py</span> lines 36–54. The GPU twins were written to Isaac Lab's pattern from the start. Option B is not a rewrite of them. It is moving them into wlbot, deleting the numpy copies, and running them at n&nbsp;=&nbsp;1 on the CPU, which the Isaac Lab test above shows is a supported way to use this shape.</p>
+      </div>
+
+      <div class="callout drift">
+        <p class="k">The Upkie cautionary tale</p>
+        <p>Upkie is the project whose reward shape we borrowed. Its C++ spine is the clean design. Then, from version 9, a Python PyBullet backend was added that rebuilds the same plant model, kept in sync "by convention". The C++ path applies gyro and accelerometer noise. The Python path does not. Nobody wrote that down as a decision. It is exactly a change-one-file-not-the-other outcome, in the project we learned from.</p>
+      </div>
+
+      <h3>How projects prevent drift, ranked by how much they remove</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Pattern</th><th>Who</th><th>What it removes</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill bad">common</span> Hand-copy the observation per target, no tests</td><td>humanoid-gym, unitree_rl_gym, booster_gym, walk-these-ways</td><td>nothing</td></tr>
+            <tr><td>Export a declarative config from the training env; a C++ mirror consumes it</td><td>unitree_rl_lab, Isaac Lab IO descriptors</td><td>layout drift only, not math</td></tr>
+            <tr><td>Bake the normalizer into the ONNX and test export parity</td><td>Isaac Lab rsl_rl exporter, Playground, Open Duck, go2-phoenix</td><td>normalization drift</td></tr>
+            <tr><td>Put the whole observation assembly inside the exported graph</td><td>K-Scale kinfer</td><td>all observation drift</td></tr>
+            <tr><td>Validation sim speaks the robot's own interface</td><td>unitree_mujoco, ROBOTIS, kos-sim, rl_sar</td><td>the sim2sim copy</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Two things stand out. First, the most common practice is the worst one, and it has post-mortems: humanoid-gym's sim2sim script omits the default-pose subtraction that training applies; go2-phoenix's audit found every export before a certain date had silently dropped normalization; rl_sar's joint order was wrong until a release fixed it. Second, our existing cross-engine parity tests are already ahead of common practice. The research found no other project with a test of observation assembly itself.</p>
+      <p>No project unifies the plant model, meaning motor, sensors, estimators and delays, across two engines. The field either randomizes over the mismatch or runs one plant. Option B goes further than the field there, which is fine, because it is the same technique applied one layer down.</p>
+
+      <h3>One idea we had not considered</h3>
+      <p>K-Scale traces a <code>step(raw_sensors, carry)</code> function into the ONNX, so the runtime feeds raw sensor values and the graph itself carries the scaling, the filters and the history. For us that would move the observation assembler out of the C firmware entirely. It is a real option for the last remaining drift surface, the C assembler on the firmware branch versus <span class="file">wlbot/obs.py</span>. It also changes the export contract and sits on the firmware boundary, so it is a separate decision after this one, not part of it.</p>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="proposal">
+      <h2><span class="num">5</span> The proposed architecture</h2>
+      <p>Option B lets the unification go one level higher than the models. The order of operations is also written twice today: the CPU env's step loop senses, ticks the yaw filter, pushes the delay ring, reads it, assembles, and keeps a two-step rate history for the jerk term. The mjlab actuator hook, the observation term and the reward term do the same sequence in three classes, with their own copy of that history. Change the sensor order in one and the other drifts, and no reward diff would show it.</p>
+      <p>So wlbot should own two pipelines, and each engine becomes a wrapper around them.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 900 620" role="img" aria-label="Three columns. Left, the PyBullet adapter for one robot. Centre, wlbot holding a sense pipeline, the policy, an actuation pipeline and the reward. Right, the mjlab adapter for 1024 robots. Both adapters send true state into the sense pipeline and receive torques from the actuation pipeline. The policy is exported as an ONNX file to the robot firmware below.">
+          <defs>
+            <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+            <marker id="arr2s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- headers -->
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="currentColor" text-anchor="middle">
+            <text x="120" y="40">wlbot_bullet/  ·  PyBullet  ·  n = 1</text>
+            <text x="450" y="40">wlbot/  ·  one implementation</text>
+            <text x="780" y="40">wlbot_mjlab/  ·  MuJoCo Warp  ·  n = 1024</text>
+          </g>
+
+          <!-- left adapter -->
+          <rect x="30" y="60" width="180" height="465" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">
+            <text x="45" y="86" font-family="Archivo, Helvetica, Arial, sans-serif" font-weight="600">adapter</text>
+            <text x="45" y="112">reads the engine's state</text>
+            <text x="45" y="136">puts it in tensors,</text>
+            <text x="45" y="152">shape [1, …]</text>
+            <text x="45" y="178">hands torques back</text>
+            <text x="45" y="204">applies the drawn masses,</text>
+            <text x="45" y="220">friction and wheel radius</text>
+            <text x="45" y="246">reorders the quaternion</text>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor" opacity="0.7">
+            <text x="45" y="470">Gymnasium loop</text>
+            <text x="45" y="488">float64, the oracle</text>
+            <text x="45" y="506">URDF, Bullet client</text>
+          </g>
+
+          <!-- right adapter -->
+          <rect x="690" y="60" width="180" height="465" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">
+            <text x="705" y="86" font-family="Archivo, Helvetica, Arial, sans-serif" font-weight="600">adapter</text>
+            <text x="705" y="112">reads the engine's state</text>
+            <text x="705" y="136">puts it in tensors,</text>
+            <text x="705" y="152">shape [1024, …]</text>
+            <text x="705" y="178">hands torques back</text>
+            <text x="705" y="204">applies the drawn masses,</text>
+            <text x="705" y="220">friction and wheel radius</text>
+            <text x="705" y="246">per-world model fields</text>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor" opacity="0.7">
+            <text x="705" y="470">mjlab hook and terms</text>
+            <text x="705" y="488">float32, the trainer</text>
+            <text x="705" y="506">MJCF, CUDA</text>
+          </g>
+
+          <!-- centre: wlbot -->
+          <rect x="270" y="60" width="360" height="465" fill="none" style="stroke:var(--accent)" stroke-width="2"/>
+
+          <!-- sense pipeline -->
+          <rect x="290" y="80" width="280" height="180" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="300" y="98" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">sense pipeline, ticked at 500 Hz</text>
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="305" y="110" width="250" height="24"/>
+            <rect x="305" y="146" width="250" height="24"/>
+            <rect x="305" y="182" width="250" height="24"/>
+            <rect x="305" y="218" width="250" height="24"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">
+            <text x="315" y="126">sensors: gyro filter, encoder, noise</text>
+            <text x="315" y="162">estimators: pitch and yaw filters</text>
+            <text x="315" y="198">observation delay ring</text>
+            <text x="315" y="234">assembler → 40 numbers, 100 Hz</text>
+          </g>
+          <g stroke="currentColor" stroke-width="1" marker-end="url(#arr2s)">
+            <line x1="430" y1="134" x2="430" y2="145"/>
+            <line x1="430" y1="170" x2="430" y2="181"/>
+            <line x1="430" y1="206" x2="430" y2="217"/>
+          </g>
+
+          <!-- policy -->
+          <line x1="430" y1="260" x2="430" y2="279" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <rect x="380" y="280" width="120" height="28" fill="none" style="stroke:var(--accent)" stroke-width="1.5"/>
+          <text x="440" y="298" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">policy (MLP)</text>
+          <line x1="430" y1="308" x2="430" y2="327" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr2)"/>
+
+          <!-- actuation pipeline -->
+          <rect x="290" y="328" width="280" height="150" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="300" y="346" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="currentColor">actuation pipeline, ticked at 500 Hz</text>
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="305" y="356" width="250" height="24"/>
+            <rect x="305" y="386" width="250" height="24"/>
+            <rect x="305" y="416" width="250" height="24"/>
+            <rect x="305" y="446" width="250" height="24"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">
+            <text x="315" y="372">mixer: (U, u_y) → left, right volts</text>
+            <text x="315" y="402">action delay line</text>
+            <text x="315" y="432">battery sag + motor law → torque</text>
+            <text x="315" y="462">leg servo model</text>
+          </g>
+
+          <!-- reward -->
+          <rect x="290" y="490" width="280" height="26" fill="none" stroke="currentColor" stroke-width="1"/>
+          <text x="430" y="507" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">reward, scored on the odometry the policy sees</text>
+
+          <!-- adapter arrows -->
+          <g stroke="currentColor" stroke-width="1.3" marker-end="url(#arr2)">
+            <line x1="210" y1="160" x2="268" y2="160"/>
+            <line x1="270" y1="410" x2="212" y2="410"/>
+            <line x1="690" y1="160" x2="632" y2="160"/>
+            <line x1="630" y1="410" x2="688" y2="410"/>
+          </g>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" fill="currentColor" text-anchor="middle">
+            <text x="240" y="151">true state</text>
+            <text x="240" y="402">torques</text>
+            <text x="660" y="151">true state</text>
+            <text x="660" y="402">torques</text>
+          </g>
+
+          <!-- onnx export -->
+          <polyline points="500,294 590,294 590,562" fill="none" style="stroke:var(--accent)" stroke-width="1.3" marker-end="url(#arr2)"/>
+          <text x="597" y="545" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" style="fill:var(--accent)">ONNX</text>
+          <rect x="270" y="565" width="360" height="44" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="450" y="591" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">robot firmware: runs the ONNX, builds observations in C</text>
+        </svg>
+        </div>
+        <figcaption>Proposed. The plant lives once in wlbot as two batched pipelines and a reward. Each engine reads its own state into tensors, calls the pipelines, and writes torques back. The two adapters do the same four things; only the batch size and the engine API differ. The firmware only ever sees the exported policy.</figcaption>
+      </figure>
+
+      <h3>One policy step, from the inside</h3>
+      <p>The policy acts at 100&nbsp;Hz. Between two actions the physics engine and the plant model tick five times at 500&nbsp;Hz, which is the firmware's own rate. Both pipelines run inside every substep; the observation is assembled and the reward scored once at the end.</p>
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 900 300" role="img" aria-label="A bar labelled one policy step of 10 milliseconds is divided into five substeps of 2 milliseconds. The first substep is expanded into five stages: the physics engine advances, the adapter reads state into tensors, the sense pipeline ticks, the actuation pipeline ticks, and the adapter writes torques. The other four substeps repeat the same stages. After the fifth substep the observation is assembled, the reward scored, and the policy picks the next action.">
+          <defs>
+            <marker id="arrH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" fill="currentColor">
+            <text x="60" y="28">action a<tspan font-size="8" dy="3">t</tspan><tspan dy="-3"> is applied</tspan></text>
+            <text x="840" y="28" text-anchor="end">observation o<tspan font-size="8" dy="3">t+1</tspan><tspan dy="-3"> and reward r</tspan><tspan font-size="8" dy="3">t</tspan></text>
+          </g>
+          <rect x="60" y="38" width="780" height="26" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="450" y="55" text-anchor="middle" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="currentColor">one policy step  ·  10 ms  ·  100 Hz</text>
+
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="60" y="84" width="156" height="28"/><rect x="216" y="84" width="156" height="28"/><rect x="372" y="84" width="156" height="28"/><rect x="528" y="84" width="156" height="28"/><rect x="684" y="84" width="156" height="28"/>
+          </g>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="10" fill="currentColor" text-anchor="middle">
+            <text x="138" y="102">substep 1  ·  2 ms  ·  500 Hz</text>
+            <text x="294" y="102">substep 2</text>
+            <text x="450" y="102">substep 3</text>
+            <text x="606" y="102">substep 4</text>
+            <text x="762" y="102">substep 5</text>
+          </g>
+          <line x1="138" y1="112" x2="138" y2="128" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrH)"/>
+
+          <!-- expanded substep -->
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="60" y="130" width="330" height="22"/>
+            <rect x="60" y="158" width="330" height="22"/>
+            <rect x="60" y="242" width="330" height="22"/>
+          </g>
+          <g fill="none" style="stroke:var(--accent)" stroke-width="1.5">
+            <rect x="60" y="186" width="330" height="22"/>
+            <rect x="60" y="214" width="330" height="22"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor">
+            <text x="70" y="145">1. physics engine advances 2 ms</text>
+            <text x="70" y="173">2. adapter: read true state into tensors [n, …]</text>
+            <text x="70" y="201">3. sense pipeline: sensors → estimators → delay ring</text>
+            <text x="70" y="229">4. actuation pipeline: delayed volts → battery → motor law</text>
+            <text x="70" y="257">5. adapter: write wheel torques to the engine</text>
+          </g>
+
+          <rect x="410" y="130" width="430" height="134" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="625" y="192" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">substeps 2 to 5 repeat the same five stages</text>
+          <text x="625" y="210" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor" opacity="0.75">the pipelines tick every substep, at the firmware's 500 Hz</text>
+
+          <rect x="60" y="274" width="780" height="22" fill="none" style="stroke:var(--accent)" stroke-width="1.5"/>
+          <text x="450" y="289" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor">after substep 5: the assembler builds the 40-number observation, the reward is scored, the policy picks a<tspan font-size="8" dy="3">t+1</tspan></text>
+        </svg>
+        </div>
+        <figcaption>Where the pipelines run. Stages 3 and 4 are the shared code from the previous figure. Stages 2 and 5 are the whole job of an engine adapter. Stage 1 is the engine itself.</figcaption>
+      </figure>
+
+      <h3>What each package keeps</h3>
+      <div class="keeps">
+        <div class="own">
+          <h4>wlbot/</h4>
+          <ul>
+            <li>observation assembler, reward, jerk history</li>
+            <li>pitch and yaw estimators, ported from firmware</li>
+            <li>motor law, battery, leg servo</li>
+            <li>sensor noise and filters</li>
+            <li>both delay rings</li>
+            <li>domain randomization draw laws</li>
+            <li>push wrench, leg kinematics, firmware PD</li>
+            <li>the sense and actuation pipelines</li>
+            <li>deploy, crossplay, the PD sanity gate</li>
+          </ul>
+        </div>
+        <div>
+          <h4>wlbot_bullet/</h4>
+          <ul>
+            <li>the URDF and meshes</li>
+            <li>the PyBullet backend</li>
+            <li>the Gymnasium env, running the pipelines at n&nbsp;=&nbsp;1</li>
+            <li>parity reference generators</li>
+          </ul>
+        </div>
+        <div>
+          <h4>wlbot_mjlab/</h4>
+          <ul>
+            <li>the MJCF</li>
+            <li>the single-robot MuJoCo backend</li>
+            <li>the mjlab actuator hook</li>
+            <li>term classes: obs, reward, termination, events, commands</li>
+            <li>the env config, training, evaluation</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Conventions the adapters would follow</h3>
+      <p class="small">Proposed, to be confirmed in the design step.</p>
+      <ul>
+        <li>Every quantity is a tensor with a leading batch dimension, <code>[n, …]</code>, even when n is 1.</li>
+        <li>Quaternions are <code>(w, x, y, z)</code>, MuJoCo's order. PyBullet's adapter reorders at the boundary.</li>
+        <li>SI units at the policy boundary. Degrees inside the firmware estimators, as the firmware has them.</li>
+        <li>float64 on the CPU oracle, float32 on the GPU trainer, chosen at construction, as today.</li>
+        <li>One <code>torch.Generator</code> per environment for every random draw. Same seed, same episode, on both engines.</li>
+        <li>Domain randomization produces a params dict of tensors. Each adapter applies the plant fields its own way and hands the actuator and sensor fields to the pipelines.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="migration">
+      <h2><span class="num">6</span> How we get there</h2>
+      <p>One model per commit. Before a torch twin is deleted, its existing parity test runs with the unified module in both slots. The old tests are the oracle for the migration itself, then they retire.</p>
+
+      <figure>
+        <div class="frame">
+        <svg viewBox="0 0 760 270" role="img" aria-label="Three stages. Before: a numpy twin and a torch twin both feed a parity test. During one commit: the new module and each old twin feed the same parity test, so the new module is checked against both. After: one module remains; the two twins and the test are crossed out.">
+          <defs>
+            <marker id="arrI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker>
+          </defs>
+          <g font-family="Archivo, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="currentColor" text-anchor="middle">
+            <text x="140" y="30">before</text>
+            <text x="380" y="30">during one commit</text>
+            <text x="620" y="30">after</text>
+          </g>
+
+          <!-- before -->
+          <g fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="45" y="60" width="90" height="28"/><rect x="145" y="60" width="90" height="28"/><rect x="95" y="130" width="90" height="28"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor" text-anchor="middle">
+            <text x="90" y="78">numpy twin</text><text x="190" y="78">torch twin</text><text x="140" y="148">parity test</text>
+          </g>
+          <line x1="90" y1="88" x2="125" y2="128" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrI)"/>
+          <line x1="190" y1="88" x2="155" y2="128" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrI)"/>
+          <text x="140" y="250" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">two copies, one test between them</text>
+
+          <!-- during -->
+          <rect x="330" y="60" width="100" height="28" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="380" y="78" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor">new module</text>
+          <rect x="330" y="130" width="100" height="28" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <text x="380" y="148" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor">same parity test</text>
+          <g fill="none" stroke="currentColor" stroke-width="1" opacity="0.7">
+            <rect x="270" y="200" width="90" height="28"/><rect x="400" y="200" width="90" height="28"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.8">
+            <text x="315" y="218">old numpy twin</text><text x="445" y="218">old torch twin</text>
+          </g>
+          <line x1="380" y1="88" x2="380" y2="128" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrI)"/>
+          <line x1="315" y1="200" x2="350" y2="160" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrI)"/>
+          <line x1="445" y1="200" x2="410" y2="160" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrI)"/>
+          <text x="380" y="250" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">the new module must match each old twin</text>
+
+          <!-- after -->
+          <rect x="560" y="60" width="120" height="28" fill="none" style="stroke:var(--accent)" stroke-width="1.6"/>
+          <text x="620" y="78" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="10.5" fill="currentColor">one module</text>
+          <g fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.45">
+            <rect x="525" y="130" width="85" height="24"/><rect x="630" y="130" width="85" height="24"/><rect x="577" y="190" width="86" height="24"/>
+          </g>
+          <g font-family="Source Serif 4, Georgia, serif" font-size="10" fill="currentColor" text-anchor="middle" opacity="0.45">
+            <text x="567" y="146">numpy twin</text><text x="672" y="146">torch twin</text><text x="620" y="206">parity test</text>
+          </g>
+          <g style="stroke:var(--drift)" stroke-width="1.4">
+            <line x1="525" y1="130" x2="610" y2="154"/><line x1="630" y1="130" x2="715" y2="154"/><line x1="577" y1="190" x2="663" y2="214"/>
+          </g>
+          <text x="620" y="250" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="currentColor">twins deleted, test retired</text>
+        </svg>
+        </div>
+        <figcaption>How one model migrates. The existing parity test is reused with the new module in one slot and each old twin in the other, so nothing is deleted until the new code has matched both. Then the twins and the test go in the same commit.</figcaption>
+      </figure>
+
+      <ol class="steps">
+        <li><strong>Reward.</strong> The smallest file. Proves the pattern end to end.</li>
+        <li><strong>Motor, battery, leg servo, delay line.</strong> Measure the whole CPU environment step here and write the number down.</li>
+        <li><strong>Sensors and the observation delay ring.</strong></li>
+        <li><strong>Pitch filter and the estimator model</strong> that wraps it.</li>
+        <li><strong>Yaw filter and its warm start.</strong></li>
+        <li><strong>Observation assembler.</strong></li>
+        <li><strong>Push wrench.</strong></li>
+        <li><strong>Domain randomization draws</strong>, and the two single-robot backends switch from a perturbed config dict to the params dict.</li>
+        <li><strong>The sense and actuation pipelines</strong>, lifting the order of operations out of the CPU env and the mjlab hook so it exists once.</li>
+      </ol>
+
+      <h3>Tests afterwards</h3>
+      <ul>
+        <li><strong>Deleted:</strong> the six model-parity tests in <span class="file">wlbot/cross_engine/</span> for the actuator, sensors, MDP, pitch filter, yaw filter and randomization. Their absolute-value checks, such as the analytic reward values and the encoder step size, move next to the modules they pin.</li>
+        <li><strong>Kept:</strong> the model, passive-dynamics, PD-gate, linkage, obs-delay, environment and ablation tests. Those compare the two physics engines, which remains a real question.</li>
+        <li><strong>New:</strong> nothing is required for the unification itself. A golden replay test that runs a recorded raw-sensor sequence through the pipelines and through the exported ONNX would be the field's best guard for the firmware boundary; we already keep hardware captures for the yaw filter.</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="costs">
+      <h2><span class="num">7</span> Costs and open questions</h2>
+      <ul>
+        <li><strong>The CPU tools get slower.</strong> Roughly twice per environment step by estimate. Step 2 of the migration measures it. If crossplay time ever matters, that is where to look.</li>
+        <li><strong>wlbot depends on torch.</strong> The default environment already ships CPU torch. The firmware only takes the ONNX. Nothing in the deploy path changes.</li>
+        <li><strong>Batched code reads less like a spec.</strong> <code>where(acc_ok, …)</code> replaces <code>if acc_ok:</code>. The firmware is the source of the estimators, not the target, and the docstrings keep the prose formulas.</li>
+        <li><strong>CPU random seeds change.</strong> The GPU code is the surviving code, so GPU seeds keep reproducing. CPU seeds from before the migration will not, and the CPU is the oracle, not the trained artifact.</li>
+        <li><strong>mjlab on <code>device="cpu"</code> still initializes CUDA</strong> unless the GPU is hidden. This touches only the single-robot MuJoCo backend on a machine without a GPU.</li>
+        <li><strong>Isaac Lab's development branch is moving PD execution into the solver</strong> for speed. That is a counter-signal only if torch actuator overhead at 1,024 robots ever becomes the bottleneck, and mjlab's design shows it need not.</li>
+        <li><strong>The firmware's C observation assembler is still a second copy</strong> of <span class="file">wlbot/obs.py</span>. This plan does not touch it. The kinfer-style option in section 4 would, and is a later decision.</li>
+      </ul>
+    </section>
+
+    <hr class="sep">
+
+    <!-- ============================================================ -->
+    <section id="glossary">
+      <h2><span class="num">8</span> Words used here</h2>
+      <dl class="gloss">
+        <dt>plant</dt>
+        <dd>Control-engineering word for the thing being controlled, here the robot plus everything between the policy and the physics: motors, battery, sensors, estimators, delays. The physics engine simulates the body; the plant model simulates the rest.</dd>
+        <dt>oracle</dt>
+        <dd>A slow, trusted reference you compare the fast thing against. Our PyBullet environment plays that role for the GPU trainer.</dd>
+        <dt>batched, vectorized</dt>
+        <dd>Holding one column of numbers per quantity, one entry per robot, and applying every operation to the whole column at once. It is how a GPU simulates a thousand robots at the cost of one.</dd>
+        <dt>mask style</dt>
+        <dd>Branching with a column of true and false values and <code>where</code>, instead of an <code>if</code>. Needed because a thousand robots take different branches on the same line.</dd>
+        <dt>policy step, physics substep</dt>
+        <dd>The policy acts at 100&nbsp;Hz. Between two actions the physics and the plant model tick five times at 500&nbsp;Hz, the firmware's own rate.</dd>
+        <dt>sim2sim, sim2real</dt>
+        <dd>Checking a policy trained in one simulator inside a second simulator, and then on the real robot. Each transfer is a chance for the observation pipeline to differ.</dd>
+        <dt>domain randomization</dt>
+        <dd>Drawing a slightly different robot each episode: heavier, stickier wheels, weaker motor, later commands. The policy learns to cope with the spread instead of one exact plant.</dd>
+        <dt>parity test</dt>
+        <dd>A test that drives two implementations with identical inputs and asserts they agree. It catches drift after it happens.</dd>
+        <dt>delay line, zero-order hold</dt>
+        <dd>A ring buffer that returns the value from some milliseconds ago. Zero-order hold means it repeats the last value until a new one arrives, which is what real actuators and sensors do.</dd>
+        <dt>complementary filter</dt>
+        <dd>The firmware's way of estimating tilt: integrate the gyro for speed, pull gently toward the accelerometer's angle for stability. Both estimators here are ports of the firmware's own code.</dd>
+        <dt>ONNX</dt>
+        <dd>A portable file format for neural networks. The trained policy is exported to it and the firmware runs it. It is the only thing that crosses from this repository to the robot.</dd>
+        <dt>adapter, wrapper</dt>
+        <dd>A thin piece of code that translates between an engine's own API and the shared pipelines. It should contain no plant logic of its own.</dd>
+      </dl>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="refs" class="refs">
+      <h2><span class="num">9</span> References</h2>
+      <p class="small">Collected by four research passes on 14 September 2026. Framework claims were checked against the linked source files, not search snippets. Repository links point at the project; file paths are as found on that date and may move. A few projects named in the text had no stable link at the time and are listed by name only.</p>
+
+      <h3 id="ref-isaac">Isaac Lab and mjlab: batched models, engine-neutral terms</h3>
+      <ol>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_base.py">Isaac Lab, <code>actuator_base.py</code></a> <span class="note">· <code>ActuatorBase.__init__(cfg, joint_names, joint_ids, num_envs, device, …)</code>, all state <code>torch.zeros(num_envs, num_joints, device=…)</code>.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_pd.py">Isaac Lab, <code>actuator_pd.py</code></a> <span class="note">· ideal PD, DC motor with torque-speed clip, delayed PD with a per-env delay buffer.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/actuators/actuator_net.py">Isaac Lab, <code>actuator_net.py</code></a> <span class="note">· learned actuator nets loaded with <code>map_location=device</code>.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/utils/noise/noise_model.py">Isaac Lab, <code>noise_model.py</code></a> <span class="note">· <code>NoiseModel(cfg, num_envs, device)</code>, bias state <code>[num_envs, 1]</code>.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/managers/observation_manager.py">Isaac Lab, <code>observation_manager.py</code></a> <span class="note">· instantiates noise models with the env's <code>num_envs</code> and <code>device</code>.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab/isaaclab/envs/mdp/observations.py">Isaac Lab, <code>envs/mdp/observations.py</code></a> <span class="note">· every term reads <code>asset.data.*</code> and nothing engine-specific.</span></li>
+        <li><a href="https://isaac-sim.github.io/IsaacLab/main/source/tutorials/03_envs/register_rl_env_gym.html">Isaac Lab tutorial, registering an RL env</a> <span class="note">· "With the <code>--device cpu</code> flag, the simulation will run on the CPU. This is useful for debugging."</span></li>
+        <li><span class="note">Isaac Lab tests <code>source/isaaclab/test/actuators/test_ideal_pd_actuator.py</code>, <code>test_dc_motor.py</code>, <code>test_noise.py</code> · parametrized over <code>num_envs</code> in {1, 2} and <code>device</code> in {"cuda:0", "cpu"}.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/discussions/4339">Isaac Lab discussion #4339</a> <span class="note">· main branch frozen; Newton integration lives on develop.</span></li>
+        <li><a href="https://isaac-sim.github.io/IsaacLab/main/source/experimental-features/newton-physics-integration/index.html">Isaac Lab, Newton physics integration</a> <span class="note">· the multi-engine design.</span></li>
+        <li><a href="https://isaac-sim.github.io/IsaacLab/main/source/experimental-features/newton-physics-integration/solver-transitioning.html">Isaac Lab, transitioning solvers</a> <span class="note">· "the exact same USD files" are used; only the solver config changes.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/develop/source/isaaclab/isaaclab/assets/articulation/articulation_data.py">Isaac Lab develop, <code>articulation_data.py</code></a> <span class="note">· the data container became a factory over PhysX and Newton backends.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/develop/source/isaaclab/isaaclab/envs/mdp/observations.py">Isaac Lab develop, <code>envs/mdp/observations.py</code></a> <span class="note">· terms survived the engine swap with a one-token change to <code>.torch</code> accessors.</span></li>
+        <li><a href="https://arxiv.org/abs/2601.22074">mjlab paper, arXiv 2601.22074</a> <span class="note">· "mjlab adopts the manager-based API introduced by Isaac Lab."</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/actuator/actuator.py">mjlab, <code>actuator/actuator.py</code></a> <span class="note">· <code>initialize(mj_model, model, data, device)</code>, "Device for tensor operations (e.g., "cuda", "cpu")".</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/actuator/pd_actuator.py">mjlab, <code>actuator/pd_actuator.py</code></a> <span class="note">· the control law is plain torch.</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/entity/entity.py">mjlab, <code>entity/entity.py</code></a> <span class="note">· the engine adapter: get command, apply delay, compute, write ctrl.</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/sim/sim_data.py">mjlab, <code>sim/sim_data.py</code></a> <span class="note">· zero-copy warp-to-torch wrapper with an explicit CPU branch.</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/src/mjlab/envs/mdp/observations.py">mjlab, <code>envs/mdp/observations.py</code></a></li>
+        <li><a href="https://github.com/mujocolab/mjlab/blob/main/docs/source/faq.rst">mjlab FAQ</a> <span class="note">· "Passing <code>device="cpu"</code> puts all mjlab computation on the CPU"; evaluation works on macOS.</span></li>
+        <li><a href="https://github.com/mujocolab/mjlab/issues/949">mjlab issue #949</a> <span class="note">· CPU mode still initializes CUDA unless <code>CUDA_VISIBLE_DEVICES=""</code>.</span></li>
+      </ol>
+
+      <h3 id="ref-playground">MuJoCo Playground</h3>
+      <ol>
+        <li><a href="https://github.com/google-deepmind/mujoco_playground">mujoco_playground</a> <span class="note">· <code>_src/mjx_env.py</code> single-env <code>reset</code>/<code>step</code>; <code>_src/wrapper.py</code> applies Brax's <code>VmapWrapper</code>, literally <code>jax.vmap(self.env.step)</code>.</span></li>
+        <li><span class="note"><code>_src/locomotion/go1/joystick.py</code> · noise written once inside <code>_get_obs</code>, uniform per stream. <code>go1/randomize.py</code> · vmapped model edits, drawn once per env at wrapper construction. <code>manipulation/franka_emika_panda_robotiq/push_cube.py</code> · the only action and observation delay ring, <code>jp.roll</code> buffers.</span></li>
+        <li><span class="note"><code>experimental/brax_network_to_onnx.ipynb</code> · normalization baked into the ONNX graph. <code>experimental/sim2sim/play_go1_joystick.py</code> · observation re-assembled in numpy on CPU MuJoCo, no shared code with training.</span></li>
+        <li><a href="https://arxiv.org/abs/2502.08844">MuJoCo Playground paper, arXiv 2502.08844</a> <span class="note">· hardware runs C++ ros2-control with ONNX Runtime at 50 Hz and a separate model-based estimator.</span></li>
+      </ol>
+
+      <h3 id="ref-upkie">Upkie</h3>
+      <ol>
+        <li><a href="https://upkie.github.io/upkie/observations.html">Upkie documentation, observations</a> <span class="note">· the observer keys the spine adds, identical for sim and hardware.</span></li>
+        <li><a href="https://github.com/upkie/upkie">upkie/upkie</a> <span class="note">· <code>spines/bullet_spine.cpp</code> and <code>spines/pi3hat_spine.cpp</code> build the same <code>Spine</code> with different interfaces and the shared <code>spines/common/observers.h</code>. <code>upkie/cpp/interfaces/ImuUncertainty.h</code> · gyro and accel bias plus Gaussian noise on the C++ path. <code>upkie/envs/backends/pybullet_backend.py</code> · the Python re-implementation added in v9, without IMU noise. <code>upkie/envs/upkie_env.py</code> · reward is 0.0, left to wrappers.</span></li>
+        <li><a href="https://github.com/upkie/ppo_balancer">upkie/ppo_balancer</a> <span class="note">· <code>wrap_velocity_env.py</code> training-only noise and lag wrappers; <code>train.py</code> forks one Bullet spine per env; <code>run.py</code> deploys the same env stack unchanged.</span></li>
+        <li><a href="https://codeberg.org/upkie/rl_zoo3_balancer">upkie/rl_zoo3_balancer</a> <span class="note">· the current trainer, same wrappers re-homed, single-instance numpy.</span></li>
+      </ol>
+
+      <h3 id="ref-drift">Sim2sim and sim2real practice, and failure stories</h3>
+      <ol>
+        <li><a href="https://github.com/roboterax/humanoid-gym">humanoid-gym</a> <span class="note">· torch <code>compute_observations</code> for training, a separate numpy loop in <code>scripts/sim2sim.py</code> that omits the default-pose subtraction on some channels; no tests.</span></li>
+        <li><a href="https://github.com/unitreerobotics/unitree_rl_gym">unitree_rl_gym</a> <span class="note">· <code>deploy/deploy_mujoco/deploy_mujoco.py</code> and <code>deploy/deploy_real/deploy_real.py</code> each re-index the observation by hand from a YAML of scales.</span></li>
+        <li><a href="https://github.com/BoosterRobotics/booster_gym">booster_gym</a> <span class="note">· <code>play_mujoco.py</code> and <code>deploy/deploy.py</code> assemble state separately.</span></li>
+        <li><a href="https://github.com/Improbable-AI/walk-these-ways">walk-these-ways</a> <span class="note">· <code>go1_gym_deploy/envs/lcm_agent.py</code> imports nothing from the training env.</span></li>
+        <li><a href="https://github.com/unitreerobotics/unitree_rl_lab">unitree_rl_lab</a> <span class="note">· <code>utils/export_deploy_cfg.py</code> exports term dims, scales and history to YAML; a C++ observation manager consumes it and throws on an unregistered term. One binary runs against unitree_mujoco and the real robot.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/blob/main/source/isaaclab_rl/isaaclab_rl/rsl_rl/exporter.py">Isaac Lab, <code>rsl_rl/exporter.py</code></a> <span class="note">· <code>forward = self.actor(self.normalizer(x))</code>, the normalizer travels inside the export.</span></li>
+        <li><a href="https://github.com/apirrone/Open_Duck_Playground">Open Duck Playground</a> <span class="note">· <code>playground/common/export_onnx.py</code>, same baked-in normalization.</span></li>
+        <li><a href="https://github.com/kscalelabs/ksim">K-Scale ksim</a> and <a href="https://github.com/kscalelabs/kinfer">kinfer</a> <span class="note">· <code>examples/kbot/convert.py</code> traces <code>step_fn(joint_angles, …, gyroscope, command, carry)</code> using the task's own normalization functions; the runtime loads <code>init_fn.onnx</code> and <code>step_fn.onnx</code> and feeds raw sensors. <a href="https://github.com/kscalelabs/kos-sim">kos-sim</a> runs the same file in simulation over the same gRPC interface.</span></li>
+        <li><a href="https://github.com/unitreerobotics/unitree_mujoco">unitree_mujoco</a> <span class="note">· publishes the robot's own DDS messages so SDK programs run unchanged against the simulator.</span></li>
+        <li><a href="https://github.com/fan-ziqi/rl_sar">rl_sar</a> <span class="note">· one C++ <code>ComputeObservation</code> shared by Gazebo, MuJoCo and real targets. <a href="https://github.com/fan-ziqi/rl_sar/issues/96">Issue #96</a>: policies could not stand until a joint-mapping mismatch was fixed.</span></li>
+        <li><a href="https://github.com/isaac-sim/IsaacLab/issues/4383">Isaac Lab issue #4383</a> <span class="note">· custom joint order, "falls over in MuJoCo", unresolved at time of reading.</span></li>
+        <li><a href="https://github.com/google-deepmind/mujoco_playground/issues/270">mujoco_playground issue #270</a> <span class="note">· a sim2sim mismatch report.</span></li>
+        <li><a href="https://github.com/mochshultan/sim2real">mochshultan/sim2real</a> <span class="note">· leg-by-leg CAN order versus joint-by-joint policy order, fixed with explicit mapping tables and a MuJoCo sim2sim step.</span></li>
+        <li><span class="note">Named without a stable link: go2-phoenix's <code>verify_deploy.py</code> parity gate, added after an audit found every earlier export had dropped normalization; microduck_rl's README rule to deploy only the exported ONNX; ROBOTIS K1's MuJoCo hardware interface replacing the Dynamixel one with no simulation-specific copy of the control logic.</span></li>
+      </ol>
+
+      <h3 id="ref-xp">The array API question, option A</h3>
+      <ol>
+        <li><a href="https://numpy.org/doc/stable/reference/array_api.html">NumPy, array API standard compatibility</a> <span class="note">· the main namespace is compatible with the 2024.12 standard as of 2.3.</span></li>
+        <li><a href="https://numpy.org/doc/stable/release/2.0.0-notes.html">NumPy 2.0 release notes</a> <span class="note">· <code>numpy.array_api</code> removed; use <code>array-api-strict</code> for testing.</span></li>
+        <li><a href="https://github.com/pytorch/pytorch/issues/58743">PyTorch issue #58743</a> <span class="note">· the array API compliance tracker, open since 2021.</span></li>
+        <li><a href="https://data-apis.org/array-api-compat/supported-array-libraries.html">array-api-compat, supported libraries</a> <span class="note">· what is and is not wrapped for torch.</span></li>
+        <li><a href="https://data-apis.org/array-api-compat/">array-api-compat</a></li>
+        <li><a href="https://docs.scipy.org/doc/scipy/dev/api-dev/array_api.html">SciPy developer docs, array API support</a> <span class="note">· the production pattern: <code>xp = array_namespace(arr)</code>, explicit dtype and device, mandatory multi-backend tests.</span></li>
+        <li><a href="https://scikit-learn.org/stable/modules/array_api.html">scikit-learn, array API support</a> and <a href="https://blog.scikit-learn.org/updates/update-array-api/">the 2026 progress post</a>.</li>
+        <li><a href="https://discuss.scientific-python.org/t/array-api-compatibility-in-scikit-image/2316">scikit-image discussion</a> <span class="note">· still a draft proposal.</span></li>
+        <li><a href="https://data-apis.org/array-api/latest/API_specification/array_object.html">Array API, the array object</a> <span class="note">· methods like <code>.abs()</code> and <code>.sum()</code> are not part of the standard.</span></li>
+        <li><a href="https://numpy.org/neps/nep-0050-scalar-promotion.html">NEP 50, scalar promotion</a> and <a href="https://github.com/pytorch/pytorch/issues/59868">PyTorch issue #59868</a> <span class="note">· where numpy and torch promote differently.</span></li>
+        <li><a href="https://docs.pytorch.org/docs/main/generated/torch.set_default_dtype.html">torch default dtype</a> <span class="note">· float32, where numpy defaults to float64.</span></li>
+        <li><a href="https://data-apis.org/array-api/latest/design_topics/device_support.html">Array API, device support</a> and <a href="https://github.com/pytorch/pytorch/issues/150199">PyTorch issue #150199</a>.</li>
+        <li><a href="https://data-apis.org/array-api/latest/design_topics/copies_views_and_mutation.html">Array API, copies, views and mutation</a>.</li>
+        <li><a href="https://data-apis.org/array-api/latest/API_specification/generated/array_api.info.capabilities.html">Array API, capabilities</a> <span class="note">· boolean indexing is optional; <a href="https://docs.pytorch.org/docs/2.14/generated/torch.nonzero.html"><code>torch.nonzero</code></a> syncs host and device on CUDA.</span></li>
+        <li><a href="https://github.com/data-apis/array-api/issues/431">Array API issue #431</a> <span class="note">· random number generation will not be standardized.</span></li>
+        <li><a href="https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/utils/extmath.py">scikit-learn <code>extmath.py</code></a> <span class="note">· draws in numpy then <code>xp.asarray</code> to the device.</span></li>
+        <li><a href="https://data-apis.org/array-api-strict/">array-api-strict</a>.</li>
+      </ol>
+
+      <h3 id="ref-overhead">Torch small-operation overhead, option B</h3>
+      <ol>
+        <li><a href="https://github.com/pytorch/pytorch/issues/13049">PyTorch issue #13049</a> <span class="note">· 2018, about 4 µs of dispatch before a kernel launches.</span></li>
+        <li><a href="https://github.com/pytorch/pytorch/issues/41383">PyTorch issue #41383</a> <span class="note">· 2020, 5 to 7 µs per tiny op.</span></li>
+        <li><a href="https://discuss.pytorch.org/t/pytorch-tensor-slow-on-small-matrix-operations-large-overhead/67882">PyTorch forum, small matrix overhead</a> <span class="note">· 3×3 add, numpy under 1 µs versus torch 5 to 11 µs, in 2020.</span></li>
+        <li><a href="https://horace.io/brrr_intro.html">Horace He, "Making Deep Learning Go Brrrr"</a> <span class="note">· tiny tensors at roughly 3.5 µs per op through many layers of dispatch.</span></li>
+        <li><a href="https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/">PyTorch blog, CUDA graphs</a> <span class="note">· at small batch sizes CPU overhead can exceed GPU run time.</span></li>
+        <li><span class="note">Measured on this machine, 14 September 2026, torch 2.13 CPU, one thread: about 0.5 to 0.8 µs per elementary op on 12-element float32 tensors, two to three times numpy; torch faster than numpy at batch 1,024. Separately, one ten-op motor-law tick: 1.8 µs numpy on floats, 4.1 µs numpy length 1, 12.0 µs torch length 1.</span></li>
+      </ol>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="built">
+      <h2><span class="num">10</span> What was built</h2>
+      <p>The plan ran as written, one model per commit, each checked against the old code before its twin was deleted. Eight of the nine steps landed with exact or rounding-level agreement. The ninth, the orchestration, went in as three commits: the sense pipeline, the actuation pipeline, and one single-robot loop that the Gymnasium env wraps and crossplay drives.</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Step</th><th>Commit</th><th>Oracle check against the old code</th></tr></thead>
+          <tbody>
+            <tr><td>1. Reward</td><td><span class="file">40a993e</span></td><td>exact, float64, 7 weight sets</td></tr>
+            <tr><td>2. Motor, battery, servo, delay line</td><td><span class="file">f7c8a22</span></td><td>exact on six checks</td></tr>
+            <tr><td>3. Sensors, observation ring</td><td><span class="file">e21e1b3</span></td><td>exact on five channels over 400 ticks</td></tr>
+            <tr><td>4. Pitch estimator and its sequencing</td><td><span class="file">1fcbdc4</span></td><td>within 6e-14</td></tr>
+            <tr><td>5. Yaw estimator and warm start</td><td><span class="file">958ae30</span></td><td>bit-identical over 2000 ticks; hardware replay gate unchanged</td></tr>
+            <tr><td>6. Observation assembler</td><td><span class="file">97eaaaa</span></td><td>exact; ONNX export byte-identical</td></tr>
+            <tr><td>7. Push wrench, one quaternion helper</td><td><span class="file">80f6cec</span></td><td>within 3e-17</td></tr>
+            <tr><td>8. Domain randomization</td><td><span class="file">9f9edf8</span></td><td>same key set; 20,000-episode supports match, means within 0.84%</td></tr>
+            <tr><td>9a. Sense pipeline</td><td><span class="file">945a5f3</span></td><td>GPU eval at 1000 episodes matches the pre-migration commit</td></tr>
+            <tr><td>9b. Actuation pipeline</td><td><span class="file">4e8599a</span></td><td>same, two runs each side</td></tr>
+            <tr><td>9c. Single-robot loop</td><td><span class="file">d2c8d58</span></td><td>crossplay reproduces the previous numbers exactly</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Where the plan had to bend</h3>
+      <ul>
+        <li><strong>The batched end-to-end eval became the acceptance check.</strong> Step 9a shipped two defects that both test suites, both PD gates and single-robot crossplay all missed: the pipeline added the IMU lever-arm velocity a second time, and the reset-time observation fallback reported zero pitch. Only the GPU eval gates on a strong checkpoint at a thousand episodes caught them, as a six-point survival drop. Every later step ran that check, with the pre-migration commit as the reference: survival about 0.79, velocity error 0.115, yaw error 0.32.</li>
+        <li><strong>Three engine differences were resolved, not preserved.</strong> The reward scores live true state on both engines, where the CPU used to score a delayed reading. The sensor order is the firmware tick's. And <code>imu_vel_world</code> in the shared true-state dict means the IMU point's velocity, which each engine computes before handing it over.</li>
+        <li><strong>mjlab's own actuator delay is switched off.</strong> The shared delay line models the action latency on both engines; the held-lag tests were rewritten against it.</li>
+        <li><strong>Random streams changed on the CPU.</strong> Every per-episode draw now comes from one torch generator in a fixed order, so CPU seeds from before the migration do not reproduce. GPU seeds do.</li>
+      </ul>
+
+      <h3>What each package holds now</h3>
+      <p>wlbot owns every model, both pipelines and the single-robot loop. wlbot_bullet is the URDF, the PyBullet backend and a Gymnasium wrapper. wlbot_mjlab is the MJCF, the single-robot MuJoCo backend, an actuator hook and the term classes that call the pipelines, plus training and evaluation. Its non-test code went from 3,596 lines to 2,344. The seven torch twins and the six model-parity tests are gone; the physics parity tests remain.</p>
+      <p class="small">Still open: the C observation assembler on the firmware branch is the last second copy of <span class="file">wlbot/obs.py</span>, and the kinfer-style export in section 4 is the candidate for it. Separately, <span class="file">wlbot/sysid/</span> was deleted earlier the same day as collateral of an unrelated move and awaits a decision on restoring it.</p>
+    </section>
+
+  </article>
+</div>
+
+</body></html>

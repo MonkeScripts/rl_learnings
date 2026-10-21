@@ -1,0 +1,668 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>Station-Keeping Policy Runner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;600&display=swap">
+
+<style>
+:root {
+  --paper:     #EBEEF1;
+  --card:      #F5F7F8;
+  --ink:       #11171E;
+  --ink-2:     #39434E;
+  --muted:     #6B7784;
+  --rule:      #CDD3D9;
+  --hair:      #DEE3E7;
+
+  --flow:      #1D2A38;
+  --pass:      #1F7A5C;
+  --gate:      #B4622A;
+  --stop:      #9C3A34;
+  --data:      #37566F;
+  --on-fill:   #F7F9FA;
+
+  --w: 74ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:   #0F1318;
+    --card:    #171D24;
+    --ink:     #E6EBEF;
+    --ink-2:   #B4BEC7;
+    --muted:   #808C97;
+    --rule:    #29323B;
+    --hair:    #1F272E;
+
+    --flow:    #C9D5E0;
+    --pass:    #46B58C;
+    --gate:    #DD9256;
+    --stop:    #D97068;
+    --data:    #7FA3BE;
+    --on-fill: #0F1318;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:   #0F1318;
+  --card:    #171D24;
+  --ink:     #E6EBEF;
+  --ink-2:   #B4BEC7;
+  --muted:   #808C97;
+  --rule:    #29323B;
+  --hair:    #1F272E;
+
+  --flow:    #C9D5E0;
+  --pass:    #46B58C;
+  --gate:    #DD9256;
+  --stop:    #D97068;
+  --data:    #7FA3BE;
+  --on-fill: #0F1318;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Source Sans 3", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: clamp(1.8rem, 4vw, 3.5rem) clamp(1rem, 3.5vw, 2.75rem) 5rem;
+}
+
+/* ---- masthead ---------------------------------------------------------- */
+
+header.doc {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1.25rem;
+  margin-bottom: 2.75rem;
+}
+.docline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.1rem;
+}
+h1 {
+  font-family: Archivo, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.6vw, 2.75rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.6rem;
+  text-wrap: balance;
+}
+header.doc p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--ink-2);
+  font-size: 1.03rem;
+}
+
+/* ---- sections ---------------------------------------------------------- */
+
+section {
+  display: grid;
+  grid-template-columns: 3.1rem minmax(0, 1fr);
+  gap: 0 1.1rem;
+  margin-bottom: 3.1rem;
+}
+.snum {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding-top: 0.42rem;
+  border-top: 2px solid var(--rule);
+}
+.sbody { border-top: 2px solid var(--rule); padding-top: 0.35rem; min-width: 0; }
+.sbody > * { max-width: var(--w); }
+.sbody > .wide, .sbody > .scroller, .sbody > .grid2 { max-width: none; }
+
+h2 {
+  font-family: Archivo, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.32rem;
+  letter-spacing: -0.011em;
+  margin: 0 0 0.75rem;
+  text-wrap: balance;
+}
+h3 {
+  font-family: Archivo, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.94rem;
+  margin: 1.7rem 0 0.5rem;
+}
+p { margin: 0 0 0.95rem; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 600; }
+
+code, .m {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.87em;
+}
+code {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  padding: 0.05em 0.3em;
+}
+
+/* ---- diagram ----------------------------------------------------------- */
+
+.scroller { overflow-x: auto; margin: 0.4rem 0 1rem; padding-bottom: 0.3rem; }
+.scroller svg { display: block; width: 100%; min-width: 780px; height: auto; }
+
+.lane-lbl {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.07em;
+  fill: var(--muted);
+}
+.box-t {
+  font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600;
+  fill: var(--on-fill);
+}
+.box-s {
+  font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px;
+  fill: var(--on-fill); opacity: 0.85;
+}
+.edge-t {
+  font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px;
+  fill: var(--muted);
+}
+.lane { fill: none; stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 4; }
+
+/* ---- tables ------------------------------------------------------------ */
+
+.tablewrap { overflow-x: auto; margin: 0.3rem 0 1rem; }
+table { border-collapse: collapse; width: 100%; min-width: 500px; font-size: 0.88rem; }
+th {
+  text-align: left;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.67rem; font-weight: 500;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0.85rem 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+td {
+  padding: 0.55rem 0.85rem 0.55rem 0;
+  border-bottom: 1px solid var(--hair);
+  vertical-align: top;
+  color: var(--ink-2);
+}
+td:first-child { color: var(--ink); }
+td.k, th.k {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82rem; white-space: nowrap; color: var(--ink);
+}
+td.n, th.n {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; text-align: right;
+  white-space: nowrap; color: var(--ink);
+}
+th.n { text-align: right; }
+caption {
+  text-align: left; font-size: 0.8rem; color: var(--muted);
+  padding-bottom: 0.6rem;
+}
+
+/* ---- pills ------------------------------------------------------------- */
+
+.pill {
+  display: inline-block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.08rem 0.4rem; border-radius: 2px;
+  border: 1px solid currentColor; white-space: nowrap;
+}
+.pill.grant { color: var(--gate); }
+.pill.cont  { color: var(--stop); }
+.pill.ok    { color: var(--pass); }
+
+/* ---- callouts ---------------------------------------------------------- */
+
+.note {
+  background: var(--card);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--data);
+  padding: 0.95rem 1.15rem;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  margin: 0 0 1rem;
+}
+.note.open { border-left-color: var(--gate); }
+.note b { color: var(--ink); font-weight: 600; }
+.note p { margin-bottom: 0.6rem; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: 1.4rem;
+  margin: 0.3rem 0 0.6rem;
+}
+.grid2 h3 { margin-top: 0; }
+.grid2 > div { min-width: 0; }
+
+.chain {
+  display: flex; flex-direction: column; gap: 0;
+  margin: 0.3rem 0 1rem;
+}
+.chain > div {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  gap: 0 0.8rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--hair);
+}
+.chain > div:first-child { border-top: 1px solid var(--rule); }
+.chain .tick {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem; color: var(--pass); padding-top: 0.1rem;
+}
+.chain b { font-weight: 600; display: block; font-size: 0.94rem; }
+.chain span { font-size: 0.87rem; color: var(--ink-2); }
+.chain .where {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.76rem; color: var(--muted); display: block; margin-top: 0.15rem;
+}
+
+footer {
+  border-top: 2px solid var(--ink);
+  padding-top: 1rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+</style>
+
+<div class="sheet">
+
+<header class="doc">
+  <div class="docline">
+    <span>wl_robot_balance_idf · branch policy_port</span>
+    <span>ESP32 · IDF 5.5</span>
+    <span>2026-09-10</span>
+  </div>
+  <h1>Station-keeping policy runner</h1>
+  <p>How a trained reinforcement-learning actor gets from a Hugging Face artifact onto the wheels of a self-balancing robot, what stops it when it misbehaves, and what has actually been measured.</p>
+</header>
+
+<!-- ============================ 1 ============================ -->
+<section>
+  <div class="snum">1</div>
+  <div class="sbody">
+    <h2>What runs, and where</h2>
+    <p>The control tick owns the robot. It runs at 500 Hz on core 1 and never waits for the policy. Every fifth tick it posts a sensor snapshot to a mailbox and moves on. The policy task sits one priority notch below it, so by construction it executes only in the gaps the tick leaves and can never delay balancing.</p>
+
+    <div class="scroller">
+      <svg viewBox="0 0 920 366" role="img" aria-label="Swimlane diagram: the 500 Hz control tick posts an observation every fifth tick to the 100 Hz policy task, which assembles, normalises and runs an int16 graph, then publishes volts back to the tick's arbiter, which gates them before the motors.">
+
+        <!-- lanes -->
+        <path class="lane" d="M150 34 H900"/>
+        <path class="lane" d="M150 332 H900"/>
+        <text class="lane-lbl" x="140" y="72" text-anchor="end">CONTROL TICK</text>
+        <text class="lane-lbl" x="140" y="88" text-anchor="end">500 Hz · core 1</text>
+        <text class="lane-lbl" x="140" y="104" text-anchor="end">priority 20</text>
+
+        <text class="lane-lbl" x="140" y="268" text-anchor="end">POLICY TASK</text>
+        <text class="lane-lbl" x="140" y="284" text-anchor="end">100 Hz · core 1</text>
+        <text class="lane-lbl" x="140" y="300" text-anchor="end">priority 19</text>
+
+        <!-- top lane boxes -->
+        <rect x="160" y="52" width="156" height="60" rx="3" fill="var(--flow)"/>
+        <text class="box-t" x="238" y="78" text-anchor="middle">IMU · FOC · PD law</text>
+        <text class="box-s" x="238" y="95" text-anchor="middle">every 2000 us</text>
+
+        <rect x="646" y="52" width="150" height="60" rx="3" fill="var(--flow)"/>
+        <text class="box-t" x="721" y="78" text-anchor="middle">arbiter</text>
+        <text class="box-s" x="721" y="95" text-anchor="middle">gates, ramp, cap</text>
+
+        <rect x="826" y="52" width="74" height="60" rx="3" fill="var(--data)"/>
+        <text class="box-t" x="863" y="78" text-anchor="middle">motors</text>
+        <text class="box-s" x="863" y="95" text-anchor="middle">set_diff</text>
+
+        <path d="M316 82 H640" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+        <path d="M796 82 H820" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+        <path d="M814 77 l8 5 -8 5 z" fill="var(--rule)"/>
+
+        <!-- down arrow: post -->
+        <path d="M360 112 V196" stroke="var(--data)" stroke-width="1.5" fill="none"/>
+        <path d="M355 188 l5 9 5 -9 z" fill="var(--data)"/>
+        <text class="edge-t" x="372" y="140">PolicyIn, every 5th tick</text>
+        <text class="edge-t" x="372" y="155">spinlock, straight-line copy</text>
+
+        <!-- up arrow: publish -->
+        <path d="M608 196 V112" stroke="var(--data)" stroke-width="1.5" fill="none"/>
+        <path d="M603 120 l5 -9 5 9 z" fill="var(--data)"/>
+        <text class="edge-t" x="620" y="140">PolicyOut, with t_ms</text>
+        <text class="edge-t" x="620" y="155">t_ms is the staleness clock</text>
+
+        <!-- bottom lane boxes -->
+        <rect x="160" y="200" width="140" height="58" rx="3" fill="var(--flow)"/>
+        <text class="box-t" x="230" y="224" text-anchor="middle">assemble</text>
+        <text class="box-s" x="230" y="241" text-anchor="middle">4 frames x 10</text>
+
+        <rect x="318" y="200" width="140" height="58" rx="3" fill="var(--flow)"/>
+        <text class="box-t" x="388" y="224" text-anchor="middle">normalise</text>
+        <text class="box-s" x="388" y="241" text-anchor="middle">40 divides, in C</text>
+
+        <rect x="476" y="200" width="160" height="58" rx="3" fill="var(--pass)"/>
+        <text class="box-t" x="556" y="224" text-anchor="middle">esp-dl int16 graph</text>
+        <text class="box-s" x="556" y="241" text-anchor="middle">23 616 B, w16a16</text>
+
+        <rect x="654" y="200" width="128" height="58" rx="3" fill="var(--flow)"/>
+        <text class="box-t" x="718" y="224" text-anchor="middle">scale to volts</text>
+        <text class="box-s" x="718" y="241" text-anchor="middle">x 8.0 and x 4.0</text>
+
+        <path d="M300 229 H314" stroke="var(--rule)" stroke-width="1.5"/>
+        <path d="M308 224 l8 5 -8 5 z" fill="var(--rule)"/>
+        <path d="M458 229 H472" stroke="var(--rule)" stroke-width="1.5"/>
+        <path d="M466 224 l8 5 -8 5 z" fill="var(--rule)"/>
+        <path d="M636 229 H650" stroke="var(--rule)" stroke-width="1.5"/>
+        <path d="M644 224 l8 5 -8 5 z" fill="var(--rule)"/>
+        <path d="M782 229 H800 V120" stroke="var(--rule)" stroke-width="1.5" fill="none"/>
+
+        <!-- feedback edge -->
+        <path d="M718 258 V292 H230 V262" stroke="var(--gate)" stroke-width="1.5"
+              fill="none" stroke-dasharray="4 3"/>
+        <path d="M225 270 l5 -9 5 9 z" fill="var(--gate)"/>
+        <text class="edge-t" x="474" y="308" text-anchor="middle" fill="var(--gate)">prev_action: the pre-scaling action, never the volts</text>
+      </svg>
+    </div>
+
+    <p>The dashed edge is the loop's only feedback. The action the network produced goes back into the next observation, before any scaling, ramping or capping the firmware applies. Feeding back the volts instead would put the firmware's own limiters inside the network's idea of what it just did.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>The task, as created in <span class="m">policy_begin()</span>.</caption>
+        <thead><tr><th>Property</th><th class="k">Value</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Core</td><td class="k">1</td><td>Same core as the control tick, so the priority relationship actually bites</td></tr>
+          <tr><td>Priority</td><td class="k">19</td><td>One below the tick. It runs only while the tick is blocked</td></tr>
+          <tr><td>Stack</td><td class="k">6144 B</td><td>Observation history plus the esp-dl call frame</td></tr>
+          <tr><td>Rate</td><td class="k">100 Hz</td><td><span class="m">POLICY_TICK_DIV 5</span> against the 2000 µs tick, held by a static assertion</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 2 ============================ -->
+<section>
+  <div class="snum">2</div>
+  <div class="sbody">
+    <h2>The forty numbers</h2>
+    <p>The observation is four stacked frames of ten channels, oldest first, spanning 30 ms of history. Frame stacking and action history are not separate mechanisms: the two action slots sit inside each frame.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>One frame. The whole observation is this, four times.</caption>
+        <thead><tr><th>Channel</th><th>Unit</th><th class="n">Scale</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="k">pitch</td><td>rad</td><td class="n">0.8</td><td>Sensed angle, mount offset included</td></tr>
+          <tr><td class="k">pos_err</td><td>m</td><td class="n">0.25</td><td>Unbounded by design, no firmware-style leash</td></tr>
+          <tr><td class="k">gyro</td><td>rad/s</td><td class="n">5.0</td><td>Pitch rate</td></tr>
+          <tr><td class="k">odom_vel</td><td>m/s</td><td class="n">1.0</td><td>Low-passed at 50 ms</td></tr>
+          <tr><td class="k">gyro_z</td><td>rad/s</td><td class="n">3.0</td><td>Yaw rate</td></tr>
+          <tr><td class="k">cmd_vel</td><td>m/s</td><td class="n">0.5</td><td>Hardwired 0, station keeping only</td></tr>
+          <tr><td class="k">cmd_yaw_rate</td><td>rad/s</td><td class="n">1.5</td><td>Hardwired 0</td></tr>
+          <tr><td class="k">yaw_err</td><td>rad</td><td class="n">0.5</td><td>Clamped at 45° with reference pullback</td></tr>
+          <tr><td class="k">prev_action[0]</td><td>none</td><td class="n">1.0</td><td>Last action, pre-scaling</td></tr>
+          <tr><td class="k">prev_action[1]</td><td>none</td><td class="n">1.0</td><td>Last action, pre-scaling</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Two constants here are pinned to what training believed rather than to what the robot measures. Odometry uses a nominal wheel radius of 0.019205 m, and the 10 ms step is baked into the assembler's filters. Re-measuring the wheel must not silently move the policy's sense of distance, and the rate is not a free parameter: the four-frame stack spans three of those intervals, so the network learned what one frame ago means in seconds.</p>
+
+    <p>Two actions come out. The first becomes the common voltage on both wheels at a scale of 8 V, the second the differential yaw voltage at 4 V.</p>
+  </div>
+</section>
+
+<!-- ============================ 3 ============================ -->
+<section>
+  <div class="snum">3</div>
+  <div class="sbody">
+    <h2>The network on the chip</h2>
+    <p>A 40 → 64 → 64 → 2 tanh network, quantized to int16 by esp-ppq and executed by esp-dl. Both tanh layers became 2049-entry lookup tables during quantization, which is where most of the arithmetic saving comes from: on the float path those were 128 calls into <span class="m">tanhf</span>, and they cost more than the 6,784 multiply-accumulates did.</p>
+
+    <div class="grid2">
+      <div>
+        <h3>Inside the graph</h3>
+        <p>Three matrix layers, two tanh lookups, and a final clip to the unit interval. <span class="m">w16a16</span>: 16-bit weights, 16-bit activations.</p>
+      </div>
+      <div>
+        <h3>Deliberately outside it</h3>
+        <p>The per-channel normalisation, the multiplication to volts, and the guard against a non-finite action. Each is in C, and each for a reason worth keeping.</p>
+      </div>
+    </div>
+
+    <p>The normalisation stays out because folding it into the first layer would hand the quantizer forty channels whose raw ranges span three orders of magnitude, all sharing one 16-bit scale. Normalising first puts every channel near unit scale, which is why training normalises there too.</p>
+
+    <p>The guard against a non-finite action stays out because ONNX carries the clip but not the float path's check for a value that is not a number. This is the last place before an action becomes voltage, so the wrapper refuses to publish one.</p>
+
+    <div class="note">
+      <p><b>The calibration range decides which observations the graph can represent.</b> The input range is chosen from observations shown to the quantizer, and anything outside it is clipped at inference time, which is a far larger error than rounding.</p>
+      <p>On 2026-09-09 a step cap fed the calibrator the first ten seconds of a ninety second run. It sized the range to ±0.25 for a run that reaches 0.695, and 4.8% of rows then had a channel clipped, the action feedback and the gyro among them. On those rows the quantized network disagreed with the float one by up to 7 V of motor command, and the robot flew visibly worse.</p>
+      <p>Calibration now spreads across the whole window with the largest-magnitude rows forced in, uses a minmax range rather than the default KL, and the exporter prints the count of rows that fall outside the chosen range. That count must be zero.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Quantization error against the float network, over all 8,769 observations of a real capture.</caption>
+        <thead><tr><th>Quantity</th><th class="n">Action</th><th class="n">Motor command</th></tr></thead>
+        <tbody>
+          <tr><td>Worst</td><td class="n">9.04e-03</td><td class="n">72.3 mV</td></tr>
+          <tr><td>99th percentile</td><td class="n">5.44e-03</td><td class="n">43 mV</td></tr>
+          <tr><td>Rows outside the input range</td><td class="n">0</td><td class="n"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>For scale, commanded voltage over that capture had a spread of 570 mV, so the worst quantization error is roughly an eighth of the signal's own variation and under 1% of full scale.</p>
+  </div>
+</section>
+
+<!-- ============================ 4 ============================ -->
+<section>
+  <div class="snum">4</div>
+  <div class="sbody">
+    <h2>Taking the wheels, and losing them</h2>
+    <p>An operator asks for the handover, and the request is a flag applied against live inputs on the next tick, because the request itself can be a hundred milliseconds stale by the time it arrives. Releasing is unconditional and always allowed.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Every reason a handover is refused or revoked. Grant-only checks run once; continuous checks run every tick at 500 Hz and eject mid-flight.</caption>
+        <thead><tr><th>Refusal</th><th>When</th><th>Why it exists</th></tr></thead>
+        <tbody>
+          <tr><td class="k">DISARMED</td><td><span class="pill grant">grant</span></td><td>Training episodes start balanced with wheels down</td></tr>
+          <tr><td class="k">REFLEX</td><td><span class="pill grant">grant</span> <span class="pill cont">continuous</span></td><td>The crouch reflex runs off tilt whoever holds the wheels, and a crouch below the trained height would eject the policy mid-disturbance</td></tr>
+          <tr><td class="k">HOME</td><td><span class="pill grant">grant</span> <span class="pill cont">continuous</span></td><td>The homing cascade banks owed travel while the policy drives and would repay all of it the instant the PD law got the wheels back</td></tr>
+          <tr><td class="k">YAW</td><td><span class="pill grant">grant</span></td><td>Heading error is an observation channel, and an unsettled estimator drifts underneath it</td></tr>
+          <tr><td class="k">DISTURBED</td><td><span class="pill grant">grant</span></td><td>Episodes start calm</td></tr>
+          <tr><td class="k">HEIGHT</td><td><span class="pill grant">grant</span> <span class="pill cont">continuous</span></td><td>No height channel and no gain schedule, so the trained 45 to 85 mm band is enforced every tick</td></tr>
+          <tr><td class="k">STALE</td><td><span class="pill grant">grant</span> <span class="pill cont">continuous</span></td><td>Output older than 60 ms is presumed a dead feed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Two things soften the moment of handover. A 500 ms ramp scales the policy's voltage in from zero, and a hard cap of 6 V bounds it whatever the network asks for. The observation assembler is reset at the grant, which is what makes it a fresh episode with references latched where the robot currently stands.</p>
+
+    <div class="note">
+      <p><b>There is no fallback network any more.</b> The float path was removed from the chip, which returned about 27 KB of DRAM. If the graph refuses to produce a finite action, the runner publishes nothing, the staleness gate fires on the next tick, and the PD law takes the wheels.</p>
+      <p>That is the same gate a dead feed trips, so the two look alike from outside. The <span class="m">espdl_fb</span> counter in the console info report is what separates them, and it should read zero.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 5 ============================ -->
+<section>
+  <div class="snum">5</div>
+  <div class="sbody">
+    <h2>What actually checks it</h2>
+    <p>Four gates. Each compares against something the previous one could not reach.</p>
+
+    <div class="chain">
+      <div>
+        <div class="tick">01</div>
+        <div>
+          <b>ONNX replay</b>
+          <span>This repository reads a published graph the same way onnxruntime executes it, to 1e-5 over 512 observations. It exists because a graph can be read wrong in a way that is self-consistent everywhere afterwards: a published actor's square 64×64 layer arrived untransposed, everything downstream agreed with itself, and the network was 1.27 out on the action.</span>
+          <span class="where">just export-policy</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">02</div>
+        <div>
+          <b>Golden replay</b>
+          <span>The generated C assembler and the float reference network, compiled with host gcc, replayed against the numpy twin over 240 chained steps. Holds to 2e-4 on the action and 1e-3 on volts, and currently passes at 3.3e-7.</span>
+          <span class="where">scripts/test_policy.py</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">03</div>
+        <div>
+          <b>Quantization grading</b>
+          <span>The int16 graph against the float network across an entire real capture, reported split by whether any input channel fell outside the quantized range. An earlier version graded only a held-out tail, which happened to be the quietest stretch of the run, and reported 1.16e-3 for a network that was 0.87 out where it mattered.</span>
+          <span class="where">just export-espdl</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">04</div>
+        <div>
+          <b>On-device vectors</b>
+          <span>Thirty-two observations baked into the firmware, graded on the ESP32 itself against esp-ppq's bit-exact integer twin of esp-dl's kernels at 2e-4, and against the float network at 6.7e-3. This is the only check that reaches the chip's own arithmetic, and it replaced what was lost when the float network came off.</span>
+          <span class="where">console V</span>
+        </div>
+      </div>
+    </div>
+
+    <p>The float weights are still generated into the repository, fenced behind a compile flag that only the host gate defines. They are the oracle. Every accuracy figure quoted about the int16 graph is measured against them, and the clipping failure above was found because they were there to disagree with.</p>
+  </div>
+</section>
+
+<!-- ============================ 6 ============================ -->
+<section>
+  <div class="snum">6</div>
+  <div class="sbody">
+    <h2>Measured timing</h2>
+    <p>Every inference records what it cost, and that column is wall time, not processor time. The policy task sits below the control tick, so a tick landing mid-inference is counted inside the window. The median therefore describes the pipeline delay; the minimum over a long run is the closest available bound on the compute itself.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>From 8,769 inferences over 90 seconds, 2026-09-09. These are the <strong>float</strong> path's figures.</caption>
+        <thead><tr><th>Quantity</th><th class="n">µs</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Policy period</td><td class="n">10 000</td><td>Fixed by the training rate</td></tr>
+          <tr><td>Publish latency, median</td><td class="n">4 000</td><td>Period minus the median recorded age</td></tr>
+          <tr><td>Inference window, median</td><td class="n">3 075</td><td>Wall time, preemption included</td></tr>
+          <tr><td>Inference window, minimum</td><td class="n">1 364</td><td>Least-preempted sample</td></tr>
+          <tr><td>Arithmetic, hot cache</td><td class="n">435</td><td>Console profiler, best of 200</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The gap between 1,364 and 435 is roughly 930 µs that is not arithmetic. The profiler runs its passes back to back with the code resident; a real inference runs once per 10 ms while the tick, the motor commutation and the radio all execute their own code through a 32 KB instruction cache. Everything on the inference path lives in flash, spread across about a megabyte of it. That attribution is inferred from the gap, not measured directly.</p>
+
+    <div class="note open">
+      <p><b>Open item: the int16 path has not been profiled.</b> Every figure in the table above is the float network, measured before it was replaced. The quantized network is expected to be quicker, chiefly because the tanh calls became table lookups, but no measurement has been taken on the chip.</p>
+      <p>The console profiler now times what actually runs: observation assembly, the forty divides, and the graph. Until that has been run, any claim about what the change bought is a prediction.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 7 ============================ -->
+<section>
+  <div class="snum">7</div>
+  <div class="sbody">
+    <h2>Recording a run</h2>
+    <p>Captures go over the serial cable at 921600 baud, never over the radio. The link drops packets under load and a replay that must reproduce every 100 Hz action row for row cannot tolerate a missing one. The policy task appends an 80-byte row to a small RAM ring and a low-priority task on the other core drains it as text, so the inference path never waits on a UART.</p>
+
+    <p>The ring is slack for the drainer, not a buffer you fill and read back. There is nothing to dump and no moment to hit: start the stream, do the run, stop it. If the drainer falls behind, the loss is announced on the stream and counted by the host.</p>
+
+    <p>Each row is the complete interface at one inference. The sensor snapshot the runner assembled, the assembler's three derived channels so the training side can check its own arithmetic against ours, the pre-scaling action, and the flags. Four columns exist purely so a capture can be read without outside context, each added because its absence produced a question the first time a file went out.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>The four context columns.</caption>
+        <thead><tr><th class="k">Column</th><th>What it answers</th></tr></thead>
+        <tbody>
+          <tr><td class="k">com_mm</td><td>Which pendulum this was. Not an input, but the plant at 45 mm is not the plant at 85</td></tr>
+          <tr><td class="k">zp_deg</td><td>The zero reference at that inference, so true pitch is recoverable and two captures either side of a recalibration are comparable</td></tr>
+          <tr><td class="k">age_ms</td><td>How much delay the policy was flying under, per sample rather than as one sticky maximum</td></tr>
+          <tr><td class="k">us</td><td>What that inference cost. Timed around the observation conversion and the forward pass only, so the recorder never measures the act of recording</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 8 ============================ -->
+<section>
+  <div class="snum">8</div>
+  <div class="sbody">
+    <h2>Known limits</h2>
+
+    <div class="chain">
+      <div>
+        <div class="tick">·</div>
+        <div>
+          <b>Station keeping only</b>
+          <span>The two command channels are hardwired to zero, which is the trained distribution. Driving under the policy is two lines in the runner and nothing else, but it is not what this network was trained to do.</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">·</div>
+        <div>
+          <b>The rate is not a knob</b>
+          <span>Running faster is a retrain, not a configuration change. The step is baked into the assembler's filters and the four-frame stack, so the same weights at 200 Hz would see references drifting at half the intended rate over half the intended history.</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">·</div>
+        <div>
+          <b>Already at the fast edge of training</b>
+          <span>The actor trained with an action delay drawn from 5 to 30 ms. Measured delay on the robot is 6 to 9. Making inference faster moves further off that distribution rather than toward its middle.</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">·</div>
+        <div>
+          <b>Zero-order held at 100 Hz</b>
+          <span>When the policy owns the wheels there is no fast inner loop beneath it. Its output is held for all five ticks until the next inference, so it really is a 100 Hz balance controller. If sharp disturbances ever become the failure mode rather than steady station keeping, rate is a reasonable thing to suspect.</span>
+        </div>
+      </div>
+      <div>
+        <div class="tick">·</div>
+        <div>
+          <b>One published actor has an ONNX</b>
+          <span>The import path takes ONNX and needs no torch, but only one of the seven published runs offers one today. The rest still need the heavier toolchain.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Policy sk_ident_r128_s0@4500 · graph policy_esp32_int16.espdl, 23 616 B, w16a16, minmax calibration<br>
+  Gates: stale 60 ms · height 45 to 85 mm · cap 6 V · ramp 500 ms · recorder ring 100 rows
+</footer>
+
+</div>
+
+</body></html>

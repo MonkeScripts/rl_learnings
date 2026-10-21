@@ -1,0 +1,584 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Microduck Run Doctor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F8; --surface:#FBFCFD; --ink:#171C24; --ink-2:#4B5563; --muted:#7A8494;
+  --rule:#D9DEE6; --grid:#E7EBF1; --accent:#2A78D6; --accent-ink:#1E5AA3; --accent-soft:#E3EEFB;
+  --good:#0ca30c; --warn:#c98500; --crit:#d03b3b; --good-soft:#E4F5E4; --warn-soft:#FBF0D6; --crit-soft:#F9E3E3;
+  --band:#2A78D6; --shade:#171C24;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151B; --surface:#171C24; --ink:#E6E9EE; --ink-2:#B4BCC8; --muted:#8892A0;
+    --rule:#2A313C; --grid:#232A35; --accent:#3987E5; --accent-ink:#8FB8F0; --accent-soft:#1B2A40;
+    --good:#0ca30c; --warn:#fab219; --crit:#e66767; --good-soft:#15301A; --warn-soft:#3A2E10; --crit-soft:#3B1C1C;
+    --band:#3987E5; --shade:#E6E9EE;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151B; --surface:#171C24; --ink:#E6E9EE; --ink-2:#B4BCC8; --muted:#8892A0;
+  --rule:#2A313C; --grid:#232A35; --accent:#3987E5; --accent-ink:#8FB8F0; --accent-soft:#1B2A40;
+  --good:#0ca30c; --warn:#fab219; --crit:#e66767; --good-soft:#15301A; --warn-soft:#3A2E10; --crit-soft:#3B1C1C;
+  --band:#3987E5; --shade:#E6E9EE;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;padding-block:0 64px;padding-inline:clamp(16px,4vw,40px)}
+.wrap{max-width:1040px;margin:0 auto}
+.prose{max-width:72ch}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(34px,5vw,52px);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:clamp(22px,2.6vw,28px);font-weight:600;margin-top:12px}
+h3{font-size:18px;font-weight:600;margin-top:28px}
+p{margin:12px 0}
+a{color:var(--accent-ink)}
+code,.mono{font-family:var(--mono);font-size:0.86em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px;color:var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+header{padding-block:56px 24px;border-bottom:1px solid var(--rule)}
+header .lede{font-size:19px;color:var(--ink-2);max-width:66ch;margin-top:16px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.meta b{color:var(--ink);font-weight:600}
+section{padding-block:40px;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+.num{font-family:var(--mono);color:var(--accent-ink)}
+figure{margin:24px 0 0}
+figcaption{font-size:14px;color:var(--ink-2);margin-top:10px;max-width:80ch}
+.chart{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 12px 8px;position:relative}
+.chart + .chart{margin-top:8px}
+.chart svg{display:block;width:100%;height:auto;font-family:var(--mono);font-size:11px}
+.chart .t{color:var(--ink-2);font-size:13px;font-family:var(--sans);margin:0 4px 6px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.chart .t .metric{font-family:var(--mono);color:var(--ink);font-size:12px}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:12px;padding:6px 8px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-110%);display:none;z-index:2}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:24px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.chip.good{color:var(--good);background:var(--good-soft)}
+.chip.warn{color:var(--warn);background:var(--warn-soft)}
+.chip.crit{color:var(--crit);background:var(--crit-soft)}
+.chip.info{color:var(--accent-ink);background:var(--accent-soft)}
+.chip.info::before{background:var(--accent)}
+.chip.good::before{background:var(--good)} .chip.warn::before{background:var(--warn)} .chip.crit::before{background:var(--crit)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin-top:20px}
+.tw{overflow-x:auto;margin-top:8px}
+th{text-align:left;font-weight:600;font-size:12.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--grid);vertical-align:top}
+td.mono,th.mono{font-family:var(--mono);font-size:13px;white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-top:24px;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
+.steps > div{padding:14px 16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.steps .k{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.06em}
+.steps .v{font-weight:600;margin-top:4px}
+.steps .d{font-size:13.5px;color:var(--ink-2);margin-top:4px}
+.steps .cover{background:var(--accent-soft)}
+.steps .cover .k::after{content:" · covered by wandb";color:var(--accent-ink)}
+.gaps{counter-reset:g;list-style:none;padding:0;margin:20px 0 0;display:grid;gap:10px}
+.gaps li{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--rule);border-radius:8px}
+.gaps li::before{counter-increment:g;content:counter(g,decimal-leading-zero);font-family:var(--mono);color:var(--accent-ink);font-weight:600;font-size:15px;padding-top:2px}
+.gaps b{display:block;margin-bottom:2px}
+.gaps span{color:var(--ink-2);font-size:14.5px}
+.diagram{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto;min-width:640px;font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:20px}
+.level{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px}
+.level .k{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.06em}
+.level h3{margin:6px 0 8px;font-size:17px}
+.level ul{margin:8px 0 0;padding-left:18px;font-size:14.5px;color:var(--ink-2)}
+.level li{margin:4px 0}
+.level .eff{margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--accent-ink)}
+.callout{border-left:3px solid var(--accent);padding:6px 16px;margin:24px 0 0;color:var(--ink-2);background:var(--surface);border-radius:0 8px 8px 0}
+.callout b{color:var(--ink)}
+.small{font-size:13.5px;color:var(--muted)}
+@media (max-width:640px){ .steps > div{border-right:0} }
+@media (prefers-reduced-motion:no-preference){ .chart .cursor{transition:opacity .08s} }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Design exploration · microduck_rl</div>
+  <h1>Microduck Run Doctor</h1>
+  <p class="lede">A diagnostic and replay layer for sim2real PPO runs. It reads the config that produced a run, predicts what the curves should do, flags only what they shouldn't, and lets you stand in the sim at the exact iteration a flag fired.</p>
+  <div class="meta">
+    <span>run <b>2026-09-14_17-56-13_velocity</b></span>
+    <span><b>50,000</b> iterations</span>
+    <span><b>4,096</b> envs</span>
+    <span><b>200</b> checkpoints</span>
+    <span>curriculum done by <b>it 2,000</b></span>
+  </div>
+</header>
+
+<section>
+  <div class="eyebrow">The gap</div>
+  <h2>Every tracker sees anonymous scalars. The config that produced them sits unread beside the log.</h2>
+  <div class="prose">
+    <p>Reading a run well is a six-step loop. Weights &amp; Biases, Comet, Neptune and TensorBoard cover exactly one of the six. Roboto's tag-and-summarize covers a coarse version of the same one. The other five are what an experienced engineer does in their head, and all five are cheap to automate because the inputs already exist on disk: <code>params/env.yaml</code> holds every curriculum boundary, penalty name and target value; the tfevents file holds every curve.</p>
+  </div>
+  <div class="steps">
+    <div><div class="k">1</div><div class="v">Context</div><div class="d">What changed since the last run? Diff two <code>env.yaml</code> files.</div></div>
+    <div><div class="k">2</div><div class="v">Expect</div><div class="d">Given the change and the curriculum schedule, what should the curves do, and when?</div></div>
+    <div class="cover"><div class="k">3</div><div class="v">Observe</div><div class="d">What did the curves actually do?</div></div>
+    <div><div class="k">4</div><div class="v">Compare</div><div class="d">Is the delta between expected and observed concerning, or a scheduled shock?</div></div>
+    <div><div class="k">5</div><div class="v">Diagnose</div><div class="d">Group co-timed symptoms under one root cause. Disambiguate with a second metric.</div></div>
+    <div><div class="k">6</div><div class="v">Decide</div><div class="d">Wait, stop, or change one thing for the next run. Replay the moment to be sure.</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Evidence · your run, not a mock</div>
+  <h2>Three checks the doctor would have run on this training, with real curves from the tfevents file.</h2>
+
+  <figure>
+    <div class="chart" id="c-reward">
+      <div class="t"><span>Mean reward, first 3,000 iterations · 5-iter smoothing</span><span class="metric">Train/mean_reward</span></div>
+    </div>
+    <div class="chart" id="c-arw">
+      <div class="t"><span>Action-rate penalty weight (curriculum staircase)</span><span class="metric">Curriculum/action_rate_weight</span></div>
+    </div>
+    <figcaption><b>Curriculum-aware expectation.</b> Shaded windows are the 200 iterations after each scheduled weight change. Reward dips inside every one of them. Three recover above their pre-shock level; three don't. A z-score alert fires six times. The doctor fires zero times at 500, 750 and 1,250, and at 1,000, 1,500 and 2,000 it checks the raw <code>Metrics/*</code> before deciding, because a heavier penalty weight is <i>supposed</i> to lower total reward.</figcaption>
+  </figure>
+
+  <div class="tw">
+  <table>
+    <thead><tr><th>Boundary</th><th>Change at this step</th><th class="n">Pre-shock</th><th class="n">First 25 it</th><th class="n">+150 to +200</th><th>Doctor's read</th></tr></thead>
+    <tbody id="btable"></tbody>
+  </table>
+  </div>
+
+  <h3>Penalty sign audit</h3>
+  <div class="prose"><p>The single most important check from <code>AGENTS.md</code>: every <code>Episode_Reward/&lt;penalty&gt;</code> must stay at or below zero for the whole run, or the policy is being paid for the violation. Maximum value across all 50,000 iterations:</p></div>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Term</th><th class="n">Weight</th><th class="n">Max over run</th><th class="n">Final</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">action_rate_l2</td><td class="n mono">−0.1 → −1.0</td><td class="n mono">−0.0336</td><td class="n mono">−0.829</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">body_ang_vel</td><td class="n mono">−0.05</td><td class="n mono">−0.0067</td><td class="n mono">−0.018</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">dof_pos_limits</td><td class="n mono">−1.0</td><td class="n mono">−0.0002</td><td class="n mono">−0.012</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">foot_clearance</td><td class="n mono">−2.0</td><td class="n mono">−0.0001</td><td class="n mono">−0.005</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">foot_swing_height</td><td class="n mono">−0.25</td><td class="n mono">−0.0006</td><td class="n mono">−0.003</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">foot_slip</td><td class="n mono">−0.1</td><td class="n mono">−0.00002</td><td class="n mono">−0.0002</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">self_collisions</td><td class="n mono">−1.0</td><td class="n mono">−0.00004</td><td class="n mono">−0.0007</td><td><span class="chip good">pass</span></td></tr>
+      <tr><td class="mono">angular_momentum</td><td class="n mono">−0.02</td><td class="n mono">−0.00000</td><td class="n mono">−0.00000</td><td><span class="chip warn">inert</span> <span class="small">exactly 0.0 for 50k iterations; the term contributes nothing. Check the <code>robot/root_angmom</code> sensor.</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Phase-conditioned thresholds</h3>
+  <div class="grid2">
+    <figure style="margin:0">
+      <div class="chart" id="c-std">
+        <div class="t"><span>Action std, full run</span><span class="metric">Policy/mean_std</span></div>
+      </div>
+      <figcaption>Exploration ends at it 468 (σ &lt; 0.5), commitment at 791 (σ &lt; 0.3), consolidation from 1,358 (σ &lt; 0.2). A σ of 0.16 is healthy at it 40,000 and would be a premature-convergence flag at it 300. The same number, two verdicts, decided by phase.</figcaption>
+    </figure>
+    <figure style="margin:0">
+      <div class="chart" id="c-air">
+        <div class="t"><span>Mean foot air time, full run · 25-iter smoothing</span><span class="metric">Metrics/air_time_mean</span></div>
+      </div>
+      <figcaption>The shaded band is the rewarded window (<code>threshold_min 0.125</code>, <code>threshold_max 0.3</code>). The policy converges to 0.1254 s and spends only 31% of iterations above the floor: it takes the shortest step that pays. Not a bug, but a fact about the gait the reward shaped, and a candidate for a rule: <i>metric parked at the edge of its reward window</i>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Landscape</div>
+  <h2>Nobody has built this. Several people have built a piece of it.</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Source</th><th>Take</th><th>Leave</th></tr></thead>
+    <tbody>
+      <tr><td><b>Roboto.ai</b></td><td>Deterministic Actions on triggers emit typed Events with start/end, scope, metadata, tags. The LLM agent sees only structured events, never raw logs. "Not a system that reads 40 GB, a system that knows which 40 KB has the answer."</td><td>Events stay individual. No expectation model, no grouping, no notion of the config that produced the run. Per-log summaries; cross-run is tag filtering.</td></tr>
+      <tr><td><b>Eureka / RDA</b> (NVIDIA)</td><td>The reward reflection: per-term statistics over training as the input to an LLM that proposes reward edits. The only prior art that reaches <i>recommendation</i>.</td><td>Blind to the curriculum schedule and to what changed since the last run. Rewrites reward code wholesale.</td></tr>
+      <tr><td><b>W&amp;B Automations</b></td><td>Already-built delivery: <code>RUN_METRIC_THRESHOLD / _CHANGE / _ZSCORE</code> over a 5–10 value window into Slack or a webhook.</td><td>Windowed z-score is the only statistic. Every scheduled shock is an anomaly.</td></tr>
+      <tr><td><b>Reward-hacking detection</b> (PPO/SAC, MuJoCo)</td><td>Six hack categories with env-agnostic statistical detectors, 78% precision / 82% recall. Adaptable as rules.</td><td>Post-hoc, single run.</td></tr>
+      <tr><td><b>Foxglove</b></td><td>Typed, colored, time-range Events searchable across recordings. Click a plot point to seek playback.</td><td>URDF/ROS-centric 3D; MJCF needs conversion; MCAP ceremony from Python.</td></tr>
+      <tr><td><b>Rerun</b></td><td>One global time cursor across time-series, 3D and text views. <code>rerun-loader-mjcf</code> logs a MuJoCo model once and <code>MjData</code> per step. Arrow export feeds the rule engine from the same log.</td><td>No contact logging (log <code>data.contact</code> as points yourself). No mjlab bridge exists yet.</td></tr>
+      <tr><td><b>mjlab</b> (already in the repo)</td><td><code>RecorderManager</code> with <code>record_post_step / record_pre_reset / record_post_reset</code> hooks via <code>cfg.recorders</code>, currently <code>{}</code>. Checkpoints every 250 iterations. <code>play</code> hot-swaps checkpoints.</td><td><code>play</code> starts <code>common_step_counter</code> at 0, so the curriculum does not rewind with the checkpoint.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Five things nothing does today</h3>
+  <ol class="gaps">
+    <li><b>Curriculum-aware expectation</b><span><code>env.yaml</code> says a shock lands at step 12,000. Predict the dip, open a recovery window, flag only non-recovery.</span></li>
+    <li><b>Reward-semantics checks</b><span>Penalty sign audit. Task term flat while total rises. Weighted <code>Episode_Reward/*</code> reconciled against raw <code>Metrics/*</code>. Inert terms.</span></li>
+    <li><b>Config diff → hypothesis → test</b><span>Diff two runs' <code>env.yaml</code>, attach an expected effect to each change, check the curves for it. Comet diffs configs; nobody reasons about them.</span></li>
+    <li><b>Phase-conditioned thresholds</b><span>σ, entropy and learning rate judged against the phase the run is in, not a global constant.</span></li>
+    <li><b>Incident → checkpoint replay</b><span>A flag at iteration k links to <code>model_k.pt</code>, the curriculum state at k, and a recorded rollout window you can scrub.</span></li>
+  </ol>
+</section>
+
+<section>
+  <div class="eyebrow">Design</div>
+  <h2>Deterministic first, replay on flag, narrator last.</h2>
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 960 440" role="img" aria-label="Data flow: env.yaml feeds an expectation model; tfevents and the expectation model feed a rule engine that emits typed events; events trigger a replay action that loads the checkpoint, rewinds the curriculum counter and records a rollout to Rerun; an optional LLM narrator reads only events, config diff and replay stats.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <!-- inputs -->
+          <rect x="20" y="40" width="150" height="54" rx="6" fill="var(--bg)"/>
+          <rect x="20" y="150" width="150" height="54" rx="6" fill="var(--bg)"/>
+          <rect x="20" y="300" width="150" height="54" rx="6" fill="var(--bg)"/>
+          <!-- expectation -->
+          <rect x="240" y="26" width="200" height="82" rx="6" fill="var(--surface)"/>
+          <!-- rule engine -->
+          <rect x="240" y="140" width="200" height="118" rx="6" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <!-- events -->
+          <rect x="520" y="150" width="150" height="98" rx="6" fill="var(--accent-soft)" stroke="var(--accent)"/>
+          <!-- replay -->
+          <rect x="520" y="290" width="270" height="118" rx="6" fill="var(--surface)"/>
+          <!-- narrator -->
+          <rect x="740" y="140" width="200" height="118" rx="6" fill="var(--surface)" stroke-dasharray="5 4"/>
+          <!-- outputs -->
+          <rect x="740" y="26" width="200" height="82" rx="6" fill="var(--bg)"/>
+        </g>
+        <g fill="currentColor">
+          <text x="95" y="62" text-anchor="middle" font-weight="600">env.yaml</text>
+          <text x="95" y="80" text-anchor="middle" fill="var(--muted)">this run · params/</text>
+          <text x="95" y="172" text-anchor="middle" font-weight="600">tfevents / W&amp;B API</text>
+          <text x="95" y="190" text-anchor="middle" fill="var(--muted)">every scalar, live or post-hoc</text>
+          <text x="95" y="322" text-anchor="middle" font-weight="600">env.yaml</text>
+          <text x="95" y="340" text-anchor="middle" fill="var(--muted)">previous run</text>
+
+          <text x="340" y="50" text-anchor="middle" font-weight="600">Expectation model</text>
+          <text x="340" y="70" text-anchor="middle" fill="var(--muted)">curriculum boundaries · penalty set</text>
+          <text x="340" y="86" text-anchor="middle" fill="var(--muted)">reward windows · std schedule</text>
+
+          <text x="340" y="164" text-anchor="middle" font-weight="600">Rule engine</text>
+          <text x="340" y="186" text-anchor="middle" fill="var(--muted)">20–30 rules</text>
+          <text x="340" y="204" text-anchor="middle" fill="var(--muted)">phase state machine</text>
+          <text x="340" y="222" text-anchor="middle" fill="var(--muted)">suppression after known shocks</text>
+          <text x="340" y="240" text-anchor="middle" fill="var(--muted)">causal grouping of co-timed symptoms</text>
+
+          <text x="595" y="174" text-anchor="middle" font-weight="600">Events</text>
+          <text x="595" y="194" text-anchor="middle" fill="var(--muted)">typed · iteration range</text>
+          <text x="595" y="210" text-anchor="middle" fill="var(--muted)">metrics · stage · severity</text>
+          <text x="595" y="230" text-anchor="middle" fill="var(--muted)">queryable across runs</text>
+
+          <text x="655" y="314" text-anchor="middle" font-weight="600">Replay action</text>
+          <text x="655" y="336" text-anchor="middle" fill="var(--muted)">load model_k.pt</text>
+          <text x="655" y="352" text-anchor="middle" fill="var(--muted)">common_step_counter = k × 24</text>
+          <text x="655" y="368" text-anchor="middle" fill="var(--muted)">run curriculum terms once</text>
+          <text x="655" y="386" text-anchor="middle" fill="var(--muted)">RecorderTerm → qpos·qvel·contacts·rewards → .rrd</text>
+
+          <text x="840" y="164" text-anchor="middle" font-weight="600">Narrator (optional)</text>
+          <text x="840" y="186" text-anchor="middle" fill="var(--muted)">LLM sees events, config diff,</text>
+          <text x="840" y="202" text-anchor="middle" fill="var(--muted)">replay stats. Never raw logs.</text>
+          <text x="840" y="224" text-anchor="middle" fill="var(--muted)">Proposes ONE change.</text>
+
+          <text x="840" y="50" text-anchor="middle" font-weight="600">Delivery</text>
+          <text x="840" y="70" text-anchor="middle" fill="var(--muted)">W&amp;B alert / Slack</text>
+          <text x="840" y="86" text-anchor="middle" fill="var(--muted)">Rerun / Foxglove event marks</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar)">
+          <path d="M170 67 H240"/>
+          <path d="M170 177 H240"/>
+          <path d="M340 108 V140"/>
+          <path d="M440 199 H520"/>
+          <path d="M595 248 V290"/>
+          <path d="M670 199 H740"/>
+          <path d="M645 150 V67 H740"/>
+          <path d="M170 327 H480 V240 Q480 199 520 199" stroke-dasharray="4 4"/>
+          <path d="M790 349 H840 V258" stroke-dasharray="4 4"/>
+        </g>
+        <g fill="var(--muted)">
+          <text x="205" y="60" text-anchor="middle">reads</text>
+          <text x="205" y="170" text-anchor="middle">streams</text>
+          <text x="356" y="128" text-anchor="start">expected dips + windows</text>
+          <text x="480" y="192" text-anchor="middle">emits</text>
+          <text x="612" y="276" text-anchor="start">on flag</text>
+          <text x="705" y="192" text-anchor="middle">only</text>
+          <text x="690" y="60" text-anchor="middle">posts</text>
+          <text x="330" y="318" text-anchor="middle">diff → hypothesis</text>
+          <text x="860" y="290" text-anchor="middle">replay stats</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Solid arrows are the core loop. Dashed arrows are the two optional inputs: the previous run's config for diff-based hypotheses, and the replay's statistics for the narrator. The rule engine is the only component with real logic; the narrator is the only one that can be wrong, so it is last and sees only typed data.</figcaption>
+  </figure>
+
+  <div class="callout"><b>The value is in the flags that don't fire.</b> A tool that alerts on every dip is muted within a day. The expectation model exists to suppress the six scheduled shocks in this run and leave attention for the seventh thing, whatever it is.</div>
+</section>
+
+<section>
+  <div class="eyebrow">Replay</div>
+  <h2>Standing in the sim at iteration k means rewinding the world, not just the weights.</h2>
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 960 300" role="img" aria-label="Comparison: mjlab play today loads model_12000.pt into an environment whose step counter is 0, so head command range is plus or minus 0.05 rad, CoM randomization plus or minus 3 mm and 2 percent standing envs. A faithful replay sets the counter to 288,000 and runs the curriculum once, giving plus or minus 0.39 rad, plus or minus 10 mm and 15 percent, matching what the policy was actually trained against at iteration 12,000.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <g fill="currentColor">
+          <text x="20" y="28" font-weight="600" font-size="13">A · mjlab play today</text>
+          <text x="500" y="28" font-weight="600" font-size="13" fill="var(--accent-ink)">B · faithful replay</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="20" y="48" width="150" height="44" rx="6" fill="var(--bg)"/>
+          <rect x="250" y="48" width="190" height="44" rx="6" fill="var(--bg)"/>
+          <rect x="20" y="130" width="420" height="140" rx="6" fill="var(--surface)"/>
+          <rect x="500" y="48" width="150" height="44" rx="6" fill="var(--bg)"/>
+          <rect x="730" y="48" width="210" height="44" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+          <rect x="500" y="130" width="440" height="140" rx="6" fill="var(--surface)" stroke="var(--accent)"/>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar2)">
+          <path d="M170 70 H250"/>
+          <path d="M345 92 V130"/>
+          <path d="M650 70 H730"/>
+          <path d="M835 92 V130"/>
+        </g>
+        <g fill="currentColor">
+          <text x="95" y="66" text-anchor="middle" font-weight="600">model_12000.pt</text>
+          <text x="95" y="82" text-anchor="middle" fill="var(--muted)">the weights</text>
+          <text x="345" y="66" text-anchor="middle" font-weight="600">common_step_counter = 0</text>
+          <text x="345" y="82" text-anchor="middle" fill="var(--muted)">curriculum never runs</text>
+          <text x="575" y="66" text-anchor="middle" font-weight="600">model_12000.pt</text>
+          <text x="575" y="82" text-anchor="middle" fill="var(--muted)">the weights</text>
+          <text x="835" y="66" text-anchor="middle" font-weight="600">counter = 12,000 × 24</text>
+          <text x="835" y="82" text-anchor="middle" fill="var(--muted)">curriculum terms run once</text>
+
+          <text x="40" y="156" fill="var(--muted)">world the policy is shown</text>
+          <text x="40" y="184">head_pose range</text><text x="300" y="184" font-weight="600">±0.05 rad</text>
+          <text x="40" y="206">trunk CoM offset</text><text x="300" y="206" font-weight="600">±3 mm</text>
+          <text x="40" y="228">standing envs</text><text x="300" y="228" font-weight="600">2%</text>
+          <text x="40" y="250">action_rate weight</text><text x="300" y="250" font-weight="600">−0.1</text>
+          <text x="40" y="264" fill="var(--warn)" font-size="10.5">easier than anything the policy saw after it 500</text>
+
+          <text x="520" y="156" fill="var(--muted)">world the policy trained in at it 12,000</text>
+          <text x="520" y="184">head_pose range</text><text x="800" y="184" font-weight="600">±0.39 rad</text>
+          <text x="520" y="206">trunk CoM offset</text><text x="800" y="206" font-weight="600">±10 mm</text>
+          <text x="520" y="228">standing envs</text><text x="800" y="228" font-weight="600">15%</text>
+          <text x="520" y="250">action_rate weight</text><text x="800" y="250" font-weight="600">−0.6</text>
+          <text x="520" y="264" fill="var(--good)" font-size="10.5">the dip you saw on the curve is now reproducible</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>The only difference between A and B is one integer and one call. Weights are only half the state of a training moment; the command ranges and randomization the policy was facing are the other half, and they are a deterministic function of the step counter.</figcaption>
+  </figure>
+
+  <h3>Three components, all small</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Component</th><th>What it does</th><th>Builds on</th><th class="n">Size</th></tr></thead>
+    <tbody>
+      <tr><td><b>Counter rewind</b></td><td>Set <code>env.common_step_counter = k × 24</code> after load, invoke each curriculum term once so weights, ranges and DR match iteration k.</td><td class="mono">mjlab play · CurriculumManager</td><td class="n">~20 lines</td></tr>
+      <tr><td><b>RecorderTerm</b></td><td>For N tracked envs, log <code>qpos</code>, <code>qvel</code>, <code>data.contact</code> and per-env per-step reward terms to Rerun on a <code>step</code> timeline. Geometry via <code>rerun-loader-mjcf</code>.</td><td class="mono">cfg.recorders · record_post_step</td><td class="n">~1 day</td></tr>
+      <tr><td><b>Trigger</b></td><td>Record only around curriculum boundaries and flagged windows, so the recorder is cheap enough to leave on during real training.</td><td class="mono">rule engine events</td><td class="n">~50 lines</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout"><b>Per-env, per-step rewards are the hidden prerequisite.</b> Every wandb metric is a mean over 4,096 envs. Reward hacking starts in the minority of envs with an extreme randomization draw before it moves the mean. A recorder that sees per-env terms catches "3% of envs have zero air time while tracking is perfect" hundreds of iterations early.</div>
+</section>
+
+<section>
+  <div class="eyebrow">Real time</div>
+  <h2>The engine belongs inside the training process. Knowing at minute 10 that a run is worth stopping is the whole payoff.</h2>
+  <div class="prose">
+    <p>Every task in this repo is already registered with <code>MicroduckOnPolicyRunner</code>. rsl_rl's <code>learn()</code> calls <code>self.logger.log(...)</code> once per iteration with the same dict it sends to Weights &amp; Biases, and the rollout loop already carries one in-process guard that halts training: <code>check_for_nan</code>. Wrapping that one <code>log</code> call gives the rule engine every scalar at iteration granularity with no API, no polling and no ingestion layer. The polling paths remain for runs you can't instrument, such as Hugging Face Jobs.</p>
+  </div>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Ingestion path</th><th>Latency</th><th>Action</th><th>Works for</th></tr></thead>
+    <tbody>
+      <tr><td><b>In-process</b> · wrap <code>logger.log</code> in <code>MicroduckOnPolicyRunner</code></td><td class="mono">0 · same iteration</td><td>Advisory. Could also save <code>model_it.pt</code> at the flagged iteration so the moment is replayable.</td><td>Local and any box that runs this repo (your run trained on <code>ae-train-00</code>)</td></tr>
+      <tr><td><b>Tail tfevents</b> · <code>EventAccumulator.Reload()</code> on the live file</td><td class="mono">seconds</td><td>Advisory</td><td>Shared filesystem</td></tr>
+      <tr><td><b>Poll W&amp;B API</b> · <code>run.history()</code></td><td class="mono">~1 min</td><td>Advisory</td><td>HF Jobs, anything remote</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>What early detection is worth on this run</h3>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Decision point</th><th class="n">Iteration</th><th class="n">Elapsed</th><th class="n">Share of run</th></tr></thead>
+    <tbody>
+      <tr><td><code>penalty_sign</code> decidable</td><td class="n mono">1</td><td class="n mono">1 s</td><td class="n mono">0%</td></tr>
+      <tr><td><code>inert_term</code> fires on <code>angular_momentum</code></td><td class="n mono">500</td><td class="n mono">10 min</td><td class="n mono">1%</td></tr>
+      <tr><td>All six curriculum shocks evaluated</td><td class="n mono">2,200</td><td class="n mono">44 min</td><td class="n mono">4%</td></tr>
+      <tr><td>Plateau or not known</td><td class="n mono">5,000</td><td class="n mono">102 min</td><td class="n mono">10%</td></tr>
+      <tr><td>Full run</td><td class="n mono">50,000</td><td class="n mono">16.15 h</td><td class="n mono">100%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">1.16 s per iteration at a median 88k env-steps/s on the training box.</p>
+
+  <h3>Advisor, not operator</h3>
+  <div class="prose">
+    <p>The doctor never stops a run. An automatic kill is the one action where a false positive costs more than the bug it prevents, and the person watching has context the rules don't. Every event, including <span class="chip crit">critical</span>, posts and training continues. What the doctor owes you in return is an alert you can act on without opening a dashboard: what was observed, what it most likely means, and what your options are with their cost.</p>
+  </div>
+  <pre class="mono" style="background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;font-size:12.5px;line-height:1.5;overflow-x:auto;margin:16px 0 0">[warn] inert_term · it 512 · 10 min elapsed
+  Episode_Reward/angular_momentum has read 0.000000 for 500 consecutive
+  iterations while its weight is -0.02.
+  Likely: robot/root_angmom sensor returns zeros, or the selector matches
+  no body. The term is contributing nothing to training.
+  Consider: this run is unaffected either way; fix before the next run.
+  Replay: model_500.pt · uv run play Microduck-Velocity-v0 --checkpoint 500</pre>
+  <p class="small">Three parts, every time. The last two lines are what turn a flag into a decision you can make in ten seconds.</p>
+  <div class="callout"><b>Why Weights &amp; Biases hasn't done this.</b> The platform sees anonymous scalars from every framework in existence. The rules on this page are legible only because the tool can read <code>env.yaml</code> and knows what <code>action_rate_l2</code> means, that <code>Curriculum/*</code> is a schedule and not a metric, and which terms are penalties. That knowledge is per-codebase. A general tracker can offer z-scores; a doctor has to live in the repo.</div>
+</section>
+
+<section>
+  <div class="eyebrow">Rules</div>
+  <h2>A first ten, with thresholds taken from this run.</h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Rule</th><th>Condition</th><th>Phase</th><th>Severity</th><th>Recommended action</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">penalty_sign</td><td>any <code>Episode_Reward/&lt;penalty&gt;</code> &gt; 0 at any step</td><td>all</td><td><span class="chip crit">critical</span></td><td>Stop. Negative weight on a self-negating <code>*_penalty</code>. Fix sign, restart.</td></tr>
+      <tr><td class="mono">inert_term</td><td>|<code>Episode_Reward/x</code>| &lt; 1e-6 for 500 consecutive iterations while weight ≠ 0</td><td>all</td><td><span class="chip warn">warning</span></td><td>Sensor or selector returns zeros. Verify the term computes on a smoke test.</td></tr>
+      <tr><td class="mono">nan_state</td><td><code>Episode_Termination/nan_state</code> &gt; 0 in 3 of 10 iterations</td><td>all</td><td><span class="chip crit">critical</span></td><td>Physics instability. Dump the offending env, check solver settings and DR extremes.</td></tr>
+      <tr><td class="mono">curriculum_shock</td><td>task or total reward drops &gt;5% within 50 steps of an <code>env.yaml</code> boundary</td><td>hardening</td><td><span class="chip info">suppressed</span></td><td>Open a 200-iteration window. Escalate to <code>no_recovery</code> only if the raw metric behind the term stays below pre-shock.</td></tr>
+      <tr><td class="mono">no_recovery</td><td>raw <code>Metrics/*</code> for the shocked term still &lt; pre-shock at window close</td><td>hardening</td><td><span class="chip warn">warning</span></td><td>Stage too aggressive. Split it or move it later, never earlier.</td></tr>
+      <tr><td class="mono">shuffle</td><td><code>track_linear_velocity</code> rising and <code>Metrics/air_time_mean</code> &lt; 0.05</td><td>discovery+</td><td><span class="chip warn">warning</span></td><td>Feet not lifting. Raise <code>air_time</code> or <code>foot_clearance</code> weight; check the command gate.</td></tr>
+      <tr><td class="mono">premature_convergence</td><td><code>Policy/mean_std</code> &lt; 0.3 before σ-phase 2 (here: it 791)</td><td>exploration</td><td><span class="chip warn">warning</span></td><td>Exploration collapsed. Raise <code>entropy_coef</code> or <code>init_std</code>; check for a farmable term.</td></tr>
+      <tr><td class="mono">window_edge</td><td>a gated metric sits within 5% of its reward window edge for 2,000 iterations</td><td>consolidation</td><td><span class="chip info">info</span></td><td>Policy is taking the minimum that pays (air time at 0.1254 vs floor 0.125). Decide if that gait is what you want; if not, move the floor.</td></tr>
+      <tr><td class="mono">total_up_task_flat</td><td><code>Train/mean_reward</code> rising over 1,000 iterations while every task term's slope ≤ 0</td><td>all</td><td><span class="chip warn">warning</span></td><td>Reward rising on regularizers alone. Check episode length: 20 s means standing still and surviving.</td></tr>
+      <tr><td class="mono">lr_floor</td><td><code>Loss/learning_rate</code> at 1e-5 for 300 iterations</td><td>all</td><td><span class="chip warn">warning</span></td><td>Every update overshoots KL 0.01. Look for a reward cliff: a std that's too tight or a binary term.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">Applied to this run: <code>penalty_sign</code> passes, <code>inert_term</code> fires on <code>angular_momentum</code>, <code>curriculum_shock</code> suppresses six alerts, <code>window_edge</code> fires on air time, <code>premature_convergence</code> does not fire (σ crossed 0.3 at it 791, after walking was established at it ~90).</p>
+</section>
+
+<section>
+  <div class="eyebrow">Roadmap</div>
+  <h2>Each level is useful on its own and feeds the next.</h2>
+  <div class="levels">
+    <div class="level">
+      <div class="k">Level 1</div>
+      <h3>Curriculum-aware alerts</h3>
+      <ul>
+        <li>Rule engine wrapped around <code>logger.log</code> in <code>MicroduckOnPolicyRunner</code>; W&amp;B polling as the remote fallback</li>
+        <li>Reads <code>env.yaml</code> for boundaries, penalty set, windows</li>
+        <li>Runs the ten rules above with suppression windows</li>
+        <li>Posts typed events to Slack: observed, likely cause, options, replay command</li>
+      </ul>
+      <div class="eff">days · a failing run costs 10 minutes, not 16 hours</div>
+    </div>
+    <div class="level">
+      <div class="k">Level 2</div>
+      <h3>Run analyzer and replay</h3>
+      <ul>
+        <li>Post-hoc report: phases, incidents, grouped root causes</li>
+        <li><code>env.yaml</code> diff against the previous run with expected effects</li>
+        <li>Counter rewind in <code>play</code>; RecorderTerm to Rerun</li>
+        <li>Click a flag, scrub the rollout at that iteration</li>
+      </ul>
+      <div class="eff">weeks · closes the curve-to-sim loop</div>
+    </div>
+    <div class="level">
+      <div class="k">Level 3</div>
+      <h3>Training copilot</h3>
+      <ul>
+        <li>Live phase state machine with causal grouping</li>
+        <li>Per-env reward monitoring for early hack detection</li>
+        <li>Narrator proposes one change from events + diff + replay stats</li>
+        <li>Optional: hands the proposal to <code>mjlab grid-search</code></li>
+      </ul>
+      <div class="eff">months · the recommendation layer</div>
+    </div>
+  </div>
+  <p class="small" style="margin-top:28px">Curves and audit values are read directly from <code>logs/rsl_rl/velocity/2026-09-14_17-56-13_velocity/events.out.tfevents.*</code> and <code>params/env.yaml</code>; landscape claims come from vendor docs and papers surveyed on 2026-09-16.</p>
+</section>
+</div>
+
+<script id="data" type="application/json">{"reward_zoom":[[0,0.09],[5,0.5],[10,1.03],[15,1.68],[20,2.29],[25,2.94],[30,3.71],[35,4.64],[40,5.6],[45,7.46],[50,9.73],[55,12.32],[60,16.11],[65,19.26],[70,26.16],[75,31.19],[80,47.76],[85,70.1],[90,78.05],[95,81.03],[100,77.34],[105,76.81],[110,73.09],[115,75.76],[120,77.74],[125,84.19],[130,92.02],[135,89.02],[140,90.35],[145,90.08],[150,85.91],[155,85.47],[160,85.66],[165,89.76],[170,95.78],[175,96.56],[180,96.75],[185,94.8],[190,93.7],[195,90.82],[200,92.29],[205,93.8],[210,96.99],[215,100.14],[220,99.12],[225,94.52],[230,94.86],[235,95.8],[240,93.69],[245,93.85],[250,95.12],[255,98.99],[260,101.81],[265,101.25],[270,98.47],[275,96.34],[280,96.82],[285,96.88],[290,97.92],[295,100.4],[300,102.15],[305,99.48],[310,98.94],[315,99.72],[320,99.18],[325,100.52],[330,101.63],[335,100.73],[340,104.44],[345,101.8],[350,103.93],[355,101.3],[360,101.6],[365,102.07],[370,103.74],[375,104.28],[380,102.17],[385,102.3],[390,102.75],[395,104.04],[400,103.02],[405,103.2],[410,102.7],[415,104.85],[420,103.71],[425,103.76],[430,104.48],[435,105.22],[440,103.29],[445,106.07],[450,101.86],[455,104.46],[460,106.22],[465,105.1],[470,106.91],[475,107.45],[480,107.09],[485,106.58],[490,107.41],[495,106.48],[500,108.14],[505,104.42],[510,103.09],[515,102.15],[520,101.82],[525,100.53],[530,99.35],[535,96.87],[540,99.45],[545,101.61],[550,103.44],[555,103.75],[560,102.34],[565,105.86],[570,107.3],[575,107.43],[580,106.83],[585,108.62],[590,108.68],[595,111.3],[600,109.63],[605,108.26],[610,111.12],[615,110.62],[620,110.51],[625,109.26],[630,110.56],[635,107.72],[640,110.61],[645,109.74],[650,109.9],[655,110.51],[660,111.73],[665,111.41],[670,111.82],[675,111.85],[680,112.6],[685,111.19],[690,113.81],[695,111.42],[700,111.68],[705,114.56],[710,112.39],[715,114.22],[720,112.99],[725,113.31],[730,112.8],[735,112.82],[740,112.38],[745,111.77],[750,112.09],[755,109.11],[760,112.54],[765,108.32],[770,107.57],[775,107.35],[780,105.51],[785,106.53],[790,105.84],[795,105.13],[800,106.45],[805,110.88],[810,110.56],[815,112.75],[820,112.47],[825,113.13],[830,114.77],[835,116.66],[840,115.37],[845,115.23],[850,115.6],[855,117.51],[860,117.07],[865,117.23],[870,118.76],[875,117.74],[880,118.5],[885,118.99],[890,116.88],[895,118.24],[900,116.15],[905,117.24],[910,116.84],[915,117.1],[920,118.71],[925,118.36],[930,118.01],[935,116.62],[940,119.33],[945,118.31],[950,117.29],[955,118.66],[960,118.48],[965,119.08],[970,119.12],[975,118.46],[980,119.32],[985,119.24],[990,118.23],[995,119.02],[1000,119.01],[1005,117.27],[1010,116.56],[1015,111.64],[1020,113.81],[1025,110.75],[1030,111.56],[1035,110.19],[1040,109.0],[1045,108.15],[1050,108.33],[1055,108.99],[1060,111.44],[1065,108.62],[1070,111.96],[1075,110.3],[1080,112.7],[1085,111.58],[1090,112.44],[1095,113.24],[1100,113.97],[1105,114.2],[1110,115.46],[1115,113.69],[1120,114.08],[1125,114.59],[1130,114.65],[1135,112.73],[1140,116.16],[1145,115.13],[1150,115.12],[1155,114.78],[1160,115.51],[1165,115.05],[1170,115.19],[1175,117.16],[1180,117.57],[1185,115.4],[1190,115.5],[1195,116.69],[1200,115.81],[1205,116.4],[1210,117.15],[1215,117.82],[1220,118.63],[1225,117.83],[1230,116.94],[1235,115.04],[1240,119.85],[1245,116.57],[1250,118.37],[1255,115.64],[1260,116.11],[1265,115.71],[1270,115.04],[1275,115.43],[1280,114.66],[1285,113.68],[1290,113.96],[1295,113.29],[1300,112.9],[1305,115.02],[1310,116.67],[1315,117.03],[1320,114.94],[1325,115.78],[1330,118.24],[1335,117.5],[1340,117.56],[1345,118.85],[1350,118.96],[1355,118.28],[1360,117.9],[1365,119.46],[1370,119.31],[1375,120.85],[1380,121.73],[1385,121.15],[1390,121.13],[1395,122.45],[1400,119.89],[1405,121.15],[1410,118.7],[1415,119.58],[1420,121.06],[1425,122.56],[1430,121.08],[1435,121.2],[1440,121.27],[1445,121.01],[1450,121.96],[1455,121.82],[1460,119.89],[1465,121.18],[1470,123.03],[1475,121.0],[1480,122.74],[1485,120.71],[1490,120.58],[1495,120.27],[1500,120.56],[1505,117.56],[1510,117.95],[1515,116.13],[1520,112.88],[1525,115.66],[1530,113.39],[1535,111.47],[1540,110.84],[1545,111.03],[1550,109.6],[1555,111.36],[1560,111.1],[1565,113.6],[1570,112.16],[1575,111.21],[1580,111.86],[1585,111.07],[1590,113.33],[1595,112.65],[1600,112.82],[1605,114.0],[1610,114.29],[1615,113.97],[1620,114.7],[1625,113.81],[1630,112.9],[1635,115.7],[1640,112.37],[1645,114.44],[1650,113.69],[1655,114.45],[1660,113.55],[1665,113.71],[1670,111.55],[1675,113.16],[1680,114.41],[1685,115.44],[1690,115.77],[1695,115.12],[1700,115.63],[1705,114.61],[1710,115.2],[1715,115.43],[1720,114.17],[1725,116.23],[1730,116.29],[1735,116.21],[1740,116.3],[1745,116.66],[1750,114.94],[1755,116.41],[1760,117.23],[1765,114.8],[1770,116.5],[1775,114.0],[1780,115.96],[1785,114.87],[1790,115.57],[1795,114.01],[1800,114.56],[1805,113.78],[1810,114.41],[1815,114.14],[1820,115.1],[1825,113.3],[1830,115.97],[1835,113.4],[1840,112.46],[1845,110.29],[1850,115.54],[1855,114.47],[1860,112.86],[1865,114.26],[1870,113.26],[1875,113.39],[1880,114.39],[1885,113.31],[1890,115.03],[1895,114.41],[1900,115.54],[1905,115.81],[1910,113.83],[1915,115.92],[1920,115.22],[1925,117.07],[1930,113.96],[1935,116.56],[1940,116.4],[1945,116.99],[1950,116.38],[1955,114.88],[1960,116.22],[1965,114.43],[1970,114.48],[1975,116.4],[1980,117.28],[1985,116.28],[1990,115.29],[1995,115.23],[2000,115.34],[2005,114.78],[2010,112.28],[2015,111.88],[2020,112.94],[2025,110.68],[2030,111.3],[2035,109.41],[2040,105.41],[2045,108.06],[2050,106.76],[2055,105.61],[2060,108.31],[2065,108.89],[2070,108.3],[2075,107.79],[2080,107.88],[2085,106.85],[2090,108.9],[2095,108.26],[2100,108.78],[2105,108.58],[2110,108.89],[2115,110.18],[2120,109.39],[2125,109.3],[2130,109.97],[2135,109.81],[2140,111.07],[2145,110.13],[2150,111.64],[2155,110.8],[2160,110.68],[2165,110.17],[2170,109.89],[2175,110.5],[2180,110.45],[2185,111.06],[2190,111.36],[2195,108.49],[2200,109.1],[2205,109.15],[2210,109.49],[2215,109.39],[2220,108.34],[2225,108.21],[2230,109.75],[2235,108.61],[2240,108.94],[2245,107.8],[2250,108.15],[2255,109.04],[2260,107.78],[2265,111.6],[2270,110.3],[2275,110.36],[2280,109.4],[2285,110.02],[2290,110.54],[2295,108.35],[2300,110.73],[2305,109.49],[2310,111.75],[2315,110.42],[2320,109.31],[2325,111.4],[2330,113.59],[2335,111.07],[2340,109.84],[2345,111.07],[2350,111.65],[2355,112.71],[2360,113.18],[2365,111.74],[2370,109.96],[2375,112.07],[2380,113.14],[2385,112.73],[2390,112.38],[2395,113.41],[2400,112.57],[2405,114.06],[2410,114.39],[2415,114.4],[2420,112.48],[2425,113.32],[2430,114.32],[2435,114.15],[2440,114.33],[2445,113.09],[2450,113.33],[2455,113.51],[2460,114.31],[2465,114.53],[2470,112.33],[2475,113.54],[2480,114.44],[2485,113.99],[2490,112.32],[2495,113.32],[2500,114.2],[2505,112.16],[2510,114.15],[2515,113.86],[2520,112.82],[2525,113.14],[2530,110.05],[2535,111.01],[2540,111.23],[2545,112.95],[2550,112.65],[2555,112.75],[2560,110.38],[2565,114.04],[2570,111.96],[2575,113.15],[2580,112.94],[2585,111.69],[2590,113.04],[2595,114.9],[2600,114.07],[2605,112.5],[2610,113.62],[2615,112.64],[2620,113.7],[2625,113.39],[2630,114.11],[2635,111.52],[2640,112.92],[2645,113.5],[2650,113.58],[2655,112.88],[2660,111.32],[2665,112.2],[2670,113.38],[2675,111.81],[2680,111.88],[2685,112.01],[2690,111.75],[2695,112.66],[2700,110.79],[2705,110.2],[2710,112.71],[2715,112.39],[2720,111.23],[2725,110.62],[2730,111.62],[2735,111.95],[2740,112.21],[2745,113.34],[2750,110.68],[2755,113.95],[2760,114.05],[2765,113.29],[2770,113.03],[2775,112.54],[2780,112.2],[2785,113.34],[2790,112.97],[2795,113.27],[2800,110.98],[2805,112.08],[2810,112.74],[2815,112.59],[2820,112.29],[2825,114.0],[2830,112.67],[2835,112.51],[2840,114.15],[2845,112.86],[2850,114.17],[2855,112.86],[2860,114.12],[2865,115.47],[2870,114.47],[2875,115.31],[2880,114.43],[2885,114.91],[2890,116.11],[2895,113.97],[2900,112.36],[2905,112.57],[2910,112.14],[2915,111.24],[2920,113.8],[2925,114.19],[2930,114.11],[2935,113.33],[2940,114.05],[2945,113.4],[2950,112.56],[2955,114.27],[2960,114.02],[2965,113.89],[2970,114.27],[2975,114.6],[2980,115.26],[2985,114.81],[2990,114.54],[2995,115.95],[3000,69.6]],"arw_zoom":[[0,-0.1],[25,-0.1],[50,-0.1],[75,-0.1],[100,-0.1],[125,-0.1],[150,-0.1],[175,-0.1],[200,-0.1],[225,-0.1],[250,-0.1],[275,-0.1],[300,-0.1],[325,-0.1],[350,-0.1],[375,-0.1],[400,-0.1],[425,-0.1],[450,-0.1],[475,-0.1],[500,-0.2],[525,-0.2],[550,-0.2],[575,-0.2],[600,-0.2],[625,-0.2],[650,-0.2],[675,-0.2],[700,-0.2],[725,-0.2],[750,-0.4],[775,-0.4],[800,-0.4],[825,-0.4],[850,-0.4],[875,-0.4],[900,-0.4],[925,-0.4],[950,-0.4],[975,-0.4],[1000,-0.6],[1025,-0.6],[1050,-0.6],[1075,-0.6],[1100,-0.6],[1125,-0.6],[1150,-0.6],[1175,-0.6],[1200,-0.6],[1225,-0.6],[1250,-0.8],[1275,-0.8],[1300,-0.8],[1325,-0.8],[1350,-0.8],[1375,-0.8],[1400,-0.8],[1425,-0.8],[1450,-0.8],[1475,-0.8],[1500,-1.0],[1525,-1.0],[1550,-1.0],[1575,-1.0],[1600,-1.0],[1625,-1.0],[1650,-1.0],[1675,-1.0],[1700,-1.0],[1725,-1.0],[1750,-1.0],[1775,-1.0],[1800,-1.0],[1825,-1.0],[1850,-1.0],[1875,-1.0],[1900,-1.0],[1925,-1.0],[1950,-1.0],[1975,-1.0],[2000,-1.0],[2025,-1.0],[2050,-1.0],[2075,-1.0],[2100,-1.0],[2125,-1.0],[2150,-1.0],[2175,-1.0],[2200,-1.0],[2225,-1.0],[2250,-1.0],[2275,-1.0],[2300,-1.0],[2325,-1.0],[2350,-1.0],[2375,-1.0],[2400,-1.0],[2425,-1.0],[2450,-1.0],[2475,-1.0],[2500,-1.0],[2525,-1.0],[2550,-1.0],[2575,-1.0],[2600,-1.0],[2625,-1.0],[2650,-1.0],[2675,-1.0],[2700,-1.0],[2725,-1.0],[2750,-1.0],[2775,-1.0],[2800,-1.0],[2825,-1.0],[2850,-1.0],[2875,-1.0],[2900,-1.0],[2925,-1.0],[2950,-1.0],[2975,-1.0],[3000,-1.0]],"std_full":[[0,0.995],[100,0.557],[200,0.522],[300,0.516],[400,0.502],[500,0.485],[600,0.382],[700,0.364],[800,0.296],[900,0.273],[1000,0.264],[1100,0.236],[1200,0.228],[1300,0.214],[1400,0.196],[1500,0.197],[1600,0.186],[1700,0.185],[1800,0.186],[1900,0.186],[2000,0.187],[2100,0.192],[2200,0.191],[2300,0.19],[2400,0.183],[2500,0.184],[2600,0.183],[2700,0.19],[2800,0.188],[2900,0.185],[3000,0.182],[3100,0.184],[3200,0.18],[3300,0.183],[3400,0.182],[3500,0.187],[3600,0.187],[3700,0.188],[3800,0.187],[3900,0.181],[4000,0.186],[4100,0.186],[4200,0.191],[4300,0.188],[4400,0.189],[4500,0.18],[4600,0.183],[4700,0.182],[4800,0.182],[4900,0.179],[5000,0.182],[5100,0.178],[5200,0.183],[5300,0.178],[5400,0.181],[5500,0.181],[5600,0.181],[5700,0.182],[5800,0.179],[5900,0.18],[6000,0.18],[6100,0.182],[6200,0.177],[6300,0.179],[6400,0.184],[6500,0.18],[6600,0.178],[6700,0.178],[6800,0.18],[6900,0.179],[7000,0.178],[7100,0.176],[7200,0.176],[7300,0.179],[7400,0.178],[7500,0.178],[7600,0.181],[7700,0.179],[7800,0.18],[7900,0.181],[8000,0.172],[8100,0.173],[8200,0.172],[8300,0.177],[8400,0.18],[8500,0.178],[8600,0.173],[8700,0.173],[8800,0.175],[8900,0.172],[9000,0.175],[9100,0.171],[9200,0.172],[9300,0.175],[9400,0.172],[9500,0.175],[9600,0.179],[9700,0.177],[9800,0.171],[9900,0.174],[10000,0.175],[10100,0.178],[10200,0.172],[10300,0.176],[10400,0.169],[10500,0.172],[10600,0.173],[10700,0.171],[10800,0.173],[10900,0.177],[11000,0.172],[11100,0.168],[11200,0.17],[11300,0.169],[11400,0.172],[11500,0.173],[11600,0.171],[11700,0.176],[11800,0.171],[11900,0.169],[12000,0.176],[12100,0.173],[12200,0.171],[12300,0.171],[12400,0.171],[12500,0.167],[12600,0.168],[12700,0.169],[12800,0.17],[12900,0.17],[13000,0.167],[13100,0.168],[13200,0.169],[13300,0.169],[13400,0.17],[13500,0.181],[13600,0.172],[13700,0.168],[13800,0.17],[13900,0.171],[14000,0.169],[14100,0.167],[14200,0.163],[14300,0.167],[14400,0.169],[14500,0.172],[14600,0.174],[14700,0.173],[14800,0.17],[14900,0.172],[15000,0.167],[15100,0.165],[15200,0.173],[15300,0.166],[15400,0.167],[15500,0.168],[15600,0.171],[15700,0.169],[15800,0.169],[15900,0.168],[16000,0.168],[16100,0.169],[16200,0.169],[16300,0.164],[16400,0.165],[16500,0.164],[16600,0.167],[16700,0.169],[16800,0.172],[16900,0.165],[17000,0.171],[17100,0.171],[17200,0.171],[17300,0.176],[17400,0.172],[17500,0.165],[17600,0.166],[17700,0.167],[17800,0.169],[17900,0.17],[18000,0.172],[18100,0.171],[18200,0.167],[18300,0.165],[18400,0.169],[18500,0.166],[18600,0.162],[18700,0.165],[18800,0.166],[18900,0.171],[19000,0.17],[19100,0.169],[19200,0.171],[19300,0.164],[19400,0.17],[19500,0.169],[19600,0.169],[19700,0.173],[19800,0.165],[19900,0.163],[20000,0.166],[20100,0.161],[20200,0.163],[20300,0.163],[20400,0.165],[20500,0.163],[20600,0.167],[20700,0.167],[20800,0.167],[20900,0.172],[21000,0.164],[21100,0.163],[21200,0.168],[21300,0.166],[21400,0.167],[21500,0.166],[21600,0.168],[21700,0.167],[21800,0.168],[21900,0.172],[22000,0.165],[22100,0.167],[22200,0.176],[22300,0.182],[22400,0.171],[22500,0.171],[22600,0.167],[22700,0.171],[22800,0.165],[22900,0.163],[23000,0.165],[23100,0.165],[23200,0.165],[23300,0.162],[23400,0.167],[23500,0.166],[23600,0.161],[23700,0.164],[23800,0.162],[23900,0.163],[24000,0.163],[24100,0.168],[24200,0.169],[24300,0.165],[24400,0.162],[24500,0.158],[24600,0.163],[24700,0.165],[24800,0.165],[24900,0.164],[25000,0.162],[25100,0.163],[25200,0.16],[25300,0.163],[25400,0.163],[25500,0.158],[25600,0.166],[25700,0.167],[25800,0.16],[25900,0.159],[26000,0.162],[26100,0.163],[26200,0.159],[26300,0.163],[26400,0.163],[26500,0.162],[26600,0.166],[26700,0.16],[26800,0.165],[26900,0.164],[27000,0.162],[27100,0.16],[27200,0.158],[27300,0.163],[27400,0.163],[27500,0.163],[27600,0.159],[27700,0.16],[27800,0.165],[27900,0.161],[28000,0.159],[28100,0.159],[28200,0.159],[28300,0.16],[28400,0.162],[28500,0.162],[28600,0.158],[28700,0.163],[28800,0.158],[28900,0.166],[29000,0.166],[29100,0.165],[29200,0.167],[29300,0.166],[29400,0.168],[29500,0.165],[29600,0.164],[29700,0.163],[29800,0.164],[29900,0.167],[30000,0.166],[30100,0.161],[30200,0.165],[30300,0.163],[30400,0.16],[30500,0.156],[30600,0.164],[30700,0.164],[30800,0.162],[30900,0.161],[31000,0.166],[31100,0.172],[31200,0.162],[31300,0.165],[31400,0.164],[31500,0.167],[31600,0.162],[31700,0.167],[31800,0.162],[31900,0.16],[32000,0.153],[32100,0.161],[32200,0.156],[32300,0.164],[32400,0.164],[32500,0.163],[32600,0.159],[32700,0.159],[32800,0.162],[32900,0.163],[33000,0.159],[33100,0.157],[33200,0.16],[33300,0.156],[33400,0.156],[33500,0.159],[33600,0.156],[33700,0.156],[33800,0.161],[33900,0.16],[34000,0.161],[34100,0.16],[34200,0.159],[34300,0.154],[34400,0.159],[34500,0.163],[34600,0.158],[34700,0.161],[34800,0.158],[34900,0.16],[35000,0.161],[35100,0.158],[35200,0.167],[35300,0.164],[35400,0.16],[35500,0.162],[35600,0.162],[35700,0.155],[35800,0.159],[35900,0.16],[36000,0.156],[36100,0.155],[36200,0.157],[36300,0.158],[36400,0.162],[36500,0.166],[36600,0.168],[36700,0.167],[36800,0.164],[36900,0.166],[37000,0.16],[37100,0.163],[37200,0.157],[37300,0.16],[37400,0.162],[37500,0.165],[37600,0.163],[37700,0.159],[37800,0.152],[37900,0.163],[38000,0.161],[38100,0.159],[38200,0.161],[38300,0.163],[38400,0.162],[38500,0.162],[38600,0.163],[38700,0.164],[38800,0.164],[38900,0.164],[39000,0.16],[39100,0.165],[39200,0.168],[39300,0.169],[39400,0.167],[39500,0.163],[39600,0.163],[39700,0.162],[39800,0.162],[39900,0.163],[40000,0.162],[40100,0.154],[40200,0.155],[40300,0.157],[40400,0.157],[40500,0.158],[40600,0.161],[40700,0.16],[40800,0.161],[40900,0.159],[41000,0.163],[41100,0.166],[41200,0.166],[41300,0.164],[41400,0.16],[41500,0.16],[41600,0.162],[41700,0.158],[41800,0.161],[41900,0.164],[42000,0.159],[42100,0.157],[42200,0.158],[42300,0.163],[42400,0.162],[42500,0.16],[42600,0.161],[42700,0.163],[42800,0.162],[42900,0.164],[43000,0.161],[43100,0.162],[43200,0.161],[43300,0.158],[43400,0.158],[43500,0.157],[43600,0.162],[43700,0.16],[43800,0.162],[43900,0.159],[44000,0.168],[44100,0.16],[44200,0.156],[44300,0.157],[44400,0.165],[44500,0.163],[44600,0.163],[44700,0.165],[44800,0.161],[44900,0.156],[45000,0.154],[45100,0.157],[45200,0.163],[45300,0.16],[45400,0.167],[45500,0.166],[45600,0.164],[45700,0.161],[45800,0.161],[45900,0.164],[46000,0.164],[46100,0.164],[46200,0.164],[46300,0.163],[46400,0.158],[46500,0.16],[46600,0.16],[46700,0.166],[46800,0.16],[46900,0.159],[47000,0.158],[47100,0.156],[47200,0.155],[47300,0.16],[47400,0.164],[47500,0.162],[47600,0.159],[47700,0.16],[47800,0.155],[47900,0.158],[48000,0.156],[48100,0.154],[48200,0.157],[48300,0.156],[48400,0.16],[48500,0.161],[48600,0.158],[48700,0.157],[48800,0.158],[48900,0.162],[49000,0.155],[49100,0.157],[49200,0.159],[49300,0.162],[49400,0.16],[49500,0.158],[49600,0.155],[49700,0.158],[49800,0.157],[49900,0.159]],"airtime_full":[[0,0.0313],[100,0.1116],[200,0.121],[300,0.1205],[400,0.1229],[500,0.1233],[600,0.1235],[700,0.1241],[800,0.1212],[900,0.1226],[1000,0.122],[1100,0.1178],[1200,0.1165],[1300,0.1172],[1400,0.1214],[1500,0.1191],[1600,0.1201],[1700,0.1196],[1800,0.1215],[1900,0.12],[2000,0.1212],[2100,0.1185],[2200,0.12],[2300,0.12],[2400,0.1182],[2500,0.1196],[2600,0.1202],[2700,0.1202],[2800,0.1212],[2900,0.1224],[3000,0.1209],[3100,0.1209],[3200,0.1213],[3300,0.1215],[3400,0.1211],[3500,0.1208],[3600,0.1215],[3700,0.1208],[3800,0.1199],[3900,0.1224],[4000,0.1231],[4100,0.1214],[4200,0.123],[4300,0.1217],[4400,0.1216],[4500,0.1211],[4600,0.1226],[4700,0.1219],[4800,0.1219],[4900,0.122],[5000,0.12],[5100,0.1223],[5200,0.1224],[5300,0.1224],[5400,0.1209],[5500,0.1227],[5600,0.1227],[5700,0.1223],[5800,0.1213],[5900,0.1222],[6000,0.1223],[6100,0.1225],[6200,0.1224],[6300,0.1239],[6400,0.122],[6500,0.1238],[6600,0.1224],[6700,0.1213],[6800,0.1232],[6900,0.1232],[7000,0.1219],[7100,0.1225],[7200,0.1232],[7300,0.1232],[7400,0.1223],[7500,0.1221],[7600,0.1238],[7700,0.1248],[7800,0.1254],[7900,0.1242],[8000,0.1215],[8100,0.1238],[8200,0.1222],[8300,0.1244],[8400,0.1234],[8500,0.1218],[8600,0.1235],[8700,0.1227],[8800,0.1243],[8900,0.1229],[9000,0.1233],[9100,0.1226],[9200,0.1232],[9300,0.1238],[9400,0.1252],[9500,0.1244],[9600,0.1232],[9700,0.1235],[9800,0.123],[9900,0.1231],[10000,0.123],[10100,0.1233],[10200,0.1238],[10300,0.1235],[10400,0.1228],[10500,0.1232],[10600,0.1235],[10700,0.1229],[10800,0.1237],[10900,0.1235],[11000,0.1237],[11100,0.1231],[11200,0.1233],[11300,0.1236],[11400,0.1221],[11500,0.1231],[11600,0.1243],[11700,0.1226],[11800,0.1235],[11900,0.1237],[12000,0.1234],[12100,0.1224],[12200,0.1232],[12300,0.1239],[12400,0.1224],[12500,0.1229],[12600,0.1228],[12700,0.1237],[12800,0.1228],[12900,0.1237],[13000,0.1242],[13100,0.124],[13200,0.1232],[13300,0.1246],[13400,0.1238],[13500,0.1228],[13600,0.1224],[13700,0.124],[13800,0.1246],[13900,0.1245],[14000,0.1233],[14100,0.1248],[14200,0.1234],[14300,0.1241],[14400,0.1244],[14500,0.125],[14600,0.1249],[14700,0.1236],[14800,0.1244],[14900,0.1238],[15000,0.1249],[15100,0.1226],[15200,0.1248],[15300,0.1226],[15400,0.1234],[15500,0.1228],[15600,0.1241],[15700,0.1256],[15800,0.1231],[15900,0.1238],[16000,0.1217],[16100,0.1249],[16200,0.1228],[16300,0.1235],[16400,0.1244],[16500,0.1245],[16600,0.1244],[16700,0.1235],[16800,0.125],[16900,0.124],[17000,0.1243],[17100,0.1239],[17200,0.1245],[17300,0.1243],[17400,0.1231],[17500,0.123],[17600,0.1241],[17700,0.1219],[17800,0.1245],[17900,0.1232],[18000,0.1223],[18100,0.1243],[18200,0.1228],[18300,0.1233],[18400,0.1241],[18500,0.1242],[18600,0.1239],[18700,0.1243],[18800,0.1237],[18900,0.1244],[19000,0.1237],[19100,0.1228],[19200,0.1245],[19300,0.1243],[19400,0.1233],[19500,0.1242],[19600,0.1245],[19700,0.1255],[19800,0.1258],[19900,0.125],[20000,0.1245],[20100,0.1254],[20200,0.1248],[20300,0.125],[20400,0.1253],[20500,0.1237],[20600,0.1241],[20700,0.1252],[20800,0.126],[20900,0.1259],[21000,0.1251],[21100,0.1247],[21200,0.1251],[21300,0.124],[21400,0.1239],[21500,0.123],[21600,0.1244],[21700,0.1241],[21800,0.125],[21900,0.125],[22000,0.1248],[22100,0.1237],[22200,0.1228],[22300,0.1219],[22400,0.1225],[22500,0.124],[22600,0.1247],[22700,0.1243],[22800,0.1229],[22900,0.1245],[23000,0.1252],[23100,0.1247],[23200,0.1238],[23300,0.1235],[23400,0.1241],[23500,0.1253],[23600,0.1237],[23700,0.1243],[23800,0.125],[23900,0.1252],[24000,0.1249],[24100,0.1238],[24200,0.1242],[24300,0.1241],[24400,0.1256],[24500,0.1258],[24600,0.125],[24700,0.1254],[24800,0.1243],[24900,0.1252],[25000,0.1246],[25100,0.1248],[25200,0.1242],[25300,0.1247],[25400,0.1247],[25500,0.1244],[25600,0.1259],[25700,0.1256],[25800,0.1236],[25900,0.124],[26000,0.1238],[26100,0.125],[26200,0.1245],[26300,0.1243],[26400,0.1243],[26500,0.1244],[26600,0.1243],[26700,0.1237],[26800,0.1232],[26900,0.124],[27000,0.1247],[27100,0.1255],[27200,0.1252],[27300,0.1261],[27400,0.126],[27500,0.1248],[27600,0.1246],[27700,0.1257],[27800,0.1245],[27900,0.1254],[28000,0.1251],[28100,0.1252],[28200,0.1249],[28300,0.1253],[28400,0.1254],[28500,0.1236],[28600,0.1248],[28700,0.1248],[28800,0.1248],[28900,0.1252],[29000,0.1248],[29100,0.1237],[29200,0.1255],[29300,0.1251],[29400,0.1251],[29500,0.1256],[29600,0.1251],[29700,0.1242],[29800,0.1241],[29900,0.1244],[30000,0.1257],[30100,0.125],[30200,0.1254],[30300,0.1252],[30400,0.1257],[30500,0.1245],[30600,0.1251],[30700,0.1255],[30800,0.125],[30900,0.1252],[31000,0.1236],[31100,0.1246],[31200,0.1251],[31300,0.1256],[31400,0.1244],[31500,0.1238],[31600,0.1248],[31700,0.1247],[31800,0.1242],[31900,0.1256],[32000,0.1258],[32100,0.1247],[32200,0.1257],[32300,0.1246],[32400,0.1246],[32500,0.1233],[32600,0.1236],[32700,0.126],[32800,0.1259],[32900,0.1257],[33000,0.1246],[33100,0.1272],[33200,0.1246],[33300,0.1241],[33400,0.1242],[33500,0.1246],[33600,0.1249],[33700,0.1259],[33800,0.1258],[33900,0.1267],[34000,0.1238],[34100,0.1242],[34200,0.1248],[34300,0.1249],[34400,0.1247],[34500,0.1251],[34600,0.1254],[34700,0.1248],[34800,0.1254],[34900,0.1253],[35000,0.1241],[35100,0.1252],[35200,0.1249],[35300,0.1247],[35400,0.1244],[35500,0.1261],[35600,0.1241],[35700,0.125],[35800,0.1246],[35900,0.1243],[36000,0.1237],[36100,0.1237],[36200,0.1247],[36300,0.1244],[36400,0.1251],[36500,0.1236],[36600,0.1235],[36700,0.1242],[36800,0.1247],[36900,0.1241],[37000,0.124],[37100,0.1254],[37200,0.1247],[37300,0.1242],[37400,0.1255],[37500,0.1248],[37600,0.1244],[37700,0.124],[37800,0.1245],[37900,0.1252],[38000,0.1258],[38100,0.1258],[38200,0.1245],[38300,0.1248],[38400,0.1248],[38500,0.1255],[38600,0.1245],[38700,0.124],[38800,0.1252],[38900,0.1242],[39000,0.1251],[39100,0.1248],[39200,0.125],[39300,0.1252],[39400,0.1256],[39500,0.1253],[39600,0.1248],[39700,0.1248],[39800,0.1256],[39900,0.1266],[40000,0.1264],[40100,0.1257],[40200,0.1247],[40300,0.1244],[40400,0.1256],[40500,0.1263],[40600,0.1253],[40700,0.1266],[40800,0.1261],[40900,0.1262],[41000,0.1253],[41100,0.1249],[41200,0.1256],[41300,0.1255],[41400,0.1248],[41500,0.125],[41600,0.1252],[41700,0.1249],[41800,0.1254],[41900,0.1245],[42000,0.1241],[42100,0.1256],[42200,0.1247],[42300,0.1251],[42400,0.1247],[42500,0.1242],[42600,0.1258],[42700,0.1256],[42800,0.1248],[42900,0.124],[43000,0.1263],[43100,0.1252],[43200,0.1268],[43300,0.1258],[43400,0.1262],[43500,0.1248],[43600,0.1245],[43700,0.1246],[43800,0.1245],[43900,0.1249],[44000,0.1252],[44100,0.1249],[44200,0.1243],[44300,0.1246],[44400,0.1258],[44500,0.1252],[44600,0.1268],[44700,0.1259],[44800,0.1251],[44900,0.1253],[45000,0.1264],[45100,0.1255],[45200,0.1253],[45300,0.1247],[45400,0.1255],[45500,0.1246],[45600,0.1245],[45700,0.1257],[45800,0.1258],[45900,0.125],[46000,0.1254],[46100,0.1253],[46200,0.1235],[46300,0.1252],[46400,0.1263],[46500,0.1256],[46600,0.1253],[46700,0.1261],[46800,0.125],[46900,0.1251],[47000,0.1241],[47100,0.1248],[47200,0.1253],[47300,0.1249],[47400,0.1257],[47500,0.1251],[47600,0.1239],[47700,0.1256],[47800,0.1251],[47900,0.126],[48000,0.1254],[48100,0.1259],[48200,0.1252],[48300,0.1244],[48400,0.1263],[48500,0.1265],[48600,0.1261],[48700,0.1262],[48800,0.1252],[48900,0.1256],[49000,0.1258],[49100,0.1261],[49200,0.1257],[49300,0.1254],[49400,0.1249],[49500,0.1255],[49600,0.125],[49700,0.1243],[49800,0.1236],[49900,0.1261]],"reward_full":[[0,0.3],[100,77.3],[200,93.5],[300,99.8],[400,103.1],[500,105.9],[600,109.8],[700,112.8],[800,107.8],[900,117.1],[1000,118.0],[1100,113.9],[1200,116.3],[1300,114.4],[1400,120.7],[1500,119.4],[1600,113.4],[1700,115.3],[1800,114.5],[1900,114.9],[2000,114.6],[2100,108.7],[2200,109.5],[2300,110.2],[2400,113.4],[2500,113.2],[2600,113.6],[2700,111.6],[2800,112.4],[2900,113.4],[3000,115.4],[3100,115.5],[3200,115.8],[3300,114.9],[3400,115.3],[3500,112.1],[3600,113.4],[3700,113.0],[3800,113.9],[3900,115.5],[4000,115.5],[4100,113.8],[4200,111.8],[4300,113.5],[4400,113.0],[4500,117.9],[4600,116.4],[4700,116.6],[4800,118.3],[4900,117.6],[5000,117.7],[5100,118.6],[5200,117.1],[5300,119.1],[5400,117.1],[5500,117.6],[5600,118.3],[5700,117.9],[5800,118.1],[5900,118.1],[6000,118.1],[6100,117.5],[6200,119.5],[6300,118.2],[6400,117.9],[6500,119.1],[6600,120.2],[6700,120.0],[6800,119.2],[6900,119.6],[7000,119.1],[7100,120.2],[7200,120.3],[7300,119.8],[7400,120.4],[7500,119.3],[7600,118.5],[7700,119.3],[7800,118.1],[7900,118.8],[8000,121.9],[8100,122.0],[8200,121.7],[8300,120.7],[8400,119.3],[8500,119.8],[8600,121.8],[8700,122.5],[8800,121.5],[8900,121.8],[9000,121.5],[9100,123.3],[9200,123.1],[9300,121.4],[9400,123.0],[9500,122.4],[9600,120.0],[9700,120.2],[9800,123.1],[9900,122.1],[10000,121.7],[10100,120.5],[10200,121.9],[10300,120.4],[10400,124.3],[10500,123.3],[10600,122.1],[10700,123.4],[10800,122.8],[10900,121.5],[11000,122.2],[11100,124.3],[11200,123.8],[11300,124.8],[11400,123.6],[11500,123.4],[11600,123.7],[11700,121.4],[11800,123.9],[11900,125.1],[12000,120.8],[12100,122.9],[12200,123.5],[12300,123.2],[12400,124.3],[12500,125.4],[12600,125.3],[12700,125.4],[12800,124.5],[12900,124.0],[13000,125.2],[13100,124.9],[13200,124.8],[13300,125.2],[13400,124.3],[13500,120.8],[13600,123.2],[13700,125.6],[13800,124.9],[13900,124.2],[14000,125.4],[14100,126.3],[14200,126.7],[14300,126.7],[14400,125.5],[14500,123.5],[14600,122.3],[14700,123.1],[14800,124.6],[14900,123.5],[15000,126.2],[15100,126.8],[15200,124.0],[15300,126.6],[15400,126.2],[15500,125.3],[15600,124.4],[15700,125.0],[15800,125.9],[15900,126.1],[16000,126.2],[16100,124.5],[16200,124.3],[16300,126.5],[16400,126.5],[16500,127.0],[16600,125.9],[16700,125.8],[16800,124.2],[16900,125.9],[17000,124.3],[17100,125.3],[17200,124.3],[17300,122.5],[17400,123.6],[17500,126.5],[17600,126.3],[17700,125.9],[17800,126.1],[17900,124.2],[18000,123.8],[18100,125.0],[18200,125.5],[18300,126.6],[18400,126.3],[18500,126.5],[18600,127.2],[18700,127.6],[18800,126.3],[18900,124.3],[19000,124.8],[19100,125.8],[19200,124.4],[19300,127.0],[19400,125.0],[19500,125.0],[19600,125.6],[19700,124.2],[19800,126.3],[19900,127.5],[20000,127.4],[20100,127.1],[20200,128.3],[20300,127.6],[20400,127.8],[20500,127.7],[20600,126.4],[20700,126.4],[20800,126.1],[20900,124.6],[21000,127.9],[21100,128.4],[21200,125.1],[21300,127.3],[21400,126.7],[21500,126.4],[21600,124.5],[21700,126.4],[21800,125.9],[21900,124.8],[22000,126.6],[22100,125.5],[22200,124.1],[22300,121.4],[22400,124.2],[22500,124.0],[22600,125.7],[22700,125.6],[22800,127.4],[22900,127.8],[23000,126.7],[23100,126.7],[23200,126.5],[23300,128.3],[23400,126.1],[23500,128.0],[23600,129.2],[23700,127.8],[23800,128.3],[23900,128.9],[24000,128.4],[24100,127.1],[24200,126.2],[24300,127.6],[24400,128.9],[24500,129.7],[24600,127.5],[24700,127.1],[24800,127.2],[24900,127.7],[25000,128.1],[25100,128.7],[25200,129.8],[25300,129.1],[25400,128.5],[25500,129.9],[25600,127.5],[25700,126.8],[25800,129.2],[25900,129.9],[26000,128.6],[26100,129.2],[26200,129.9],[26300,128.3],[26400,129.0],[26500,129.2],[26600,127.5],[26700,129.7],[26800,127.3],[26900,128.4],[27000,129.0],[27100,129.2],[27200,130.4],[27300,129.1],[27400,129.3],[27500,129.1],[27600,129.8],[27700,130.2],[27800,128.4],[27900,129.1],[28000,129.9],[28100,130.1],[28200,129.9],[28300,129.6],[28400,129.7],[28500,128.8],[28600,131.0],[28700,129.7],[28800,130.5],[28900,127.5],[29000,126.3],[29100,127.5],[29200,126.1],[29300,126.5],[29400,126.8],[29500,127.8],[29600,127.6],[29700,128.4],[29800,128.1],[29900,126.5],[30000,127.2],[30100,129.4],[30200,128.2],[30300,128.3],[30400,129.6],[30500,130.4],[30600,128.3],[30700,128.0],[30800,128.2],[30900,129.0],[31000,127.4],[31100,125.3],[31200,129.2],[31300,128.5],[31400,127.9],[31500,127.6],[31600,128.7],[31700,127.1],[31800,129.3],[31900,129.9],[32000,132.8],[32100,129.9],[32200,130.6],[32300,128.3],[32400,128.4],[32500,129.5],[32600,130.8],[32700,130.1],[32800,129.6],[32900,128.9],[33000,130.7],[33100,131.9],[33200,130.5],[33300,131.2],[33400,132.0],[33500,130.5],[33600,131.3],[33700,131.8],[33800,130.0],[33900,130.4],[34000,129.4],[34100,129.7],[34200,130.3],[34300,131.8],[34400,130.9],[34500,128.9],[34600,131.0],[34700,129.1],[34800,130.5],[34900,129.9],[35000,129.9],[35100,129.6],[35200,128.7],[35300,129.2],[35400,129.1],[35500,129.3],[35600,129.4],[35700,131.5],[35800,130.8],[35900,129.9],[36000,131.1],[36100,131.9],[36200,130.9],[36300,130.6],[36400,129.1],[36500,128.4],[36600,126.9],[36700,126.9],[36800,128.5],[36900,128.6],[37000,129.2],[37100,128.9],[37200,131.8],[37300,130.8],[37400,129.1],[37500,128.1],[37600,129.4],[37700,130.6],[37800,132.4],[37900,130.2],[38000,130.2],[38100,130.5],[38200,129.9],[38300,129.2],[38400,130.1],[38500,129.9],[38600,128.5],[38700,128.6],[38800,128.4],[38900,129.5],[39000,129.4],[39100,128.0],[39200,126.9],[39300,126.6],[39400,127.2],[39500,128.6],[39600,129.5],[39700,128.8],[39800,129.8],[39900,129.1],[40000,129.0],[40100,132.4],[40200,132.7],[40300,131.8],[40400,131.1],[40500,130.5],[40600,130.1],[40700,130.0],[40800,129.3],[40900,130.8],[41000,128.8],[41100,128.5],[41200,127.2],[41300,128.5],[41400,129.3],[41500,130.0],[41600,129.5],[41700,130.6],[41800,129.6],[41900,128.4],[42000,130.9],[42100,132.4],[42200,130.9],[42300,128.1],[42400,129.3],[42500,130.0],[42600,130.1],[42700,129.6],[42800,130.3],[42900,129.0],[43000,129.9],[43100,129.1],[43200,129.4],[43300,131.0],[43400,131.3],[43500,131.6],[43600,129.8],[43700,129.6],[43800,128.6],[43900,129.8],[44000,129.6],[44100,130.3],[44200,132.4],[44300,131.7],[44400,128.5],[44500,129.3],[44600,129.8],[44700,128.4],[44800,129.6],[44900,131.5],[45000,132.9],[45100,131.1],[45200,129.8],[45300,130.2],[45400,127.8],[45500,127.8],[45600,129.2],[45700,129.5],[45800,129.8],[45900,129.3],[46000,128.5],[46100,129.3],[46200,129.0],[46300,129.3],[46400,131.4],[46500,129.8],[46600,130.0],[46700,128.4],[46800,129.9],[46900,131.1],[47000,130.8],[47100,132.6],[47200,132.8],[47300,131.2],[47400,128.3],[47500,129.7],[47600,130.5],[47700,130.8],[47800,131.9],[47900,131.7],[48000,132.7],[48100,132.4],[48200,131.3],[48300,132.4],[48400,131.0],[48500,131.2],[48600,132.1],[48700,131.9],[48800,131.5],[48900,129.9],[49000,132.4],[49100,132.1],[49200,131.3],[49300,130.3],[49400,131.1],[49500,130.6],[49600,132.5],[49700,131.0],[49800,130.7],[49900,130.7]],"eplen_zoom":[[0,24.0],[10,38.0],[20,47.0],[30,59.0],[40,79.0],[50,135.0],[60,218.0],[70,322.0],[80,577.0],[90,911.0],[100,865.0],[110,761.0],[120,809.0],[130,929.0],[140,889.0],[150,848.0],[160,850.0],[170,913.0],[180,890.0],[190,863.0],[200,864.0],[210,885.0],[220,878.0],[230,880.0],[240,829.0],[250,869.0],[260,928.0],[270,922.0],[280,855.0],[290,870.0],[300,912.0],[310,897.0],[320,865.0],[330,907.0],[340,940.0],[350,925.0],[360,940.0],[370,916.0],[380,892.0],[390,919.0],[400,904.0],[410,892.0],[420,896.0],[430,895.0],[440,896.0],[450,881.0],[460,939.0],[470,919.0],[480,921.0],[490,917.0],[500,969.0],[510,924.0],[520,910.0],[530,907.0],[540,889.0],[550,927.0],[560,911.0],[570,938.0],[580,907.0],[590,935.0],[600,965.0],[610,963.0],[620,916.0],[630,908.0],[640,950.0],[650,948.0],[660,920.0],[670,939.0],[680,935.0],[690,942.0],[700,934.0],[710,942.0],[720,941.0],[730,952.0],[740,915.0],[750,913.0],[760,958.0],[770,963.0],[780,966.0],[790,960.0],[800,895.0],[810,937.0],[820,960.0],[830,960.0],[840,980.0],[850,950.0],[860,951.0],[870,966.0],[880,980.0],[890,947.0],[900,930.0],[910,966.0],[920,939.0],[930,971.0],[940,971.0],[950,960.0],[960,949.0],[970,960.0],[980,924.0],[990,939.0],[1000,933.0],[1010,942.0],[1020,925.0],[1030,943.0],[1040,949.0],[1050,922.0],[1060,965.0],[1070,946.0],[1080,974.0],[1090,967.0],[1100,975.0],[1110,939.0],[1120,922.0],[1130,962.0],[1140,961.0],[1150,957.0],[1160,965.0],[1170,952.0],[1180,958.0],[1190,970.0],[1200,984.0],[1210,961.0],[1220,980.0],[1230,964.0],[1240,964.0],[1250,951.0],[1260,959.0],[1270,962.0],[1280,937.0],[1290,946.0],[1300,953.0],[1310,964.0],[1320,914.0],[1330,932.0],[1340,942.0],[1350,961.0],[1360,950.0],[1370,969.0],[1380,974.0],[1390,951.0],[1400,938.0],[1410,956.0],[1420,949.0],[1430,944.0],[1440,983.0],[1450,971.0],[1460,949.0],[1470,978.0],[1480,963.0],[1490,946.0],[1500,952.0],[1510,959.0],[1520,891.0],[1530,941.0],[1540,952.0],[1550,970.0],[1560,953.0],[1570,941.0],[1580,938.0],[1590,968.0],[1600,978.0],[1610,958.0],[1620,973.0],[1630,959.0],[1640,912.0],[1650,981.0],[1660,960.0],[1670,936.0],[1680,962.0],[1690,983.0],[1700,969.0],[1710,900.0],[1720,937.0],[1730,944.0],[1740,947.0],[1750,974.0],[1760,986.0],[1770,957.0],[1780,978.0],[1790,932.0],[1800,932.0],[1810,930.0],[1820,941.0],[1830,954.0],[1840,939.0],[1850,955.0],[1860,887.0],[1870,922.0],[1880,970.0],[1890,931.0],[1900,957.0],[1910,955.0],[1920,974.0],[1930,913.0],[1940,990.0],[1950,909.0],[1960,957.0],[1970,946.0],[1980,958.0],[1990,941.0],[2000,925.0],[2010,936.0],[2020,952.0],[2030,966.0],[2040,946.0],[2050,922.0],[2060,943.0],[2070,941.0],[2080,947.0],[2090,944.0],[2100,967.0],[2110,925.0],[2120,953.0],[2130,962.0],[2140,968.0],[2150,957.0],[2160,956.0],[2170,969.0],[2180,952.0],[2190,981.0],[2200,947.0],[2210,968.0],[2220,942.0],[2230,941.0],[2240,945.0],[2250,958.0],[2260,958.0],[2270,947.0],[2280,926.0],[2290,934.0],[2300,975.0],[2310,967.0],[2320,970.0],[2330,990.0],[2340,950.0],[2350,958.0],[2360,948.0],[2370,911.0],[2380,988.0],[2390,971.0],[2400,958.0],[2410,981.0],[2420,941.0],[2430,954.0],[2440,955.0],[2450,954.0],[2460,963.0],[2470,917.0],[2480,981.0],[2490,925.0],[2500,922.0],[2510,947.0],[2520,961.0],[2530,930.0],[2540,921.0],[2550,960.0],[2560,946.0],[2570,957.0],[2580,973.0],[2590,981.0],[2600,974.0],[2610,959.0],[2620,928.0],[2630,952.0],[2640,949.0],[2650,938.0],[2660,937.0],[2670,968.0],[2680,929.0],[2690,963.0],[2700,946.0],[2710,946.0],[2720,943.0],[2730,966.0],[2740,949.0],[2750,933.0],[2760,983.0],[2770,940.0],[2780,960.0],[2790,966.0],[2800,955.0],[2810,943.0],[2820,942.0],[2830,956.0],[2840,971.0],[2850,984.0],[2860,981.0],[2870,950.0],[2880,960.0],[2890,994.0],[2900,908.0],[2910,963.0],[2920,972.0],[2930,964.0],[2940,957.0],[2950,941.0],[2960,936.0],[2970,968.0],[2980,947.0],[2990,966.0],[3000,978.0]],"boundaries":[{"it":500,"pre":107.2,"post":103.2,"rec":111.7},{"it":750,"pre":112.5,"post":109.7,"rec":117.6},{"it":1000,"pre":119.0,"post":114.8,"rec":115.8},{"it":1250,"pre":117.6,"post":115.7,"rec":120.8},{"it":1500,"pre":121.1,"post":116.7,"rec":114.3},{"it":2000,"pre":116.3,"post":112.7,"rec":110.3}]}</script>
+<script>
+(function(){
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const fmt = (v,nd)=> (nd===0? Math.round(v) : v.toFixed(nd));
+
+  function lineChart(id, o){
+    const host = document.getElementById(id);
+    const W=720, H=o.h||210, L=54, R=14, T=10, B=30;
+    const pw=W-L-R, ph=H-T-B;
+    const xs = o.data.map(d=>d[0]), ys=o.data.map(d=>d[1]);
+    const x0 = o.x? o.x[0] : Math.min(...xs), x1 = o.x? o.x[1] : Math.max(...xs);
+    let y0 = o.y? o.y[0] : Math.min(...ys), y1 = o.y? o.y[1] : Math.max(...ys);
+    const X = v => L + (v-x0)/(x1-x0)*pw, Y = v => T + (1-(v-y0)/(y1-y0))*ph;
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('role','img'); svg.setAttribute('aria-label',o.aria||'');
+    const el=(t,a,p)=>{const e=document.createElementNS(ns,t); for(const k in a) e.setAttribute(k,a[k]); (p||svg).appendChild(e); return e;};
+    // bands
+    (o.bands||[]).forEach(b=>{ el('rect',{x:X(b.x0),y:T,width:X(b.x1)-X(b.x0),height:ph,fill:css('--band'),opacity:0.10}); });
+    if(o.hband){ el('rect',{x:L,y:Y(o.hband[1]),width:pw,height:Y(o.hband[0])-Y(o.hband[1]),fill:css('--band'),opacity:0.12}); }
+    (o.vbands||[]).forEach(b=>{ el('rect',{x:X(b.x0),y:T,width:X(b.x1)-X(b.x0),height:ph,fill:css('--shade'),opacity:b.op||0.04});
+      el('text',{x:X(b.x0)+6,y:T+12,fill:css('--muted'),'font-size':10}).textContent=b.label; });
+    // grid + y ticks
+    const yt = o.yticks || [y0,(y0+y1)/2,y1];
+    yt.forEach(v=>{ el('line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1});
+      const t=el('text',{x:L-8,y:Y(v)+4,'text-anchor':'end',fill:css('--muted')}); t.textContent=fmt(v,o.ynd??1); });
+    // x ticks
+    const xt = o.xticks || [x0,x1];
+    xt.forEach(v=>{ el('line',{x1:X(v),x2:X(v),y1:T+ph,y2:T+ph+4,stroke:css('--muted')});
+      const t=el('text',{x:X(v),y:H-10,'text-anchor':'middle',fill:css('--muted')}); t.textContent=(v>=1000? (v/1000)+'k': v); });
+    el('line',{x1:L,x2:W-R,y1:T+ph,y2:T+ph,stroke:css('--rule')});
+    el('text',{x:W-R,y:H-10,'text-anchor':'end',fill:css('--muted')}).textContent='iteration';
+    // vlines
+    (o.vlines||[]).forEach(v=>{ el('line',{x1:X(v.x),x2:X(v.x),y1:T,y2:T+ph,stroke:css('--muted'),'stroke-dasharray':'3 3'});
+      if(v.label){ const t=el('text',{x:X(v.x)+4,y:T+ph-6,fill:css('--muted'),'font-size':10}); t.textContent=v.label; } });
+    // line
+    let d=''; o.data.forEach((p,i)=>{ d+= (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)+' '; });
+    const stroke = o.color || css('--accent');
+    if(o.step){ d=''; o.data.forEach((p,i)=>{ if(i){ d+='H'+X(p[0]).toFixed(1)+' '; } d+=(i?'V':'M'+X(p[0]).toFixed(1)+' ')+Y(p[1]).toFixed(1)+' '; }); }
+    el('path',{d,fill:'none',stroke,'stroke-width':2,'stroke-linejoin':'round'});
+    // markers
+    (o.marks||[]).forEach(m=>{ el('circle',{cx:X(m.x),cy:Y(m.y),r:4,fill:css(m.good?'--good':'--warn'),stroke:css('--surface'),'stroke-width':2}); });
+    // endpoint
+    const last=o.data[o.data.length-1]; el('circle',{cx:X(last[0]),cy:Y(last[1]),r:3.5,fill:stroke});
+    // hover
+    const cur=el('line',{x1:0,x2:0,y1:T,y2:T+ph,stroke:css('--ink'),'stroke-width':1,opacity:0,class:'cursor'});
+    const dot=el('circle',{r:4,fill:stroke,stroke:css('--surface'),'stroke-width':2,opacity:0});
+    const tip=document.createElement('div'); tip.className='tip'; host.appendChild(tip);
+    svg.addEventListener('pointermove',e=>{
+      const r=svg.getBoundingClientRect(); const px=(e.clientX-r.left)/r.width*W;
+      if(px<L||px>W-R){ return; }
+      const xv=x0+(px-L)/pw*(x1-x0);
+      let lo=0,hi=o.data.length-1; while(lo<hi){const m=(lo+hi)>>1; if(o.data[m][0]<xv) lo=m+1; else hi=m;}
+      const p=o.data[lo]; cur.setAttribute('x1',X(p[0])); cur.setAttribute('x2',X(p[0])); cur.setAttribute('opacity',0.5);
+      dot.setAttribute('cx',X(p[0])); dot.setAttribute('cy',Y(p[1])); dot.setAttribute('opacity',1);
+      tip.style.display='block'; tip.style.left=(X(p[0])/W*r.width)+'px'; tip.style.top=(Y(p[1])/H*r.height+ (host.querySelector('.t')?.offsetHeight||0)+14)+'px';
+      tip.textContent=`it ${p[0]} · ${fmt(p[1],o.tnd??o.ynd??2)}${o.unit||''}`;
+    });
+    svg.addEventListener('pointerleave',()=>{cur.setAttribute('opacity',0);dot.setAttribute('opacity',0);tip.style.display='none';});
+    host.appendChild(svg);
+  }
+
+  const B = D.boundaries; // [{it,pre,post,rec}]
+  const changes = {500:'action_rate −0.1→−0.2 · standing 2→5% · head range ×3.4 · CoM ±3→5 mm',
+                   750:'action_rate −0.2→−0.4 · standing 5→10%',
+                   1000:'action_rate −0.4→−0.6 · standing 10→15% · head range ×2.3 · CoM ±5→10 mm · head_bias 1→2',
+                   1250:'action_rate −0.6→−0.8',
+                   1500:'action_rate −0.8→−1.0 · standing 15→20% · head range ×1.8 · CoM ±10→15 mm · head_bias 2→3',
+                   2000:'standing 20→25% · head range ×1.5 (full)'};
+  const marks=[], bands=[];
+  B.forEach(b=>{ bands.push({x0:b.it,x1:b.it+200}); marks.push({x:b.it+175,y:b.rec,good:b.rec>=b.pre}); });
+  lineChart('c-reward',{data:D.reward_zoom,x:[0,3000],y:[0,140],yticks:[0,35,70,105,140],ynd:0,xticks:[0,500,750,1000,1250,1500,2000,2500,3000],
+    bands, vlines:B.map(b=>({x:b.it})), marks, aria:'Mean reward over the first 3000 iterations with six curriculum boundaries and their 200-iteration recovery windows shaded. Reward dips inside every window; recovery markers are green at 500, 750 and 1250, amber at 1000, 1500 and 2000.'});
+  lineChart('c-arw',{data:D.arw_zoom,x:[0,3000],y:[-1.1,0],yticks:[-1,-0.5,0],ynd:1,h:120,xticks:[0,500,750,1000,1250,1500,2000,2500,3000],step:true,color:css('--ink-2'),
+    vlines:B.map(b=>({x:b.it})), aria:'Action-rate penalty weight as a staircase from minus 0.1 to minus 1.0, stepping at 500, 750, 1000, 1250 and 1500.'});
+  lineChart('c-std',{data:D.std_full,x:[0,50000],y:[0,1],yticks:[0,0.25,0.5,0.75,1],ynd:2,xticks:[0,10000,20000,30000,40000,50000],
+    vbands:[{x0:0,x1:468,label:'explore',op:0.10},{x0:468,x1:791,label:'commit',op:0.06},{x0:791,x1:1358,label:'',op:0.03}],
+    vlines:[{x:1358,label:'consolidate →'}], aria:'Policy action standard deviation falling from 1.0 to 0.16 over 50,000 iterations, with phase bands ending at 468, 791 and 1358.'});
+  lineChart('c-air',{data:D.airtime_full,x:[0,50000],y:[0,0.32],yticks:[0,0.125,0.3],ynd:3,tnd:4,unit:' s',xticks:[0,10000,20000,30000,40000,50000],
+    hband:[0.125,0.3], aria:'Mean foot air time rising from 0.03 to 0.125 seconds and staying at the lower edge of the rewarded window from 0.125 to 0.3 seconds.'});
+
+  // boundary table
+  const tb=document.getElementById('btable');
+  B.forEach(b=>{
+    const rec=b.rec>=b.pre;
+    const read = rec ? '<span class="chip good">recovered</span> suppressed'
+      : (b.it===1000 ? '<span class="chip warn">partial</span> +0.9 vs post, −3.3 vs pre. Check raw <code>Metrics/*</code> before flagging.'
+      : '<span class="chip warn">not recovered</span> heavier penalties at this step lower total reward by design. Reconcile against raw <code>Metrics/*</code>; flag only if <i>they</i> fell.');
+    tb.insertAdjacentHTML('beforeend',`<tr><td class="mono">it ${b.it}</td><td class="small">${changes[b.it]}</td><td class="n mono">${b.pre}</td><td class="n mono">${b.post}</td><td class="n mono">${b.rec}</td><td>${read}</td></tr>`);
+  });
+})();
+</script>
+
+</body></html>

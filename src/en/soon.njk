@@ -1,0 +1,10 @@
+---
+layout: soon.njk
+pagination:
+  data: pending.en
+  size: 1
+  alias: n
+permalink: "day{{ n | pad2 }}/"
+eleventyComputed:
+  title: "{{ course.days[n].en }}"
+---

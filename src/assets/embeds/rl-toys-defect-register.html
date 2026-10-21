@@ -1,0 +1,1063 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style></head><body>
+<title>rl_toys Defect Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #eef1f4;
+  --surface:     #ffffff;
+  --surface-2:   #f6f8fa;
+  --ink:         #121a21;
+  --ink-2:       #3d4d5a;
+  --ink-dim:     #6b7c8a;
+  --rule:        #d8e0e7;
+  --rule-soft:   #e6ecf1;
+  --accent:      #0b7180;
+  --accent-soft: #d3ebee;
+
+  --sev-blocking: #a10f3c;
+  --sev-critical: #b23c0b;
+  --sev-high:     #8a6104;
+  --sev-medium:   #46596b;
+  --sev-low:      #7b8894;
+  --sev-fixed:    #16694c;
+
+  --shadow: 0 1px 2px rgba(18,26,33,.05), 0 4px 14px rgba(18,26,33,.045);
+
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0e1419;
+    --surface:     #151d24;
+    --surface-2:   #1b242c;
+    --ink:         #e0e7ed;
+    --ink-2:       #b3c1cd;
+    --ink-dim:     #7f909e;
+    --rule:        #27333d;
+    --rule-soft:   #1f2932;
+    --accent:      #47cadb;
+    --accent-soft: #12363d;
+
+    --sev-blocking: #f2708f;
+    --sev-critical: #ee9257;
+    --sev-high:     #d9b038;
+    --sev-medium:   #8fa6bb;
+    --sev-low:      #7c8b98;
+    --sev-fixed:    #4dbd92;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0e1419;
+  --surface:     #151d24;
+  --surface-2:   #1b242c;
+  --ink:         #e0e7ed;
+  --ink-2:       #b3c1cd;
+  --ink-dim:     #7f909e;
+  --rule:        #27333d;
+  --rule-soft:   #1f2932;
+  --accent:      #47cadb;
+  --accent-soft: #12363d;
+
+  --sev-blocking: #f2708f;
+  --sev-critical: #ee9257;
+  --sev-high:     #d9b038;
+  --sev-medium:   #8fa6bb;
+  --sev-low:      #7c8b98;
+  --sev-fixed:    #4dbd92;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); }
+
+code, .mono { font-family: var(--f-mono); font-variant-ligatures: none; }
+
+/* ---------- masthead ---------- */
+
+.mast {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+.mast-in {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 30px 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.eyebrow b { color: var(--accent); font-weight: 500; }
+h1 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(28px, 4.4vw, 42px);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.dek {
+  margin: 0;
+  max-width: 66ch;
+  color: var(--ink-2);
+  font-size: 16px;
+}
+
+/* ---------- tally ---------- */
+
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+.tally-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 13px 7px 11px;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--sv);
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+.tally-n {
+  font-family: var(--f-mono);
+  font-size: 18px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--sv);
+}
+.tally-l {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* ---------- shell ---------- */
+
+.shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 28px 90px;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  padding: 30px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.rail-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 9px;
+}
+
+.toc { display: flex; flex-direction: column; gap: 1px; }
+.toc a {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+.toc a:hover { background: var(--surface-2); color: var(--ink); }
+.toc a span {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.filters { display: flex; flex-direction: column; gap: 5px; }
+.fbtn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.fbtn:hover { background: var(--surface-2); }
+.fbtn[aria-pressed="true"] {
+  border-color: var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+}
+.fbtn .dot {
+  width: 9px; height: 9px; border-radius: 2px;
+  background: var(--sv, var(--ink-dim));
+  flex: none;
+}
+.fbtn .n {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-dim);
+}
+
+.rail-note {
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 14px;
+}
+.reset {
+  background: none; border: none; padding: 0;
+  font: inherit; color: var(--accent); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* ---------- main ---------- */
+
+main { padding: 30px 0 0; min-width: 0; }
+
+.prose { max-width: 68ch; }
+.prose p { color: var(--ink-2); }
+
+.callout {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  border-radius: 3px;
+  padding: 18px 22px;
+  margin: 0 0 34px;
+  box-shadow: var(--shadow);
+}
+.callout h2 {
+  font-family: var(--f-display);
+  font-size: 15px;
+  letter-spacing: .01em;
+  margin: 0 0 8px;
+}
+.callout p { margin: 0 0 10px; max-width: 70ch; }
+.callout p:last-child { margin-bottom: 0; }
+.callout ol { margin: 0; padding-left: 20px; color: var(--ink-2); }
+.callout li { margin-bottom: 7px; }
+.callout li:last-child { margin-bottom: 0; }
+
+section.grp { margin-bottom: 44px; scroll-margin-top: 18px; }
+
+.grp-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 9px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--ink);
+}
+.grp-head h2 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -.01em;
+  margin: 0;
+}
+.grp-head .count {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  color: var(--ink-dim);
+  letter-spacing: .06em;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.grp-note {
+  margin: -6px 0 16px;
+  color: var(--ink-dim);
+  font-size: 13.5px;
+  max-width: 74ch;
+}
+
+/* ---------- finding ---------- */
+
+.find {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--sv);
+  border-radius: 3px;
+  padding: 15px 18px 16px 17px;
+  margin-bottom: 9px;
+  box-shadow: var(--shadow);
+}
+.find.done { opacity: .42; }
+
+.f-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 4px;
+}
+.f-check {
+  appearance: none;
+  width: 15px; height: 15px;
+  border: 1.5px solid var(--rule);
+  border-radius: 3px;
+  background: var(--surface-2);
+  cursor: pointer;
+  flex: none;
+  position: relative;
+}
+.f-check:hover { border-color: var(--sv); }
+.f-check:checked { background: var(--sv); border-color: var(--sv); }
+.f-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px; top: 1px;
+  width: 4px; height: 8px;
+  border: solid var(--surface);
+  border-width: 0 2px 2px 0;
+  transform: rotate(42deg);
+}
+.f-id {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: var(--sv);
+  border: 1px solid var(--sv);
+  border-radius: 2px;
+  padding: 1px 5px;
+  flex: none;
+}
+.f-sev {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--sv);
+  flex: none;
+}
+.f-verified {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px dotted var(--accent);
+  cursor: help;
+  flex: none;
+}
+.f-title {
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.35;
+  margin: 2px 0 8px;
+  text-wrap: balance;
+}
+.f-path {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-bottom: 11px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 2px;
+}
+.f-path .repo {
+  color: var(--ink-dim);
+  opacity: .7;
+  margin-right: 7px;
+}
+
+dl.f-body { margin: 0; display: grid; gap: 7px; }
+dl.f-body > div { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 12px; }
+dl.f-body dt {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-top: 3px;
+}
+dl.f-body dd { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 78ch; }
+dl.f-body dd code {
+  font-size: 12.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+  padding: .5px 4px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 40px 0;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+/* ---------- fixed list ---------- */
+
+.fixed-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fixed-list li {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--sev-fixed);
+  border-radius: 3px;
+  background: var(--surface);
+  padding: 10px 13px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.fixed-list b {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+/* ---------- order table ---------- */
+
+.tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+table.order { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+table.order th, table.order td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+}
+table.order thead th {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+table.order tbody tr:last-child td { border-bottom: none; }
+table.order td.step {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 500;
+  width: 1%;
+}
+table.order td.what { color: var(--ink); font-weight: 500; }
+table.order td.why { color: var(--ink-2); }
+
+footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 40px;
+  padding-top: 18px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  max-width: 74ch;
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; gap: 0; }
+  .rail {
+    position: static;
+    max-height: none;
+    padding: 22px 0 4px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 22px;
+  }
+  .toc { display: none; }
+  .filters { flex-direction: row; flex-wrap: wrap; }
+  .fbtn { width: auto; }
+  dl.f-body > div { grid-template-columns: minmax(0, 1fr); gap: 1px; }
+  dl.f-body dt { padding-top: 4px; }
+  dl.f-body dd, .f-path { min-width: 0; overflow-wrap: anywhere; }
+  dl.f-body dd code { white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="eyebrow">
+      <span>Repo <b>glab/rl_toys</b></span>
+      <span>Tip <b>d7f99f6</b></span>
+      <span>Prior pass <b>f1b90f2</b></span>
+      <span>2026-09-01</span>
+    </div>
+    <h1>rl_toys Defect Register</h1>
+    <p class="dek">Two review passes over the MuJoCo&nbsp;+&nbsp;PyBullet stack and the firmware it deploys to — the second re-run from scratch after a 44-commit push changed the plant underneath the first.</p>
+    <div class="tally" id="tally"></div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <div>
+      <p class="rail-h">Filter by severity</p>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div>
+      <p class="rail-h">Sections</p>
+      <nav class="toc" id="toc"></nav>
+    </div>
+    <p class="rail-note">
+      Checkboxes persist in this browser only. <button class="reset" id="reset" type="button">Clear all checks</button>
+    </p>
+  </aside>
+
+  <main>
+    <div class="callout prose">
+      <h2>Two patterns, not sixty unrelated bugs</h2>
+      <p><b>A reset that puts the robot somewhere other than where the code says.</b> The spawn height, the folded legs, the yaw filter's bias, the observation cache. Three of these were found independently by three people at three different times; the fourth is still open. The training path has no gate that asserts where the robot actually starts.</p>
+      <p><b>A consumer with no parity-test partner.</b> The observation grew 36&nbsp;→&nbsp;40 and the change landed perfectly in the two implementations that have a parity test between them — and missed both consumers that don't. Stage A and Gate V4 are dead as a direct result.</p>
+      <p>The gates pass because V0–V4 all run through <code>mujoco_backend.py</code>, the standalone parity backend, which is correct. Nearly every finding below is in <code>wlbot_mjlab/tasks/</code> — the training path — which no gate exercises end to end.</p>
+    </div>
+
+    <div id="groups"></div>
+
+    <section class="grp" id="g-fixed">
+      <div class="grp-head"><h2>Fixed since the first pass</h2><span class="count">9 items</span></div>
+      <p class="grp-note">Verified closed at <span class="mono">d7f99f6</span>. Listed because they change how the rest of the register should be read.</p>
+      <ul class="fixed-list">
+        <li><b>Domain randomization is real</b>Every drawn parameter now reaches the model, and the test asserts written fields rather than draws — including <code class="mono">geom_rbound</code> after a wheel resize.</li>
+        <li><b>Servo re-armed at reset</b>The legs no longer fold to the ctrlrange floor every episode. Was worth 0.55 → 0.84 survival.</li>
+        <li><b>track is CAD-sourced</b>0.0874&nbsp;m tire-centre spacing; the phantom hardcoded 12&nbsp;mm wheel offset is gone.</li>
+        <li><b>PyBullet honours radius DR</b>Regenerates and reloads the URDF so the drawn radius reaches the collision shapes.</li>
+        <li><b>verify_export tests the scale</b>No longer multiplies and divides by the same array, so a misordered <code class="mono">OBS_SCALE</code> now diverges.</li>
+        <li><b>Export dimension checks</b><code class="mono">assert asm.obs_dim == obs_dim</code> in two places; the silent-empty layer discovery now raises.</li>
+        <li><b>Genuine URDF↔MJCF joint gate</b><code class="mono">test_every_joint_matches</code> plus <code class="mono">parent_link_pos</code> is a real comparison, not MJCF-vs-config.</li>
+        <li><b>LR schedule documented</b>The <code class="mono">lin_</code> prefix drop is now stated in the config instead of silently truncated.</li>
+        <li><b>apply_delay — not a bug</b>mjlab 1.6.0 calls it from the entity, outside <code class="mono">compute</code>. Overriding <code class="mono">compute</code> without <code class="mono">super()</code> does not disable the action delay. Closed.</li>
+      </ul>
+    </section>
+
+    <section class="grp" id="g-order">
+      <div class="grp-head"><h2>Suggested order</h2></div>
+      <div class="tw">
+        <table class="order">
+          <thead><tr><th></th><th>Do this</th><th>Because</th></tr></thead>
+          <tbody>
+            <tr><td class="step">1</td><td class="what">The two missing <span class="mono">yaw</span> keys</td><td class="why">Stage A and Gate V4 are both dead, and Stage A is what validates the conventions Stage B depends on. One line plus a shared helper.</td></tr>
+            <tr><td class="step">2</td><td class="what">The four reset / config bugs</td><td class="why">Spawn offset, observation cache, curriculum warmup, yaw-filter bias ordering. All small, all currently corrupting every rollout. Then re-run V5.</td></tr>
+            <tr><td class="step">3</td><td class="what">NaN guard + host-loop safety set</td><td class="why">Before any flight. S1 in particular defeats the firmware watchdog rather than merely failing to add a guard.</td></tr>
+            <tr><td class="step">4</td><td class="what"><span class="mono">--clean</span>, obs delay, action clipping</td><td class="why">Until these land, the numbers in the training log do not mean what their column headers say.</td></tr>
+            <tr><td class="step">5</td><td class="what">Runaway guard and <span class="mono">l_com(h)</span></td><td class="why">Cheap, and they re-baseline the survival metric that everything else is judged against.</td></tr>
+            <tr><td class="step">6</td><td class="what">Sysid, or a banner on it</td><td class="why">The constants these tools were meant to produce are now sourced by hand. Running E6 to confirm them returns a 2× error that reads as a plausible disagreement.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <p><b>Confidence.</b> Findings marked <span class="mono" style="color:var(--accent)">verified</span> were checked personally against the tip: the spawn offset and base <code class="mono">ipos</code>, both missing <code class="mono">yaw</code> keys, the NaN clamp, the curriculum arithmetic, the empty <code class="mono">firmware/</code> diff, and the motor-constant provenance. The rest come from three focused review passes; where two passes converged independently on the same finding it is noted in the entry.</p>
+      <p>Everything is stated against <span class="mono">glab/rl_toys@d7f99f6</span> unless a firmware path says otherwise. No source file in either repo was modified to produce this.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+const SEV = ["blocking","critical","high","medium","low"];
+const SEVC = {blocking:"var(--sev-blocking)",critical:"var(--sev-critical)",high:"var(--sev-high)",medium:"var(--sev-medium)",low:"var(--sev-low)"};
+
+const GROUPS = [
+{ id:"blocking", name:"Blocking — nothing runs", note:"The observation grew to 40 channels; two of its three consumers were never updated.", items:[
+  {id:"BL-1",sev:"blocking",v:1,title:"policy_runner never supplies raw[\"yaw\"] — Stage A cannot start",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:88-98",
+   mech:"<code>obs_assembly.py:108</code> reads <code>yaw = raw[\"yaw\"]</code> as a bare subscript. The runner's <code>raw</code> dict supplies ten keys and not that one.",
+   fail:"<code>KeyError: 'yaw'</code> on the first telemetry frame, with the robot armed and the authority ramp already started. Fails safe only by accident — the exception precedes <code>cmd.send</code>, so the firmware sees 50 ms of silence and reverts to onboard PD.",
+   fix:"<code>\"yaw\": s[CH[\"yaw\"]] * deg</code> — channel 14, degrees like every other angle channel. Then add a smoke test that builds the raw dict from a synthetic telemetry row; the same test would catch S-4."},
+  {id:"BL-2",sev:"blocking",v:1,title:"crossplay has the same missing key and no YawFilter at all — Gate V4 is dead",repo:"rl_toys",path:"wlbot_mjlab/scripts/crossplay.py:96-112",
+   mech:"The local <code>sense()</code> closure returns no <code>yaw</code>, and the file contains zero references to <code>YawFilter</code> — so unlike the env, it cannot simply be handed the value.",
+   fail:"<code>KeyError</code> on episode 0, step 0, on both backends. The only test that runs one policy through both engines is non-runnable, at exactly the moment the plant changed (four-bar, CAD meshes, new motor constants) and the two engines' hip servos are known to be inequivalent.",
+   fix:"Lift <code>_reset_yaw_filter</code> and the substep block out of <code>wlbot_balance_env.py</code> into a shared helper, so the three consumers cannot desync again. Warm-start it the same 90/10 way, or crossplay's estimator distribution differs from training's."}
+]},
+
+{ id:"gpu", name:"The GPU training env is not the robot", note:"All seven live in wlbot_mjlab/tasks/ — the training path, which no gate exercises end to end.", items:[
+  {id:"GPU-1",sev:"critical",v:1,title:"Every episode spawns 57.3 mm in the air",repo:"rl_toys",path:"wlbot_mjlab/tasks/mdp/events.py:200,209",
+   mech:"<code>root[:,2] = root[:,2] + com_z</code> with no subtraction of the rotated inertial offset — while the comment three lines above claims the subtraction is made. <code>robot.xml:35</code> gives <code>&lt;inertial pos=\"-0.001638 0 0.0573\"&gt;</code>, and mjlab's <code>write_root_state_to_sim</code> writes raw freejoint qpos, i.e. the body origin.",
+   fail:"Intended axle height is 21.2 mm; actual is 78.5 mm. Every episode opens with a 0.108 s free fall landing at 1.06 m/s on both wheels — about 11 of 1000 policy steps, including the frame-stack fill. Survived a 44-commit refactor because no GPU test asserts spawn geometry.",
+   fix:"Mirror <code>mujoco_backend.py:138-143</code>: subtract <code>R(quat) @ body_ipos</code>. The x term is only 1.6 mm but is missing too."},
+  {id:"GPU-2",sev:"critical",v:0,title:"The odometry advances twice per policy step",repo:"rl_toys",path:"wlbot_mjlab/tasks/mdp/observations.py:81-83",
+   mech:"<code>reset()</code> nulls <code>_cached</code> globally rather than per-env. The reward term computes first and stamps the counter; mjlab then resets terminated envs, clearing the stamp for <i>all</i> envs, so the observation pass re-enters <code>update()</code> — which mutates.",
+   fail:"At 4096 envs roughly 4 terminate per step, so this fires on essentially every step. <code>ODOM_LPF_TAU</code> becomes 0.028 s instead of 0.050; the 4-frame history spans 3 steps of wall time; <code>_pos_ref</code> and now <code>_yaw_ref</code> both double-integrate, and the yaw clamp pullback forgives excursions at twice the rate the exported C will on hardware.",
+   fix:"Per-env <code>_cached_at</code> vector, invalidate only <code>env_ids</code>, recompute only stale rows. Worth checking <code>len(env._wlbot_obs_terms)</code> at runtime — if it is 2, actor and critic are seeing different worlds and this is worse than stated."},
+  {id:"GPU-3",sev:"critical",v:1,title:"The curriculum ramp completes at 9.4% of training, not 50%",repo:"rl_toys",path:"wlbot_mjlab/tasks/sk_env_cfg.py:183-186",
+   mech:"<code>tasks/__init__.py</code> calls <code>make_env_cfg()</code> at import time, freezing <code>warmup_policy_steps = 0.5 × 3000 × 24 = 36,000</code> from the module constants before tyro parses anything.",
+   fail:"<code>launch_panel.sh:23</code> defaults <code>steps=128</code>, so the real run is 3000 × 128 = 384,000 policy steps. Full push force and full init spread arrive at 9.4%. <code>ITERS=6000</code> halves it again to 4.7%. This is the exact failure <code>RampCurriculum</code>'s docstring was written to prevent, reintroduced through the launcher instead of the config — and a plausible contributor to the seed spread.",
+   fix:"Resolve the schedule at call time from the runner object the trainer actually built, rather than from module constants at import."},
+  {id:"GPU-4",sev:"high",v:0,title:"The yaw filter is warm-started against a bias that is then discarded",repo:"rl_toys",path:"wlbot_mjlab/actuators/mjlab_wheel_actuator.py:165-170",
+   mech:"<code>Actuator.reset</code> warms the filter from <code>sensors.gyro_z_bias</code>; then <code>events.py:132-133</code> calls <code>resample_biases</code> again and draws a new one. mjlab runs <code>scene.reset</code> before <code>event_manager.apply(mode=\"reset\")</code>, so the warm start is always against the stale value.",
+   fail:"Design intent is a bias known to ±0.5 dps. Actual initial error is <code>bias_old − bias_new + N(0,0.5)</code>, so ≈0.65 dps RMS and up to 1.5 dps — roughly 15° of extra heading drift over a 10 s episode before the PI term catches it. The CPU twin has the correct order, so this is a silent GPU-only handicap on the new heading channel.",
+   fix:"Delete <code>events.py:132-133</code>. <code>Actuator.reset</code> already does both, in the right order. Keep the <code>enc_scale</code> write — that draw genuinely lives in the event."},
+  {id:"GPU-5",sev:"high",v:0,title:"No observation delay on GPU, while both cross-engine gates apply it",repo:"rl_toys",path:"wlbot_mjlab/tasks/sk_env_cfg.py:89-92",
+   mech:"<code>sim_default.yaml:128</code> declares <code>obs_delay_ms: [2.0, 10.0]</code>. Grepping <code>wlbot_mjlab/tasks/</code> for it returns nothing; only <code>action_delay_ms</code> is wired.",
+   fail:"The GPU policy sees the world up to a full policy step fresher than the CPU policy or the robot. That trains a higher-bandwidth controller than the plant supports — the standard mechanism for the exact symptom reported (good pos_err, high vel RMSE). Found independently by two review passes.",
+   fix:"mjlab 1.6.0 supports <code>ObservationTermCfg.delay_min_lag/max_lag</code> in policy steps — <code>0</code>/<code>1</code> is the cheap fix. The faithful one is a 500 Hz ring in <code>VecSensorNoise</code>, where the readings already live at physics rate."},
+  {id:"GPU-6",sev:"high",v:0,title:"--clean does not clean, and --zero-cmd is a complete no-op",repo:"rl_toys",path:"wlbot_mjlab/scripts/eval_gates.py:83-92",
+   mech:"<code>make_env_cfg()</code> runs first and bakes the unpatched <code>sim_cfg</code> into the actuator (with the delay lags already resolved to ints). <code>_apply_ablations</code> then patches only <code>cfg.events</code>. Command ranges were likewise baked into the command term.",
+   fail:"Under <code>--clean</code>: gyro noise, gyro bias, pitch noise, pitch bias, mount DR, <code>torque_noise</code> and the 5–30 ms action delay all stay on. Every &ldquo;clean&rdquo; figure in the training log is a noisy, delayed figure — so the clean-vs-DR split, and the conclusion drawn from it that the deficit is disturbances rather than station-keeping, compares a GPU run that isn't clean against a CPU run that is.",
+   fix:"Give <code>make_env_cfg</code> <code>sim_cfg</code>/<code>rand_cfg</code> parameters and ablate before constructing, not after. Note <code>_apply_ablations</code> writes a scalar where the schema is <code>[min,max]</code> — that becomes a TypeError the moment this is fixed."},
+  {id:"GPU-7",sev:"high",v:0,title:"The unclipped action is stored in the policy interface slot",repo:"rl_toys",path:"wlbot_mjlab/tasks/mdp/terms.py:65-67",
+   mech:"<code>self._raw[:] = actions</code> stores raw, while only the plant path clamps. <code>clip_actions</code> is never set on the runner cfg, so it defaults to no clipping.",
+   fail:"At <code>init_std = exp(-1.0) = 0.368</code>, a mean-0.9 action exceeds 1.0 about 39% of the time and reaches ±2 at 3σ. So <code>prev_action</code> carries ±2 in training and exactly ±1 on the robot — a distribution mismatch on 8 of 40 inputs. The slew penalty also charges up to 0.36 for an action change that produces zero change in applied volts.",
+   fix:"Clamp before storing, and set <code>clip_actions=1.0</code> so the manager buffer the obs and reward read is clipped too."}
+]},
+
+{ id:"constants", name:"Consequences of the new measured constants", note:"d7f99f6 corrected the motor constants upward. Three downstream numbers were not revisited.", items:[
+  {id:"CON-1",sev:"high",v:0,title:"runaway_wheel_rad_s: 80 is now reachable by motor torque alone",repo:"rl_toys",path:"configs/sim_default.yaml — runaway_wheel_rad_s",
+   mech:"With the old constants the no-load ceiling was 75.5 rad/s, so the guard could never fire from torque. With <code>kt_over_R 0.0126</code> / <code>ke 0.0955</code>, nominal free-spin is 72.4 rad/s — but at <code>vbat0 = 8.4</code> with <code>ke</code> drawn low it is 105 rad/s, and even at nominal <code>ke</code> on a full battery it is 76.5.",
+   fail:"A legitimate full-throttle recovery from a hard push now terminates as &ldquo;runaway&rdquo; on a meaningful fraction of DR draws. Survival numbers before and after d7f99f6 measure different things.",
+   fix:"Raise the guard above the DR-worst free-spin (~110 rad/s), or state explicitly that it is now behavioural rather than numerical and re-baseline. Cheap diagnostic: <code>eval.py</code> already collects the termination-cause split."},
+  {id:"CON-2",sev:"medium",v:0,title:"The hip joint range extends 0.048 rad past the four-bar singularity",repo:"rl_toys",path:"wlbot/model/legs.py:85 · wlbot/model/linkage.py:101",
+   mech:"Recomputed from <code>geometry.json</code>: with <code>L2 = 52.086</code> and <code>Lc = 12.143</code> mm, the loop closes only while <code>d(q) &lt; L2 + Lc</code>, which fails at <code>q = 0.80377</code> rad. The emitted joint limit is <code>0.8513</code>, where the discriminant is −1.735e-5.",
+   fail:"<code>np.sqrt(np.clip(Lc² − a², 0, None))</code> silently returns a pose that does not satisfy the loop, so <code>joint_values(h)</code> and <code>axle_drop(h)</code> return plausible garbage above h ≈ 92.95 mm with no error. Widening <code>init_state.h_mm</code> would produce silently wrong spawn poses on both engines. At the ctrlrange ceiling the linkage is already 65% of the way to singular.",
+   fix:"Compute <code>q_sing</code> in <code>LegParams.__init__</code> and clamp the range below it; make <code>Linkage.solve</code> raise on a negative discriminant instead of clipping."},
+  {id:"CON-3",sev:"low",v:0,title:"l_com is fixed at 85 mm while the true lever is 62–85 mm",repo:"rl_toys",path:"configs/sim_default.yaml — l_com",
+   mech:"<code>base_com_z: 0.0573</code> was tuned so the whole-robot CoM lands exactly 85.005 mm above the axle at <code>height_ref</code> — verified, with CoM x on the axle to machine precision. But the reward's <code>tip_pos</code>/<code>tip_vel</code> use the constant at every height.",
+   fail:"<code>init_state.h_mm ~ U(45,85)</code>, so the mean episode runs a 74 mm lever scored as 85 — 15% high on average, 37% high at h=45. At 0.1 rad pitch that is 3.7 mm of phantom tip displacement against σ=50 mm, biasing the reward toward crouched episodes.",
+   fix:"Now trivially available — <code>LegKinematics</code> can produce the lever per height. Pass <code>l_com(h)</code> into the reward on both twins."},
+  {id:"CON-4",sev:"low",v:0,title:"The torque-offset band puts the measured asymmetry at the 91st percentile",repo:"rl_toys",path:"configs/randomization.yaml — torque_offset_nm",
+   mech:"Each wheel draws <code>U(-0.006, 0.006)</code> independently, so the <i>differential</i> — which is what the hardware actually exhibits — is triangular on ±0.012 with median 0.0035 N·m.",
+   fail:"The measured veer is 0.66 V surviving <code>U → 0</code>, i.e. ≈0.00832 N·m differential. <code>P(|D| &gt; 0.00832) = 9.4%</code>: only about one episode in eleven trains against a veer as strong as the real robot's, and the median drawn differential is 42% of measured. The per-wheel band and the per-wheel measurement are consistent; the composition into a differential is where the margin is lost.",
+   fix:"Raise to ≈0.008–0.010, or restructure the draw as common-mode plus a differential drawn directly."}
+]},
+
+{ id:"safety", name:"Hardware safety", note:"git diff f1b90f2..d7f99f6 -- firmware/ is empty, and policy_runner.py changed only in its model-loading lines. The whole set is intact.", items:[
+  {id:"SAF-1",sev:"critical",v:1,title:"Telemetry loss is undetectable, and the host actively defeats the firmware watchdog",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:78-84",
+   mech:"<code>time.monotonic() - t_next &gt; STREAM_TIMEOUT_S</code> is a loop-overrun check, not a staleness check — <code>t_next</code> was advanced to a future deadline one line earlier, so the expression is ≈ −0.010 in normal operation. <code>UdpStream._latest</code> is never invalidated, so <code>latest()</code> returns the last packet forever, and line 84 discards the sample index that would reveal it.",
+   fail:"On a one-way link drop the assembler converges to a fixed point, the policy emits a constant action, and at a frozen 12° pitch that is −3 V per wheel held indefinitely. Meanwhile the loop keeps sending at 100 Hz, refreshing <code>s_last_us</code>, so <code>hc.age_ms</code> never exceeds 50 and the onboard PD fallback never engages. The docstring's claim that it stops commanding on stream silence is false.",
+   fix:"Keep the index from <code>latest()</code>; record when it last changed; if unchanged for <code>STREAM_TIMEOUT_S</code>, send <code>MODE_PD</code> and reset <code>t_start</code>."},
+  {id:"SAF-2",sev:"critical",v:1,title:"NaN passes the exported C output clamp straight into the mixer",repo:"rl_toys",path:"wlbot/deploy/export/export_c.py:146,321",
+   mech:"The emitted clamp is <code>(s &lt; -1.0f ? -1.0f : (s &gt; 1.0f ? 1.0f : s))</code>. Both comparisons are false for NaN, so NaN is returned, and <code>volts[i] = act[i] * POLICY_ACT_SCALE[i]</code> carries it out.",
+   fail:"In Stage B the network runs on-chip, so <code>host_cmd.cpp</code>'s filter is not in the path at all and there is no other guard. One NaN in <code>raw-&gt;pitch</code> reaches <code>hw_motors_set_diff</code>. The numpy twin behaves identically, so the parity gate agrees with the bug.",
+   fix:"<code>act[o] = (x[o] == x[o]) ? x[o] : 0.0f;</code> in the generated loop, mirrored into <code>Actor.__call__</code> so parity is preserved. Emit a <code>POLICY_VOLT_LIMIT</code> from <code>v_limit</code> and apply it in <code>policy_step</code> while you are there."},
+  {id:"SAF-3",sev:"high",v:0,title:"u_y is never clamped to --u-max",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:106-107",
+   mech:"Only the common-mode term is clipped after scaling; the differential is not.",
+   fail:"A cautious first flight at <code>--u-max 2</code> still permits a 4 V differential (<code>ACTION_SCALE[1] = 4.0</code>) — ±2 V per wheel with opposite signs, so the robot can spin in place at full authority during what was meant to be a low-authority bring-up.",
+   fix:"One line. It is also the path by which an <code>inf</code> reaches the wire, since <code>np.clip</code> would have caught it (see SAF-5)."},
+  {id:"SAF-4",sev:"high",v:0,title:"The authority ramp arms once and never re-arms",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:74,103-104",
+   mech:"<code>t_start</code> is set on the first iteration that gets a sample; the dropout branch <code>continue</code>s without resetting it.",
+   fail:"After an 8 s link loss, the next iteration computes <code>ramp = 1.0</code> and sends full <code>U</code> on the first packet. The firmware has no ramp either — <code>hc.age_ms</code> goes from <code>INT64_MAX</code> to 0 in one tick and <code>host_ok</code> flips false→true instantly. There is no ramp anywhere on the re-arm path, in either process.",
+   fix:"Reset <code>t_start = None</code> in the loss branch and on any mode transition."},
+  {id:"SAF-5",sev:"high",v:0,title:"±inf passes the firmware's NaN filter",repo:"wl_robot / firmware",path:"firmware/host_cmd/host_cmd.cpp:61-66",
+   mech:"The guard is <code>x == x</code>, which is true for infinities. The comment says &ldquo;NaN/inf&rdquo;.",
+   fail:"Reachable exactly through SAF-3: <code>inf * 4.0</code> goes onto the wire unclipped, and <code>0.5f*(inf − inf)</code> is NaN inside the mixer — an undefined PWM duty.",
+   fix:"<code>isfinite()</code> on all three fields."},
+  {id:"SAF-6",sev:"high",v:0,title:"No magnitude clamp on U, u_y or h_mm anywhere in firmware",repo:"wl_robot / firmware",path:"firmware/host_cmd/host_cmd.cpp:67-74 · INTEGRATION.md §1",
+   mech:"The header delegates all guards to the caller; the caller sketch in the integration guide clamps nothing and is meant to be pasted verbatim.",
+   fail:"<code>h_mm = 1e30</code> passes both the magic and the NaN check and commands the STS3032 to its hard stop, where it stalls. A servo-burnout path from one bad packet.",
+   fix:"Clamp at ingress, in <code>host_cmd_task</code>, so it cannot be forgotten by whoever pastes §1."},
+  {id:"SAF-7",sev:"high",v:0,title:"The host envelope is measured from raw pitch, not from ZEROPOINT",repo:"wl_robot / firmware",path:"firmware/INTEGRATION.md §1",
+   mech:"<code>fabsf(in.pitch_deg) &lt; 25.0f</code>, but the robot balances at ZEROPOINT ≈ +8.4°.",
+   fail:"Relative to actual equilibrium the window is −33.4° to +16.6°. The host loses authority after only 16.6° of forward lean — the middle of a normal forward-push recovery, where the policy needs it most — and the handoff happens mid-transient at whatever voltage was being applied. Backward it keeps authority well past recoverable.",
+   fix:"Subtract the zeropoint before taking the magnitude."},
+  {id:"SAF-8",sev:"high",v:0,title:"A firmware channel-count change crashes the runner mid-flight",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:29-38",
+   mech:"<code>Capture</code> is generic but is constructed with <code>list(CH)</code> — 36 hardcoded names. <code>UdpStream</code> learns the real width and the runner never compares it.",
+   fail:"Flashing F3 (36→39 channels), which E6, E11 and E12 all require, raises <code>struct.error</code> on the first <code>add_sample</code> — while the robot is armed and balancing on the host policy.",
+   fix:"<code>assert self.stream.nch in (None, len(CH))</code> after the first packet, so it fails on the ground."},
+  {id:"SAF-9",sev:"high",v:0,title:"load_actor never asserts that observation normalization is off",repo:"rl_toys",path:"wlbot/deploy/policy.py — load_actor",
+   mech:"It reads only <code>actor_state_dict</code> and ignores every other key. <code>obs_normalization=False</code> is set in the config but nothing checks it at load time.",
+   fail:"A checkpoint trained with running mean/var exports silently, and the generated C then divides by the fixed <code>OBS_SCALE</code> constants instead of the learned statistics. A numerical mismatch with no error — the most dangerous of the rsl_rl export failure modes.",
+   fix:"Assert no <code>obs_norm</code> / <code>actor_obs_normalizer</code> keys are present, or that the normalizer is identity."},
+  {id:"SAF-10",sev:"medium",v:0,title:"The degree→SI boundary is hand-written, ungenerated and untested",repo:"rl_toys",path:"wlbot/deploy/export/export_c.py — policy_raw_t · docs/6-deployment.md",
+   mech:"The generated C starts at SI radians. Three conversions sit upstream of it in firmware: pitch with the ZEROPOINT re-offset, <code>gyro</code>/<code>gyro_z</code>, and the new <code>yaw</code> — which the boundary table does not mention at all.",
+   fail:"An integrator converts <code>yaw</code> correctly but leaves <code>gyro_z</code> in deg/s. Its scale is 3.0, so 1 rad/s arrives as 19.1 normalized instead of 0.33; both hidden layers saturate and the policy outputs a constant. Nothing in the export gate, the parity test or the doc catches it.",
+   fix:"Generate a <code>policy_raw_from_telemetry()</code> that takes the degree-domain struct plus ZEROPOINT, and extend the parity test's mirror to that entry point."},
+  {id:"SAF-11",sev:"medium",v:0,title:"Firmware accepts commands from any source and never checks the sequence number",repo:"wl_robot / firmware",path:"firmware/host_cmd/host_cmd.cpp:54,72",
+   mech:"<code>recvfrom(..., nullptr, nullptr)</code>, and <code>pkt.seq</code> is stored but never compared. Oversized datagrams are also accepted, since lwIP truncates and returns 20.",
+   fail:"A forgotten runner on a second laptop interleaves commands at 100 Hz with the live one — last packet wins, and neither operator can tell. A reordered datagram is applied <i>and</i> refreshes the age timer.",
+   fix:"Latch the first peer's address; reject <code>(int16_t)(pkt.seq - s_cmd.seq) &lt;= 0</code>."},
+  {id:"SAF-12",sev:"medium",v:0,title:"Teardown never disarms",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:114-118",
+   mech:"The <code>finally</code> block closes the capture and both sockets without sending anything.",
+   fail:"On Ctrl-C the robot holds the last commanded voltage for the full 50 ms fallback window — at the 6 V clamp, a visible lurch.",
+   fix:"Send a few <code>MODE_PD</code> zero packets before closing."},
+  {id:"SAF-13",sev:"medium",v:0,title:"A 3-action policy is silently deployed with its third action discarded",repo:"rl_toys",path:"wlbot/deploy/hostloop/policy_runner.py:106 · export_c.py:125",
+   mech:"The runner slices <code>action[:2]</code> while feeding the full vector back as <code>prev_action</code>. The exporter accepts <code>act_dim=3</code> and gives the third channel <code>POLICY_ACT_SCALE[2] = 1.0</code>.",
+   fail:"The policy is told it commanded a height it never got. And the height action is <i>affine</i> in the env — <code>h = h_min + (a+1)/2·(h_max−h_min)</code> — so a multiplicative scale of 1.0 exports <code>a[2] = 0</code> as 0.0 where the env means 62.5 mm.",
+   fix:"Honour <code>action[2]</code> with the env's mapping, or refuse to run when <code>n_actions &gt; 2</code>. No test exercises <code>act_dim != 2</code>."}
+]},
+
+{ id:"sysid", name:"System identification", note:"wlbot/sysid/ changed by exactly one thing since the last pass: diag_drift.py was deleted. Everything below is verbatim.", items:[
+  {id:"SID-0",sev:"high",v:1,title:"The motor constants are labelled MEASURED but only the resistance was measured",repo:"rl_toys",path:"configs/sim_default.yaml — wheel_motor",
+   mech:"<code>ke = 60/(2π·100)</code> comes from a &ldquo;2208 gimbal listing KV~100&rdquo; — a datasheet number — and <code>kt_over_R = ke/R_phase</code> inherits it. Only the 15.2 Ω line-to-line reading is an instrument measurement. The arithmetic is internally consistent (no-load 83.8 rad/s, 1.61 m/s — both check out); the convention is not pinned.",
+   fail:"Whether <code>60/(2π·KV)</code> yields the phase, line-to-line or bus-referenced constant depends on the vendor's KV convention, and pairing it with <code>R_phase</code> requires both in the same frame — a factor of up to √3, plus an open question on whether the dq resistance is <code>R_phase</code> or 1.5×. Separately, <code>tau_coulomb: 0.010</code> is lower-bounded from stuck-wheel segments <i>on the ground</i>, so it includes contact resistance, and the sim applies it as a motor-side term on top of <code>ground_friction</code>.",
+   fix:"E4 (coast-down) and E6 (step ladder) settle both in one bench session with no datasheet. But fix SID-1 through SID-8 first — see the note on SID-3."},
+  {id:"SID-1",sev:"critical",v:1,title:"tau_c is used as absolute N·m and as a per-J ratio in the same function",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:41-62",
+   mech:"The regression needs N·m for <code>y</code> to be dimensionally consistent with <code>A@x</code>. The YAML print multiplies by <code>rotor_j</code> as if it were a ratio. <code>fit_coastdown</code>, the documented source, returns only ratios.",
+   fail:"Paste E4's output as the workflow instructs and <code>y ≈ ±1000</code> against volt-scale columns — <code>kt_over_R</code> comes out five orders of magnitude wrong and <code>ke</code> collapses to the 1e-4 floor. Pass absolutes and <code>tau_coulomb</code> prints as 4e-09: friction erased entirely.",
+   fix:"Pick one convention. Make <code>fit_coastdown</code> return absolutes by taking <code>--rotor-j</code>, and drop the <code>* rotor_j</code> from the print."},
+  {id:"SID-2",sev:"critical",v:1,title:"E6 fails silently and prints a plausible YAML fragment",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:78",
+   mech:"<code>--tau-c</code> has no default, so <code>args.tau_c or 0.0</code> makes <code>y</code> the zero vector and the least-squares system homogeneous.",
+   fail:"<code>lstsq</code> returns <code>[0, 0]</code> exactly; the <code>max(..., 1e-4)</code> floor turns &ldquo;learned nothing&rdquo; into <code>ke: 0.0001</code>. It prints a well-formed fragment with no warning. Paste it and every wheel produces exactly zero torque at every voltage — and <code>test_stall_torque_is_kt_over_r_times_volts</code> still passes, because <code>0 == 0 × 4.0</code>.",
+   fix:"<code>required=True</code> for E6, and raise if <code>‖y‖</code> is negligible or <code>kt_over_R &lt;= 0</code>."},
+  {id:"SID-3",sev:"critical",v:1,title:"U is a common-mode command; each motor receives half of it",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:43-52",
+   mech:"The fitted model is single-motor (<code>w</code> is one wheel) but the voltage channel is the common-mode term, which <code>hw_motors_set_diff</code> halves before it reaches a motor. The excitation path halves it too.",
+   fail:"A <i>perfect</i> experiment reports <code>kt_over_R</code> half and <code>ke</code> double — 0.0063 and 0.191 against the current 0.0126 and 0.0955. Stall torque and no-load speed both halve. This is the live risk: with the constants now sourced by hand, someone running E6 to confirm them gets a 2× error in both directions that reads as a plausible disagreement worth splitting.",
+   fix:"<code>v_motor = 0.5 * run[volt_channel]</code>, or log a genuine per-motor echo. Until then, a <code>NotImplementedError</code> banner on <code>fit_steps</code> is the safer state."},
+  {id:"SID-4",sev:"critical",v:0,title:"replay_validate compares sensed pitch against true pitch",repo:"rl_toys",path:"wlbot/sysid/replay_validate.py:33,52",
+   mech:"Both the initial condition and the comparison use the raw <code>pitch</code> channel, which sits at ZEROPOINT ≈ +8.4° at equilibrium, while the backend returns true body pitch.",
+   fail:"A 0.1466 rad DC bias floor on every RMSE — an order of magnitude above anything you would be tuning against. This is the gate that decides whether the sim is trustworthy, and it cannot currently pass.",
+   fix:"Use <code>run[\"err\"]</code>, or subtract <code>run[\"zp\"]</code>."},
+  {id:"SID-5",sev:"high",v:0,title:"replay_validate's window schedule assumes the clock starts at zero",repo:"rl_toys",path:"wlbot/sysid/replay_validate.py:26",
+   mech:"<code>Run.t</code> is firmware uptime in ms/1000, so a capture begun two minutes after boot spans [120, 150] — but <code>starts</code> is built from 0.5.",
+   fail:"<code>searchsorted</code> returns 0 for all 120 starts below <code>t[0]</code>, so the same first window is replayed 120 times and the median/p90 are computed over duplicates of one window. The bulk of the run is never validated, and the reported window count is fiction.",
+   fix:"<code>self.t -= self.t[0]</code> in <code>Run.__init__</code>."},
+  {id:"SID-6",sev:"high",v:0,title:"replay_validate replays the PD law's output, not what was applied",repo:"rl_toys",path:"wlbot/sysid/replay_validate.py:42",
+   mech:"Channel <code>U</code> is <code>o.U</code>, computed every tick regardless of whether it is used. The host's applied command is echoed separately in <code>u_host_U</code>/<code>u_host_uy</code>.",
+   fail:"Replaying a HOST-mode capture feeds the sim the voltage the PD law <i>would have</i> applied while the robot was following the policy. The two are unrelated, and the resulting RMSE looks like a legitimate model-mismatch number.",
+   fix:"Prefer the host echo channels when present, and record the active mode in the capture metadata."},
+  {id:"SID-7",sev:"high",v:1,title:"find_decays never terminates a decay",repo:"rl_toys",path:"wlbot/sysid/loaders.py:35",
+   mech:"The monotonicity tolerance <code>abs(w[j+1]) &lt; abs(w[j]) + 0.5</code> is applied <i>per sample</i>, which at 500 Hz permits 250 rad/s² of acceleration.",
+   fail:"Fed a clean 1.5 s coast-down followed by a driven 20 rad/s² ramp, it returns a single segment spanning the whole 4 s. On the canonical E4 procedure it latches during spin-up and runs to the end of the array, so the fit regresses positive <code>dw/dt</code> and prints <b>negative friction coefficients</b> with no sign check.",
+   fix:"Make the tolerance a rate — <code>+ 0.5*(t[j+1]-t[j])</code> — and assert both coefficients are non-negative before printing."},
+  {id:"SID-8",sev:"high",v:1,title:"--rotor-j defaults to the rotor alone, 3.95× under the physical inertia",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:70-71",
+   mech:"The default <code>2e-6</code> is verbatim <code>rotor_inertia</code>, whose own comment says it is added <i>to</i> the wheel link. The coast-down inertia is wheel + rotor: <code>0.5·0.032·0.019205² + 2e-6 = 7.90e-6</code>.",
+   fail:"Since the printed YAML scales both friction terms by this value, taking the default under-reports them by ~4× (and up to 7× if the tire is rim-loaded rather than a uniform disc).",
+   fix:"Make it required, or derive it from the config."},
+  {id:"SID-9",sev:"high",v:0,title:"E5 runs the identical fit as E4 and mislabels the result",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:75-76",
+   mech:"Both dispatch to <code>fit_coastdown</code>; the docstring's differencing step is never implemented, and the printed label is the same.",
+   fail:"E5's &ldquo;b/J&rdquo; is really <code>(b + kt·ke/R)/J</code> — with the config values, 19.7× the true <code>b/J</code>. Worse, <code>actuators.py:31</code> already models electrical braking inside <code>kt_over_R·(v − ke·ω)</code>, so pasting E5's output as <code>b_viscous</code> double-counts it. Add 0.078 N·m of phantom drag at 80 rad/s to a motor whose stall torque is 0.07.",
+   fix:"Make E5 take the E4 result and print <code>kt·ke/R = (slope_E5 − slope_E4)·J</code>, as the docstring says."},
+  {id:"SID-10",sev:"high",v:0,title:"The E6 design matrix is collinear by construction",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:53",
+   mech:"At steady state, by the very model being fitted, <code>w_ss</code> is an affine function of <code>v_ss</code>. The two columns are collinear up to the small <code>tau_c·sgn(w)</code> offset.",
+   fail:"<code>kt/R</code> and <code>ke</code> are not separately identifiable from steady-state data. <code>lstsq</code> with <code>rcond=None</code> returns whatever the noise points at, and the split swings wildly while the residual stays small. Rank and condition number are discarded with <code>*_</code>.",
+   fix:"Identify <code>ke</code> from the transient or from the E5−E4 slope, and fit only <code>kt/R</code> from the steps. At minimum print <code>cond(A)</code> and abort above ~1e3."},
+  {id:"SID-11",sev:"high",v:0,title:"The default voltage channel does not exist under any spec",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:42",
+   mech:"<code>volt_channel=\"u_host_l\"</code>, but F3 defines <code>u_host_U</code> and <code>u_host_uy</code>. There is no CLI flag to override it.",
+   fail:"<code>KeyError</code> — so E6 has never been run end to end. <code>latency_probe.py</code> carries the same phantom name in a comment.",
+   fix:"Point it at the real channel and add the flag (with SID-3's halving applied)."},
+  {id:"SID-12",sev:"high",v:0,title:"The steady-state detector implements neither of its stated conditions",repo:"rl_toys",path:"wlbot/sysid/fit_wheel_motor.py:47-48",
+   mech:"The comment says &ldquo;|dw/dt| small while |V| &gt; 0.5 <i>for &gt; 0.5 s</i>&rdquo;, but the mask is per-sample and the <code>ss.sum() &lt; 100</code> check counts total samples, not contiguous run length.",
+   fail:"Every zero-crossing of <code>dw/dt</code> during the transient — one per overshoot ring — passes. And the <code>2.0 rad/s²</code> threshold is absolute on a numerically differentiated, encoder-quantised signal: one count of jitter across a 2 ms sample is 0.77 rad/s, giving ~380 rad/s² of noise in <code>dw</code>. The threshold either admits everything or nothing.",
+   fix:"Require a contiguous run of <code>0.5·hz</code> samples and scale the threshold to the segment's own <code>|w|</code>."},
+  {id:"SID-13",sev:"medium",v:0,title:"fit_servo masks on the regressand, biasing tau",repo:"rl_toys",path:"wlbot/sysid/fit_servo.py:26-29",
+   mech:"The estimator itself is correct OLS. But <code>|da| &gt; 1.0</code> selects on the dependent variable, and since <code>da ≈ err/tau</code> that is equivalently a cut on <code>|err| &gt; tau</code>.",
+   fail:"Truncating small errors out of a through-the-origin fit biases the slope, and it discards the settling tail — exactly where the time constant is most cleanly observable. During the ramp the mask is always satisfied and <code>err</code> has almost no dynamic range, so the fit is fitting a near-constant to a near-constant. No guard against a negative or enormous result.",
+   fix:"Mask on the command instead, and reject <code>tau &lt;= 0</code> or <code>tau &gt; 1 s</code>."},
+  {id:"SID-14",sev:"medium",v:0,title:"Backlash is pooled across directions, conflating a deadband with a static offset",repo:"rl_toys",path:"wlbot/sysid/fit_servo.py:31-33",
+   mech:"The comment says &ldquo;per direction&rdquo;; the code takes <code>abs()</code> and pools both into one percentile. The sim models backlash as a signed, direction-dependent residual.",
+   fail:"A symmetric deadband and a pure calibration offset produce identical answers, and the pooled p90 <i>adds</i> the offset rather than cancelling it. Any error in the 8.4 steps/mm constant appears as a proportional offset absorbed straight into <code>backlash_mm</code> — a 1% error contributes 0.4 mm against a 0.5 mm nominal.",
+   fix:"<code>(median(err[rising]) − median(err[falling]))/2</code>, which cancels the static offset."},
+  {id:"SID-15",sev:"medium",v:0,title:"fit_pendulum has no hysteresis before zero-crossing detection",repo:"rl_toys",path:"wlbot/sysid/fit_pendulum.py:23",
+   mech:"The physics is correct — parallel-axis, upward-only crossings giving full periods, and the small-angle error at ±10° is 0.38% in I. The detection is raw.",
+   fail:"At 0.2° of pitch noise on a ±10° swing the crossing dithers by ~2 ms, which is fine — but a single spurious double-crossing halves one period and drags the mean down. <code>i_com</code> can also come out negative if <code>pivot_d</code> is over-measured, and is printed as a physical inertia with no check.",
+   fix:"Schmitt trigger, or fit <code>A·sin(ωt+φ)</code> directly."},
+  {id:"SID-16",sev:"medium",v:0,title:"latency_probe reads a stock channel as the echo, and measures a round trip",repo:"rl_toys",path:"wlbot/sysid/latency_probe.py:24,29",
+   mech:"The guard is <code>nch &lt; 37</code> and the index is <code>nch - 2</code>, but F3 appends three channels (36→39).",
+   fail:"At <code>nch = 37</code> the index lands on <code>home_dx</code>, a stock channel. Nothing matches, <code>lat</code> stays empty, and it dies on <code>max()</code> of an empty array — after claiming echoes were found. Separately, <code>time.monotonic() - t_send</code> is host-send to host-receive, so the p95 &lt; 25 ms gate is being applied to roughly double the one-way quantity it names.",
+   fix:"<code>nch != 39</code>, <code>echo_idx = 37</code>, guard the empty case, and halve or rename the metric."}
+]},
+
+{ id:"excite", name:"Excitation harness (excite.h)", note:"Header-only, tick-synchronous, never landed in firmware. Byte-identical since f1b90f2.", items:[
+  {id:"EXC-1",sev:"high",v:1,title:"The chirp sweeps to twice the requested frequency, and aliases above 125 Hz",repo:"wl_robot / firmware",path:"firmware/host_cmd/include/excite.h:69-72",
+   mech:"<code>sin(2π·f(t)·t)</code> with <code>f</code> linear in <code>t</code> gives instantaneous frequency <code>f0 + 2(f1−f0)t/T</code>. Correct phase is <code>2π(f0·t + (f1−f0)t²/(2T))</code>.",
+   fail:"Verified numerically: a configured 0.5 → 20 Hz sweep over 2 s reaches <b>39.5 Hz</b> and passes 20 Hz at the halfway mark, so it spends half the run above the requested band. Above a configured 125 Hz the true sweep exceeds Nyquist on the 500 Hz tick and folds — the applied frequency rises to 250 Hz then <i>descends</i>, reversing direction with no indication.",
+   fix:"Correct the phase, and reject <code>f1 &gt;= 0.4/dt</code> in <code>start_chirp</code>."},
+  {id:"EXC-2",sev:"medium",v:0,title:"No amplitude bound on any sequence",repo:"wl_robot / firmware",path:"firmware/host_cmd/include/excite.h:39-52",
+   mech:"All three <code>start_*</code> functions store <code>amp = volts</code> unchecked, and the integration guide routes the output straight into the mixer.",
+   fail:"A console typo — <code>excite_step 20 1</code> for <code>2 1</code> — drives 20 V through the mixer with the wheels free. It survives only because SimpleFOC's <code>voltage_limit = 8</code> clamps downstream, which is a coincidence of driver config, not a guard.",
+   fix:"Clamp to ±<code>v_limit</code> in the <code>start_*</code> functions."},
+  {id:"EXC-3",sev:"medium",v:0,title:"Every sequence ends in a discontinuous step",repo:"wl_robot / firmware",path:"firmware/host_cmd/include/excite.h:61-64",
+   mech:"<code>abort()</code> slams the output to zero in one tick — a full-amplitude edge for STEP, and whatever phase the sine was at for CHIRP.",
+   fail:"A broadband impulse into the plant, recorded in the same capture as the excitation and indistinguishable in the data from plant response. Any transfer-function estimate over the whole window is contaminated by it.",
+   fix:"Ramp to zero over ~10 ms, or window the chirp so it starts and ends at zero amplitude."},
+  {id:"EXC-4",sev:"medium",v:0,title:"The two excitation gates contradict each other, and E4 is unproducible",repo:"wl_robot / firmware",path:"firmware/INTEGRATION.md §1 vs §2",
+   mech:"§1 places the excitation branch inside <code>if (g_bal.enabled &amp;&amp; !fall_latch)</code> with <code>hw_motors_off()</code> in the else; §2 says to refuse to start when <code>g_bal.enabled</code> unless a bench flag is set.",
+   fail:"So excitation runs only with the balance loop armed <i>plus</i> a bench override. But E4 is defined as a <i>driver-disabled</i> coast-down — its model has no <code>kt·ke/R</code> term precisely because the driver is off. No documented path leaves the motors de-energised while telemetry runs. The E4/E5 conflation in SID-9 probably went unnoticed for this reason.",
+   fix:"Reconcile the two sections and add an explicit driver-disabled logging mode."},
+  {id:"EXC-5",sev:"low",v:0,title:"Off-by-one tick: the first sample is at t = dt",repo:"wl_robot / firmware",path:"firmware/host_cmd/include/excite.h:60-64",
+   mech:"<code>t += dt</code> runs before evaluation, and termination fires when <code>t</code> first reaches <code>dur_s</code>.",
+   fail:"<code>dur_s = 1.0</code> at 2 ms emits 499 samples, not 500, and the chirp is shifted one tick relative to the host's assumed time axis.",
+   fix:"Evaluate before advancing."},
+  {id:"EXC-6",sev:"low",v:0,title:"PRBS bit clock drifts when dwell_s < dt",repo:"wl_robot / firmware",path:"firmware/host_cmd/include/excite.h:75-76",
+   mech:"<code>next_flip += dwell_s</code> advances by a fixed step but only one flip happens per tick.",
+   fail:"At <code>bit_s = 0.001</code> on a 2 ms tick the sequence flips every tick (effective 2 ms bits) while the host records 1 ms in the run metadata — the PRBS bandwidth is labelled 2× too high. <i>(The LFSR itself is correct: taps {0,2,3,5} give a maximal-length period-65535 sequence, and the output timing is fine.)</i>",
+   fix:"Reject <code>bit_s &lt; dt</code>."}
+]},
+
+{ id:"tests", name:"Tests reporting unearned confidence", note:"test_actuator_parity, test_sensor_parity, test_torque_offset, test_linkage and test_export_parity are genuine two-implementation gates. These are not.", items:[
+  {id:"TST-1",sev:"high",v:0,title:"test_randomization_parity never imports the CPU randomizer",repo:"rl_toys",path:"tests/gpu/test_randomization_parity.py",
+   mech:"Every one of its checks is GPU-draws-versus-YAML. The file passes with <code>wlbot/sim/randomization.py</code> deleted.",
+   fail:"83f7aca rewrote the docstring to justify this rather than fixing it, and the file is still named <code>_parity</code>. Two of its comments state a CPU-side property in prose and then assert only the GPU side. A divergence in how <code>multiplicative × asymmetric</code> compose is invisible on both sides — the CPU counterpart checks application but not ranges.",
+   fix:"Follow <code>test_actuator_parity.py</code>: instantiate both, drive identical inputs, compare."},
+  {id:"TST-2",sev:"medium",v:0,title:"The PD gate passes trivially if both engines fall",repo:"rl_toys",path:"tests/gpu/test_pd_gate_parity.py:61-66",
+   mech:"It asserts <code>mj[case][\"survived\"]</code> but never <code>ref[case][\"survived\"]</code> — even though the reference JSON records it.",
+   fail:"<code>pitch_max</code> saturates at the termination threshold by definition, so two falls agree to a fraction of a percent and the &ldquo;push response matches&rdquo; gate goes green on two broken sims. <code>RMS_TOL</code> also loosened 0.50 → 0.60 this push.",
+   fix:"One line: assert the reference survived, in the fixture."},
+  {id:"TST-3",sev:"medium",v:0,title:"The documented remedy for a red gate is to regenerate the reference from the code under test",repo:"rl_toys",path:"tests/gpu/urdf_reference.json · passive_reference.json",
+   mech:"No config hash, no git rev, no timestamp in either file, and nothing asserts the reference and the MJCF came from the same <code>sim_default.yaml</code>. The failure message says to re-run <code>dump-refs</code>.",
+   fail:"Introduce a bug in a generator, watch V0–V2 go red, follow the printed instruction, and the bug is baked into the reference permanently. This is precisely the situation the project's own rule — <i>when the two disagree, do not fix the new one</i> — was written for, and regenerating is the only move the tooling suggests.",
+   fix:"Write <code>config_sha256</code> and <code>git_rev</code> into both JSONs and assert them."},
+  {id:"TST-4",sev:"medium",v:0,title:"The shared-assembler check passes on a dead import",repo:"rl_toys",path:"tests/test_obs_parity.py:30-35",
+   mech:"It asserts <code>module.StationKeepAssembler is obs_assembly.StationKeepAssembler</code> for two modules whose imports are both <code>#&nbsp;noqa: F401</code> — neither uses the name; both call <code>make_assembler</code>.",
+   fail:"It proves an unused import survives. This is exactly why BL-1 got through: the one place the 36→40 change had to land outside the two twins is the one place with no real test.",
+   fix:"Assert on the instance the runner actually builds, or on <code>make_assembler</code>."},
+  {id:"TST-5",sev:"medium",v:0,title:"Two servo assertions are structurally unfalsifiable, on a stale premise",repo:"rl_toys",path:"tests/test_actuator_model.py:71-73",
+   mech:"<code>ramp += clip(command - ramp, ±max_step)</code> cannot overshoot <code>command</code>, so <code>assert servo.ramp &lt;= 80.0</code> with <code>command = 80.0</code> is a tautology for any slew. And during a rising ramp the first-order lag always trails, so the second assertion is too.",
+   fail:"The comment says 60 mm/s; the config says 12, so after 1 s the ramp is at 52 mm and &ldquo;at most 100&rdquo; was never binding. Only the third assertion has content.",
+   fix:"Assert the actual slew rate."},
+  {id:"TST-6",sev:"medium",v:0,title:"mix_diff's wrong sign is pinned green by its own test",repo:"rl_toys",path:"wlbot/sim/actuators.py:103 · tests/test_actuator_model.py:79",
+   mech:"<code>mix_diff</code> returns the negated form while every live mixer uses <code>+0.5(U ± u_y)</code>. Its only importer is the test that asserts the negated form; a second test in the same file regex-pins the positive convention elsewhere.",
+   fail:"The file simultaneously asserts both conventions, one of them on dead code, under a docstring citing <code>hw_motors.cpp:154</code>. That docstring invites exactly the mistake in SID-3 — and SID-3 is the one place that reasoning was actually needed, and it got it wrong.",
+   fix:"Delete both, or rename it <code>mix_diff_hardware_frame</code> and document the sign absorption in one place."},
+  {id:"TST-7",sev:"medium",v:0,title:"The masked per-env reset path is never exercised",repo:"rl_toys",path:"tests/gpu/test_mdp_parity.py:113-123",
+   mech:"Both reset tests call bare <code>vec.reset()</code>, the all-envs path. <code>VecStationKeepObs.reset(env_ids)</code> and <code>PrivilegedState.reset</code> both have real masked branches.",
+   fail:"In a vectorized env environments terminate at different steps, so the masked call is the production path. A cross-env leak in <code>_pos_ref</code> would surface as unexplained reward variance and nothing would point at it. <i>(<code>test_yaw_filter_parity.py</code> does test its masked path — follow that.)</i>",
+   fix:"Reset a subset and assert the untouched envs keep their references."},
+  {id:"TST-8",sev:"medium",v:0,title:"The export parity mirror hardcodes the struct layout",repo:"rl_toys",path:"tests/test_export_parity.py:52-64",
+   mech:"The ctypes <code>RawObs</code> field list is written by hand rather than parsed from the emitted header.",
+   fail:"A reorder in the generator makes the test fail as a numerical divergence rather than a layout change. Worse, transposing the same two fields in both places at once makes them agree — and the firmware, which reads the header, becomes the odd one out. <code>act_dim != 2</code> is also never exported or compiled, so SID-13's affine-height bug has no coverage.",
+   fix:"Build <code>_fields_</code> by parsing <code>policy_obs.h</code>, and parameterize over <code>act_dim</code>."},
+  {id:"TST-9",sev:"low",v:0,title:"A direction assertion that carries no sign",repo:"rl_toys",path:"tests/gpu/test_sk_env.py:277-278",
+   mech:"The comment says &ldquo;direction is uniform in the ground plane, so both signs appear&rdquo;; the assertion counts unique values of a <i>norm</i>.",
+   fail:"It tests randomness of magnitude. The property is genuinely covered elsewhere, so this is a mislabel rather than a gap — but it reads as coverage that isn't there. The adjacent duty-cycle check has a ±50% band.",
+   fix:"Assert on the component signs, or delete the comment."},
+  {id:"TST-10",sev:"low",v:0,title:"Hardcoded indices, unrecorded tolerances, and no conftest",repo:"rl_toys",path:"tests/gpu/",
+   mech:"<code>test_passive_dynamics.py</code> indexes a bare sample number (40 ms at 500 Hz); joint-limit tests hardcode config values; <code>test_yaw_filter.py</code>'s replay tolerances are calibrated on one capture with no recorded margin.",
+   fail:"Change <code>physics_hz</code> and a test silently checks a different instant. A transliteration change that moves the yaw RMSE from 0.05° to 0.95° passes silently under a <code>&lt; 1.0</code> gate. And with no <code>conftest.py</code> and a hardcoded <code>cuda:0</code>, the whole GPU module errors during collection on a machine without CUDA rather than skipping.",
+   fix:"Record measured values with stated margins, derive indices from rates, add a conftest with a device fixture."}
+]},
+
+{ id:"misc", name:"Loose ends and drift", note:"Low severity individually; several are landmines for whoever touches the area next.", items:[
+  {id:"LE-1",sev:"medium",v:0,title:"additive.imu_mount_pitch is a dead draw, and the two values disagree",repo:"rl_toys",path:"configs/randomization.yaml — additive",
+   mech:"Neither randomizer reads the <code>additive</code> block. The mount-pitch DR actually comes from <code>sim_default.yaml: imu.mount_pitch_range</code>.",
+   fail:"The yaml advertises ±1° while the plant sees ±2°, and the <code>--no-noise</code> line that writes it is a no-op. This is the same dead-draw class that 10b4f31 was written to eliminate — <code>track</code> was removed for exactly this reason and documented; <code>additive</code> was missed.",
+   fix:"Delete it, or make it the single source and have both noise models read it."},
+  {id:"LE-2",sev:"medium",v:0,title:"Cross-engine leg servo stiffness has no numeric relationship",repo:"rl_toys",path:"wlbot_mjlab/robot/gen_mjcf.py · wlbot/sim/pybullet_backend.py",
+   mech:"MuJoCo gets <code>kp=50, kv=0.36, armature=1e-3</code>; Bullet gets <code>positionGain=0.3</code>, which is a solver blend factor, not a stiffness, with no armature.",
+   fail:"The config itself records that the armature alone is worth 29 survival points. The leg height <i>is</i> the pendulum length, so this changes the plant that Gate V2 compares — and V4, which would catch it, is currently dead (BL-2). Separately <code>m_supported</code> counts the wheels, which rest on the ground and are not lifted by the hip, so <code>kv</code> is ~9% high against a comment claiming critical damping.",
+   fix:"Drive both from <code>leg_servo.pd_kp</code> with an explicit PD on the Bullet side, and correct <code>m_supported</code> to <code>0.5·m_base</code>."},
+  {id:"LE-3",sev:"low",v:0,title:"MujocoBackend returns a different base_vel than PyBullet",repo:"rl_toys",path:"wlbot_mjlab/sim/mujoco_backend.py:222",
+   mech:"<code>cvel[3:6]</code> is the spatial velocity about the kinematic root's subtree CoM, not the base link's own CoM. PyBullet's <code>getBaseVelocity</code> is the latter.",
+   fail:"They differ by <code>ω × (r_base − r_subtree)</code> — at a 0.07 m offset and 5 rad/s, about 0.35 m/s. Currently harmless (no consumer), but a landmine for whoever adds a velocity gate.",
+   fix:"<code>mj_objectVelocity</code>, or drop the key."},
+  {id:"LE-4",sev:"low",v:0,title:"gen_urdf drops mesh placement in prismatic mode; gen_mjcf keeps it",repo:"rl_toys",path:"wlbot/model/gen_urdf.py:47-49",
+   mech:"3a2bf00 forces the mesh origin to the link origin — correct for the four-bar, wrong for <code>_prismatic_leg</code>, which passes a real translation that is now discarded while the rotation is kept.",
+   fail:"All four link meshes pile up at the leg link origin, each rotated. Visual only, and only on the regression path — but that path exists so a regression can be run, and it now produces two visually different robots from one config.",
+   fix:"Add a <code>keep_origin</code> flag, or pass the pose as a separate origin element."},
+  {id:"LE-5",sev:"low",v:0,title:"base_box_center has drifted from the regenerated CAD bbox",repo:"rl_toys",path:"configs/sim_default.yaml — base_box_center",
+   mech:"The config says <code>[0.001, 0, 0.010]</code> citing <code>geometry.json</code>; the current export says <code>[-0.003, 0, 0.0092]</code>.",
+   fail:"The base collision box sits 4 mm forward of the mesh it bounds. Near-zero practical impact — the base is contact-excluded and rarely touches ground — but it means the config and the CAD export have drifted, which is the thing <code>pixi run regen</code> exists to prevent.",
+   fix:"Have the generators read the bbox from <code>geometry.json</code> directly, as they already do for the linkage."},
+  {id:"LE-6",sev:"low",v:0,title:"Two docstrings claim 1 mm where the real figure is 3.5 mm",repo:"rl_toys",path:"wlbot/model/model.py:66 · wlbot/model/linkage.py",
+   mech:"Measured over h ∈ [40,85]: <code>max|axle_drop − h| = 3.508 mm</code>, peaking near h ≈ 60. The test and FOURBAR.md already state the honest number; only these two docstrings are stale.",
+   fail:"<code>axle_drop</code> feeds the spawn arithmetic on both engines, so &ldquo;1 mm&rdquo; would make a 3.5 mm spawn discrepancy look like a bug rather than the model.",
+   fix:"Say 3.5 mm."},
+  {id:"LE-7",sev:"low",v:0,title:"Documentation is stale on the 36→40 change",repo:"rl_toys",path:"docs/3-task.md · docs/5-evaluation.md · docs/6-deployment.md",
+   mech:"b6f7490 did not update the prose.",
+   fail:"<code>3-task.md</code> still says &ldquo;36 inputs&rdquo;, lists a reward term that <code>resolve_weights</code> now rejects with KeyError, and states &ldquo;No heading angle&rdquo; as a limitation. <code>5-evaluation.md</code> says the policy cannot observe heading. <code>6-deployment.md</code> gives the network as 36→64→64→2 with a flash figure derived from it, and its boundary table has no <code>yaw</code> row — the one document a firmware integrator reads.",
+   fix:"Update all four, and add the <code>yaw</code> conversion to the boundary table (see SAF-10)."},
+  {id:"LE-8",sev:"low",v:0,title:"last_current is in volts",repo:"rl_toys",path:"wlbot/sim/actuators.py:36",
+   mech:"The value is <code>(v − ke·ω)</code>, i.e. <code>i·R</code>. The comment admits it; the attribute name does not.",
+   fail:"Off by a factor of R ≈ 12 for anyone who reads it as amps. No consumer today.",
+   fix:"Rename or delete."},
+  {id:"LE-9",sev:"low",v:0,title:"save_npz casts to float32 while load_actor computes in float64",repo:"rl_toys",path:"wlbot/deploy/policy.py:44-49",
+   mech:"The round trip through <code>.npz</code> loses precision the <code>.pt</code> path keeps.",
+   fail:"<code>Actor(pt) != Actor(npz)</code> at the 1e-7 level, so an eval on the npz and an eval on the pt are not bit-identical runs. The parity test loads both sides from the same npz and never sees it.",
+   fix:"Keep float64 in the npz, or document the split."}
+]}
+];
+
+/* ---------- render ---------- */
+
+const counts = {};
+SEV.forEach(s => counts[s] = 0);
+let total = 0;
+GROUPS.forEach(g => g.items.forEach(f => { counts[f.sev]++; total++; }));
+
+const tally = document.getElementById("tally");
+SEV.forEach(s => {
+  if (!counts[s]) return;
+  const d = document.createElement("div");
+  d.className = "tally-cell";
+  d.style.setProperty("--sv", SEVC[s]);
+  d.innerHTML = `<span class="tally-n">${counts[s]}</span><span class="tally-l">${s}</span>`;
+  tally.appendChild(d);
+});
+const tot = document.createElement("div");
+tot.className = "tally-cell";
+tot.style.setProperty("--sv", "var(--ink-dim)");
+tot.innerHTML = `<span class="tally-n">${total}</span><span class="tally-l">open</span>`;
+tally.appendChild(tot);
+
+const filters = document.getElementById("filters");
+const active = new Set(SEV);
+SEV.forEach(s => {
+  if (!counts[s]) return;
+  const b = document.createElement("button");
+  b.className = "fbtn";
+  b.type = "button";
+  b.style.setProperty("--sv", SEVC[s]);
+  b.setAttribute("aria-pressed", "true");
+  b.dataset.sev = s;
+  b.innerHTML = `<span class="dot"></span>${s}<span class="n">${counts[s]}</span>`;
+  b.addEventListener("click", () => {
+    if (active.has(s)) { active.delete(s); b.setAttribute("aria-pressed", "false"); }
+    else { active.add(s); b.setAttribute("aria-pressed", "true"); }
+    apply();
+  });
+  filters.appendChild(b);
+});
+
+const toc = document.getElementById("toc");
+const host = document.getElementById("groups");
+
+GROUPS.forEach(g => {
+  const a = document.createElement("a");
+  a.href = "#g-" + g.id;
+  a.innerHTML = `${g.name.split(" — ")[0]}<span>${g.items.length}</span>`;
+  toc.appendChild(a);
+
+  const sec = document.createElement("section");
+  sec.className = "grp";
+  sec.id = "g-" + g.id;
+  sec.innerHTML =
+    `<div class="grp-head"><h2>${g.name}</h2><span class="count" data-count>${g.items.length} findings</span></div>` +
+    (g.note ? `<p class="grp-note">${g.note}</p>` : "");
+
+  g.items.forEach(f => {
+    const art = document.createElement("article");
+    art.className = "find";
+    art.dataset.sev = f.sev;
+    art.dataset.id = f.id;
+    art.style.setProperty("--sv", SEVC[f.sev]);
+    art.innerHTML =
+      `<div class="f-top">
+         <input class="f-check" type="checkbox" id="ck-${f.id}" aria-label="Mark ${f.id} handled">
+         <span class="f-id">${f.id}</span>
+         <span class="f-sev">${f.sev}</span>
+         ${f.v ? '<span class="f-verified" title="Checked personally against the tip">verified</span>' : ""}
+       </div>
+       <h3 class="f-title">${f.title}</h3>
+       <div class="f-path"><span class="repo">${f.repo}</span>${f.path}</div>
+       <dl class="f-body">
+         <div><dt>Mechanism</dt><dd>${f.mech}</dd></div>
+         <div><dt>Failure</dt><dd>${f.fail}</dd></div>
+         <div><dt>Fix</dt><dd>${f.fix}</dd></div>
+       </dl>`;
+    sec.appendChild(art);
+  });
+
+  const empty = document.createElement("p");
+  empty.className = "empty";
+  empty.hidden = true;
+  empty.textContent = "No findings at the selected severities.";
+  sec.appendChild(empty);
+  host.appendChild(sec);
+});
+
+/* ---------- filtering ---------- */
+
+function apply() {
+  GROUPS.forEach(g => {
+    const sec = document.getElementById("g-" + g.id);
+    let shown = 0;
+    sec.querySelectorAll(".find").forEach(el => {
+      const on = active.has(el.dataset.sev);
+      el.hidden = !on;
+      if (on) shown++;
+    });
+    sec.querySelector("[data-count]").textContent = shown + (shown === 1 ? " finding" : " findings");
+    sec.querySelector(".empty").hidden = shown !== 0;
+  });
+}
+
+/* ---------- persistence ---------- */
+
+const KEY = "rltoys-review-done-v1";
+
+function readDone() {
+  try {
+    const v = localStorage.getItem(KEY);
+    return v ? new Set(JSON.parse(v)) : new Set();
+  } catch (e) { return new Set(); }
+}
+function writeDone(set) {
+  try { localStorage.setItem(KEY, JSON.stringify([...set])); } catch (e) { /* private mode */ }
+}
+
+const done = readDone();
+document.querySelectorAll(".find").forEach(el => {
+  const box = el.querySelector(".f-check");
+  if (done.has(el.dataset.id)) { box.checked = true; el.classList.add("done"); }
+  box.addEventListener("change", () => {
+    if (box.checked) { done.add(el.dataset.id); el.classList.add("done"); }
+    else { done.delete(el.dataset.id); el.classList.remove("done"); }
+    writeDone(done);
+  });
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  done.clear();
+  writeDone(done);
+  document.querySelectorAll(".find").forEach(el => {
+    el.classList.remove("done");
+    el.querySelector(".f-check").checked = false;
+  });
+});
+</script>
+
+</body></html>

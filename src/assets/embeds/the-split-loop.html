@@ -1,0 +1,343 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Split Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#F2F4F1; --surface:#FFFFFF; --ink:#1A2024; --ink-2:#4A555C; --rule:#D5DBD6;
+  --slow:#A8620A; --slow-bg:#FBF0E1;      /* 100 Hz: policy rate */
+  --fast:#1D5FA8; --fast-bg:#E6EFF9;      /* 500 Hz: physics rate */
+  --phys:#6B7680; --phys-bg:#ECEFEE;
+  --ok:#2F7A4B; --warn:#A8620A; --bad:#B23A32;
+  --code-bg:#E9EDE9;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#121618; --surface:#1A2023; --ink:#E4E9E6; --ink-2:#A3AEB3; --rule:#2E373B;
+    --slow:#E0A04A; --slow-bg:#2E2414; --fast:#6FA8EC; --fast-bg:#15263A;
+    --phys:#98A3AB; --phys-bg:#222A2E; --ok:#6CC08D; --warn:#E0A04A; --bad:#EA7A70; --code-bg:#20272A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#121618; --surface:#1A2023; --ink:#E4E9E6; --ink-2:#A3AEB3; --rule:#2E373B;
+  --slow:#E0A04A; --slow-bg:#2E2414; --fast:#6FA8EC; --fast-bg:#15263A;
+  --phys:#98A3AB; --phys-bg:#222A2E; --ok:#6CC08D; --warn:#E0A04A; --bad:#EA7A70; --code-bg:#20272A;
+}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:760px;margin:0 auto}
+.wide{max-width:980px;margin:0 auto}
+header{padding-block:56px 28px;border-bottom:1px solid var(--rule);margin-bottom:36px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+h1{font-family:var(--display);font-stretch:80%;font-weight:800;font-size:clamp(40px,7vw,64px);line-height:1;margin:12px 0 16px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:28px;line-height:1.15;margin:56px 0 12px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:19px;margin:28px 0 6px}
+p{margin:0 0 14px}
+.lede{font-size:18px;color:var(--ink-2);max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:18px;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--code-bg);padding:14px 16px;border-radius:4px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;padding:0;font-size:inherit}
+.c-slow{color:var(--slow);font-weight:600}.c-fast{color:var(--fast);font-weight:600}.c-dim{color:var(--ink-2)}
+.rate{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:10px;vertical-align:1px}
+.rate.slow{color:var(--slow);background:var(--slow-bg)}.rate.fast{color:var(--fast);background:var(--fast-bg)}
+.decision{background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--ok);padding:20px 22px;margin:8px 0 0}
+.decision h2{margin:0 0 8px;font-size:22px}
+.decision ul{margin:8px 0 0;padding-left:20px}
+.decision li{margin-bottom:6px}
+.tbl{overflow-x:auto;margin:6px 0 18px;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);background:var(--ground)}
+tr:last-child td{border-bottom:0}
+.v{font-family:var(--mono);font-size:12px;font-weight:600;white-space:nowrap}
+.v.ok{color:var(--ok)}.v.half{color:var(--warn)}.v.no{color:var(--bad)}
+.qa{border-top:1px solid var(--rule);padding-top:18px;margin-top:26px}
+.q{font-family:var(--display);font-weight:600;font-size:19px;margin:0 0 8px;line-height:1.3}
+.q::before{content:"Q  ";font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+.fig{background:var(--surface);border:1px solid var(--rule);padding:16px 12px 8px;margin:10px 0 18px;overflow-x:auto}
+.fig svg{display:block;min-width:640px;width:100%;height:auto}
+.caption{font-size:13.5px;color:var(--ink-2);margin:-8px 0 20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:12px 0 18px}
+.pat{background:var(--surface);border:1px solid var(--rule);padding:16px 16px 6px;display:flex;flex-direction:column}
+.pat .who{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-bottom:6px}
+.pat h3{margin:0 0 8px}
+.pat .fit{margin-top:auto;padding-top:8px;border-top:1px dashed var(--rule);font-size:14px}
+.pat p{font-size:14.5px}
+.list-tight{padding-left:20px;margin:0 0 14px}.list-tight li{margin-bottom:6px}
+.todo{list-style:none;padding:0;margin:0 0 14px}
+.todo li{padding:10px 0 10px 28px;border-bottom:1px solid var(--rule);position:relative}
+.todo li::before{content:"";position:absolute;left:2px;top:15px;width:12px;height:12px;border:1.5px solid var(--ink-2);border-radius:2px}
+.sources{font-size:14px;padding-left:20px}
+.sources li{margin-bottom:4px}
+a{color:var(--fast);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--fast);outline-offset:2px}
+svg .t{font-family:var(--mono);font-size:12px;fill:var(--ink-2)}
+svg .tl{font-family:var(--mono);font-size:12px;fill:var(--ink)}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .slowbox{fill:var(--slow-bg);stroke:var(--slow);stroke-width:1.2}
+svg .fastbox{fill:var(--fast-bg);stroke:var(--fast);stroke-width:1.2}
+svg .physbox{fill:var(--phys-bg);stroke:var(--phys);stroke-width:1.2}
+svg .ts{font-family:var(--mono);font-size:11.5px;fill:var(--slow);font-weight:600}
+svg .tf{font-family:var(--mono);font-size:11.5px;fill:var(--fast)}
+svg .tp{font-family:var(--mono);font-size:11.5px;fill:var(--phys)}
+svg .grid{stroke:var(--rule);stroke-dasharray:3 4}
+@media (max-width:520px){h2{font-size:24px}.lede{font-size:16.5px}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">wlbot · architecture Q&amp;A · 2026-09-23</div>
+  <h1>The Split Loop</h1>
+  <p class="lede">How a <span class="rate slow">100 Hz</span> policy and a <span class="rate fast">500 Hz</span> plant share one <code>env.step()</code> in mjlab. We asked whether the shared-pipeline layer is over-engineered, looked at how other projects structure the same loop, and decided to keep it.</p>
+  <div class="meta"><span>branch lean_legs</span><span>mjlab ManagerBasedRlEnv</span><span>decimation = 500 // 100 = 5</span></div>
+</header>
+
+<section class="decision" aria-labelledby="dec">
+  <h2 id="dec">Decision: keep the shared plant layer as it is</h2>
+  <ul>
+    <li><strong>The pipelines stay in <code>wlbot/</code>.</strong> They have four real callers: the mjlab trainer, PyBullet through <code>SingleRobot</code>, Newton, and the firmware-parity tests. One definition keeps a cross-engine difference meaning "the physics differs", never "a copy drifted".</li>
+    <li><strong>The awkward mjlab wiring stays too, for now.</strong> It works. Its cost is readability, not correctness.</li>
+    <li><strong>Escape hatch, if the wiring ever causes a real bug:</strong> subclass <code>ManagerBasedRlEnv</code> and override <code>step()</code> so its substep loop reads like <code>SingleRobot.step</code> (Isaac Lab's "Direct" workflow, done by hand).</li>
+    <li><strong>Cleanups are batched for later,</strong> in one pass (listed at the end).</li>
+  </ul>
+</section>
+
+<h2>The question we started with</h2>
+<p>We know the plant is shared: <code>ActuationPipeline</code>, <code>SensePipeline</code>, <code>DomainRandomizer</code> and <code>SingleRobot</code>. But mjlab feels self-contained. We build an env config, hand it to <code>ManagerBasedRlEnv</code>, and write our own manager terms for mjlab to call. So what do our pipelines actually do, how do they talk to mjlab, and how do the two rates fit together?</p>
+<p>The first mental model was a set of <em>running</em> components passing streams of data: policy → actuation pipeline → adapter → torque → mjlab → observations → adapter → sense pipeline → policy. That turned out to be the wrong way to see it.</p>
+
+<h2>What we learned</h2>
+
+<div class="qa">
+  <p class="q">What is <code>SingleRobot</code> for?</p>
+  <p>It isn't part of the plant. It is <strong>the episode loop, written by hand</strong> for engines that don't bring a loop of their own. It owns the three plant objects plus a backend, and its <code>step()</code> is the whole simulation in about ten lines. It runs at <code>num_envs=1</code>, float64, on the CPU. The pipelines themselves are device-agnostic, and <code>SingleRobot</code> is what pins them there.</p>
+  <p>Callers: the PyBullet env <code>WlbotBalanceEnv</code> (evaluation only; the <code>gymnasium</code> dependency was dropped in <code>c343e30</code>, only its reset/step shape remains), <code>crossplay.py</code>, and tests. <strong>mjlab training never touches it.</strong></p>
+<pre><code>self.pipeline.mix(action)                      <span class="c-slow"># 100 Hz: store two volts</span>
+for _ in range(self.substeps):                 <span class="c-dim"># 5 × 2 ms</span>
+    tau, h = self.pipeline.tick(omega)         <span class="c-fast"># volts → torque</span>
+    true   = self.backend.substep(tau, ...)    <span class="c-dim"># physics</span>
+    self.sense.tick(true_tensors(true), dt)    <span class="c-fast"># truth → filtered sensors</span>
+obs = self._observe()                          <span class="c-slow"># 100 Hz: read the obs delay ring</span></code></pre>
+</div>
+
+<div class="qa">
+  <p class="q">Are the pipelines "running" and streaming data to mjlab?</p>
+  <p>No. There is one Python thread. The pipelines are objects holding state: a delay ring, filter states, battery charge. They do something only when a method is called on them. Everything is driven by one function, <code>env.step(action)</code>, which rsl_rl calls once per policy step. This is mjlab's own step (<code>manager_based_rl_env.py</code>), trimmed, with our code marked:</p>
+<pre><code>def step(self, action):                          <span class="c-slow"># called at 100 Hz by rsl_rl</span>
+    self.action_manager.process_action(action)   <span class="c-slow"># → WheelVoltageAction → pipeline.mix()</span>
+    for _ in range(self.cfg.decimation):         <span class="c-dim"># 5</span>
+        self.action_manager.apply_action()
+        self.scene.write_data_to_sim()           <span class="c-fast"># → adapter.compute() → pipeline.tick(ω)</span>
+        self.sim.step()                          <span class="c-dim"># MuJoCo integrates 2 ms</span>
+        self.scene.update(dt)                    <span class="c-fast"># → adapter.update() → sense.tick(truth)</span>
+    self.termination_manager.compute()           <span class="c-slow"># back at 100 Hz</span>
+    self.reward_manager.compute()                <span class="c-slow"># → PPO, not the policy</span>
+    ...reset finished envs (DR event draws new plants)...
+    self.obs_buf = self.observation_manager.compute()   <span class="c-slow"># → StationKeepObs reads the obs ring</span></code></pre>
+  <p>The "stream" feeling comes from state that survives between calls. "Rate" means how often something is called: each <code>sim.step()</code> advances simulated time by 2 ms, however fast the GPU actually runs.</p>
+</div>
+
+<div class="qa">
+  <p class="q">How do 100 Hz and 500 Hz fit together?</p>
+  <p>The <code>for _ in range(decimation)</code> loop is the whole answer. It works in two directions, one expanding and one shrinking:</p>
+</div>
+</div>
+
+<div class="wide">
+<div class="fig" role="img" aria-label="Timeline of one 10 ms policy step: one mix at 0 ms, five pipeline ticks, five MuJoCo steps and five sense ticks at 2 ms intervals, one observe at 10 ms">
+<svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <line class="grid" x1="170" y1="20" x2="170" y2="212"/><line class="grid" x1="310" y1="20" x2="310" y2="212"/>
+    <line class="grid" x1="450" y1="20" x2="450" y2="212"/><line class="grid" x1="590" y1="20" x2="590" y2="212"/>
+    <line class="grid" x1="730" y1="20" x2="730" y2="212"/><line class="grid" x1="870" y1="20" x2="870" y2="212"/>
+  </g>
+  <text class="tl" x="158" y="44" text-anchor="end">policy</text>
+  <text class="t" x="158" y="59" text-anchor="end">100 Hz</text>
+  <rect class="slowbox" x="172" y="30" width="96" height="26" rx="3"/><text class="ts" x="220" y="47" text-anchor="middle">mix(a_t)</text>
+  <rect class="slowbox" x="772" y="30" width="96" height="26" rx="3"/><text class="ts" x="820" y="47" text-anchor="middle">observe()</text>
+  <text class="t" x="520" y="47" text-anchor="middle">volts held in pipeline.command</text>
+  <line x1="272" y1="43" x2="425" y2="43" class="ax"/><line x1="615" y1="43" x2="768" y2="43" class="ax"/>
+
+  <text class="tl" x="158" y="99" text-anchor="end">pipeline.tick</text>
+  <g>
+    <rect class="fastbox" x="176" y="84" width="128" height="24" rx="3"/><text class="tf" x="240" y="100" text-anchor="middle">volts→τ</text>
+    <rect class="fastbox" x="316" y="84" width="128" height="24" rx="3"/><text class="tf" x="380" y="100" text-anchor="middle">volts→τ</text>
+    <rect class="fastbox" x="456" y="84" width="128" height="24" rx="3"/><text class="tf" x="520" y="100" text-anchor="middle">volts→τ</text>
+    <rect class="fastbox" x="596" y="84" width="128" height="24" rx="3"/><text class="tf" x="660" y="100" text-anchor="middle">volts→τ</text>
+    <rect class="fastbox" x="736" y="84" width="128" height="24" rx="3"/><text class="tf" x="800" y="100" text-anchor="middle">volts→τ</text>
+  </g>
+  <text class="tl" x="158" y="139" text-anchor="end">mj_step</text>
+  <g>
+    <rect class="physbox" x="176" y="124" width="128" height="24" rx="3"/><text class="tp" x="240" y="140" text-anchor="middle">+2 ms</text>
+    <rect class="physbox" x="316" y="124" width="128" height="24" rx="3"/><text class="tp" x="380" y="140" text-anchor="middle">+2 ms</text>
+    <rect class="physbox" x="456" y="124" width="128" height="24" rx="3"/><text class="tp" x="520" y="140" text-anchor="middle">+2 ms</text>
+    <rect class="physbox" x="596" y="124" width="128" height="24" rx="3"/><text class="tp" x="660" y="140" text-anchor="middle">+2 ms</text>
+    <rect class="physbox" x="736" y="124" width="128" height="24" rx="3"/><text class="tp" x="800" y="140" text-anchor="middle">+2 ms</text>
+  </g>
+  <text class="tl" x="158" y="179" text-anchor="end">sense.tick</text>
+  <g>
+    <rect class="fastbox" x="176" y="164" width="128" height="24" rx="3"/><text class="tf" x="240" y="180" text-anchor="middle">frame→ring</text>
+    <rect class="fastbox" x="316" y="164" width="128" height="24" rx="3"/><text class="tf" x="380" y="180" text-anchor="middle">frame→ring</text>
+    <rect class="fastbox" x="456" y="164" width="128" height="24" rx="3"/><text class="tf" x="520" y="180" text-anchor="middle">frame→ring</text>
+    <rect class="fastbox" x="596" y="164" width="128" height="24" rx="3"/><text class="tf" x="660" y="180" text-anchor="middle">frame→ring</text>
+    <rect class="fastbox" x="736" y="164" width="128" height="24" rx="3"/><text class="tf" x="800" y="180" text-anchor="middle">frame→ring</text>
+  </g>
+  <line class="ax" x1="170" y1="214" x2="870" y2="214"/>
+  <text class="t" x="170" y="234" text-anchor="middle">0 ms</text><text class="t" x="310" y="234" text-anchor="middle">2</text>
+  <text class="t" x="450" y="234" text-anchor="middle">4</text><text class="t" x="590" y="234" text-anchor="middle">6</text>
+  <text class="t" x="730" y="234" text-anchor="middle">8</text><text class="t" x="870" y="234" text-anchor="middle">10 ms</text>
+</svg>
+</div>
+<p class="caption wrap">One policy step. Actuation <strong>expands</strong>: one command becomes five torques. Sensing <strong>shrinks</strong>: five filtered frames go in, and one delayed frame comes out.</p>
+</div>
+
+<div class="wrap">
+  <h3>Actuation expands with a hold</h3>
+  <p>The same volts stay in <code>pipeline.command</code> for all five ticks, but the torque differs on each one. Back-EMF uses the wheel speed MuJoCo produced 2 ms earlier, and the battery sags with the current drawn. That's why the motor has to be computed at the physics rate.</p>
+  <h3>Sensing shrinks by filtering, then taking one frame</h3>
+  <p>All five truth frames pass through the firmware's pitch and yaw filters, because a filter's output depends on every sample it saw. The policy is shown only one frame per step, read from the observation ring with a delay.</p>
+  <h3>Why latency is measured in 2 ms units</h3>
+  <p><code>pipeline.tick</code> pushes the held command into the delay ring on every tick, so each slot is 2 ms, not 10 ms. A drawn latency of three slots means 6 ms, even though the policy acts only every 10 ms.</p>
+
+<div class="qa">
+  <p class="q">How do the two engines map onto each other?</p>
+  <p>Each mjlab hook calls the same <code>wlbot/</code> object as the matching line in <code>SingleRobot</code>. The manager terms are adapters, not a second implementation.</p>
+</div>
+</div>
+<div class="wide"><div class="tbl"><table>
+  <thead><tr><th>Step</th><th>SingleRobot (CPU, we own the loop)</th><th>mjlab (GPU, mjlab owns the loop)</th></tr></thead>
+  <tbody>
+    <tr><td>Draw DR per episode</td><td><code>randomizer.sample_params()</code></td><td>reset event in <code>events.py</code></td></tr>
+    <tr><td>Reset filters and rings</td><td><code>sense.reset()</code>, <code>pipeline.reset()</code></td><td><code>WheelVoltageActuator.reset(env_ids)</code></td></tr>
+    <tr><td><span class="rate slow">100 Hz</span> store action</td><td><code>pipeline.mix(action)</code></td><td><code>WheelVoltageAction.process_actions</code></td></tr>
+    <tr><td><span class="rate fast">500 Hz</span> before physics</td><td><code>pipeline.tick(omega)</code></td><td><code>WheelVoltageActuator.compute(cmd)</code></td></tr>
+    <tr><td>Physics</td><td><code>backend.substep(...)</code></td><td>mjlab's <code>mj_step</code></td></tr>
+    <tr><td><span class="rate fast">500 Hz</span> after physics</td><td><code>sense.tick(true)</code></td><td><code>WheelVoltageActuator.update(dt)</code></td></tr>
+    <tr><td><span class="rate slow">100 Hz</span> observation</td><td><code>sense.observe(...)</code></td><td><code>StationKeepObs</code> → <code>sense.observe_with(...)</code></td></tr>
+  </tbody>
+</table></div></div>
+
+<div class="wrap">
+<div class="qa">
+  <p class="q">Where was the first mental model off?</p>
+</div>
+</div>
+<div class="wide"><div class="tbl"><table>
+  <thead><tr><th>First model</th><th>Verdict</th><th>What actually happens</th></tr></thead>
+  <tbody>
+    <tr><td>Policy outputs a command</td><td class="v ok">right</td><td>The actor network outputs <code>[U, u_y]</code>.</td></tr>
+    <tr><td>→ actuation pipeline → clipped voltage</td><td class="v half">close</td><td>The action term clips to [-1, 1]; <code>mix</code> scales, mixes left/right and only <em>stores</em> the volts.</td></tr>
+    <tr><td>→ adapter converts it to torque</td><td class="v half">close</td><td>The adapter <em>calls</em> <code>pipeline.tick</code>, and the pipeline converts. The adapter is the socket, the pipeline the appliance. This happens 5× per step.</td></tr>
+    <tr><td>mjlab produces observations</td><td class="v no">wrong</td><td>MuJoCo produces true state (<code>qpos</code>, <code>qvel</code>). Observations are ours to build.</td></tr>
+    <tr><td>→ adapter reformats → sense pipeline</td><td class="v ok">right</td><td><code>adapter.update()</code>, 5× per step, after each substep.</td></tr>
+    <tr><td>Rewards go into the obs ring</td><td class="v no">wrong</td><td>The obs ring is filled by <code>sense.tick</code> during the substeps. The reward goes to PPO for learning. The policy never sees it.</td></tr>
+    <tr><td>500/100 means expanding a 100 Hz policy</td><td class="v half">half</td><td>True for actuation. Sensing goes the other way.</td></tr>
+  </tbody>
+</table></div></div>
+
+<div class="wrap">
+<h2>Is the layer over-engineered?</h2>
+<p>Before judging, we checked what mjlab can do natively. "Just use mjlab's features" is only an alternative if the features exist.</p>
+<h3>What mjlab offers</h3>
+<ul class="list-tight">
+  <li><code>BuiltinDcMotorActuator</code> with a VOLTAGE mode and back-EMF, <code>τ = K(V − Kω)/R</code>, on MuJoCo's native <code>&lt;dcmotor&gt;</code>. Its docstring says that in this mode <code>effort_target</code> carries volts, so our <code>apply_actions</code> follows mjlab's convention. It's still dead code in our setup, because our <code>compute</code> ignores it.</li>
+  <li>Observation noise, delay and history in the observation manager, plus DR through events.</li>
+</ul>
+</div>
+<div class="wide"><div class="tbl"><table>
+  <thead><tr><th>What we need</th><th>Native mjlab</th><th>Why it matters for this robot</th></tr></thead>
+  <tbody>
+    <tr><td>Latency on a 2 ms grid</td><td>Obs delay counted in policy steps (10 ms)</td><td>Real latencies are a few ms. Rounding to 10 ms is a large error for a balancing robot.</td></tr>
+    <tr><td>Firmware pitch and yaw filters at 500 Hz</td><td>Obs processing at 100 Hz</td><td>Filtering 1 frame in 5 gives a different signal from the ESP32's.</td></tr>
+    <tr><td>Battery sag, per-wheel coulomb friction, torque offset</td><td>Not in the DC motor model</td><td>These are the plant details the bench results point at.</td></tr>
+    <tr><td>The same plant in PyBullet and Newton</td><td>mjlab config exists only inside mjlab</td><td>The deciding factor.</td></tr>
+  </tbody>
+</table></div></div>
+
+<div class="wrap">
+<h3>The real reason: four callers, one definition</h3>
+<p>A good test for over-engineering is the number of real callers, not the number of layers. The pipelines are plain batched torch with no mjlab imports, and they serve mjlab, PyBullet, Newton and the firmware-parity tests. Before the plant unification (finished 2026-09-14), mjlab had its own copies in <code>actuators/mjlab_wheel_actuator.py</code> and <code>tasks/mdp/terms.py</code>. The current working tree deletes both.</p>
+
+<h3>Our limitations: where it does feel forced</h3>
+<p>The friction is at the adapter boundary, where a 500 Hz plant is squeezed into a framework built around 100 Hz managers:</p>
+<ul class="list-tight">
+  <li><strong>Sensing lives inside an actuator.</strong> <code>WheelVoltageActuator.update()</code> runs the sense pipeline because actuators are mjlab's only per-substep hook. An "actuator" that owns the IMU model surprises every new reader.</li>
+  <li><strong>A hidden shared-state lookup.</strong> The action term, the observation term and the DR events all find the pipelines through <code>wheel_actuator(entity)</code>. It's effectively a global, and the config doesn't show the dependency.</li>
+  <li><strong>An ordering workaround.</strong> <code>StationKeepObs</code> keeps per-env step stamps because mjlab computes rewards before observations and resets envs in between.</li>
+  <li><strong><code>torch.compile</code> to recover speed.</strong> The generic per-substep ticks launch about 280 + 55 small kernels at 1024 envs, which native actuators would fuse.</li>
+  <li><strong>Dead code.</strong> <code>apply_actions</code> writes an effort target that nothing reads.</li>
+  <li><strong>Engine count.</strong> The bigger cost is the Newton adapter: <code>newton_env.py</code> is 929 lines, the largest file in the repo, for a judge-only engine. Agreement between simulators hasn't predicted the bench; improving the plant model has.</li>
+</ul>
+
+<h2>How other projects do it</h2>
+<p>No project gets "one loop we hand to the engine". A GPU physics engine never owns the control flow. Either you own the loop or a framework does, and this repo has one of each.</p>
+</div>
+
+<div class="wide"><div class="grid3">
+  <article class="pat">
+    <div class="who">legged_gym · walk-these-ways · unitree_rl_gym</div>
+    <h3>You write the loop</h3>
+    <p>One env class. <code>step()</code> is literally a <code>for decimation</code> loop around <code>_compute_torques</code> and <code>simulate</code>. It's very readable.</p>
+    <p>The plant is thin: a PD law, with observation noise added once at the policy rate and no physics-rate filters. Deployment is a separate hand-written loop (<code>deploy_mujoco.py</code>) that copies the PD law and the observation building.</p>
+    <p class="fit">ANYmal's actuator network sits in the same <code>_compute_torques</code> slot. It's the closest analogue of our <code>pipeline.tick</code>.</p>
+  </article>
+  <article class="pat">
+    <div class="who">Isaac Lab · mjlab</div>
+    <h3>The framework owns the loop</h3>
+    <p>Hooks are called at fixed moments. Isaac Lab offers two workflows: <strong>manager-based</strong>, and <strong>Direct</strong>, where one class implements <code>_pre_physics_step</code> (once) and <code>_apply_action</code> (<code>decimation</code> times).</p>
+    <p>mjlab ships only <code>ManagerBasedRlEnv</code>. We're a Direct-shaped env living in a manager-only framework, and that mismatch is most of the friction.</p>
+    <p class="fit">This is where we are.</p>
+  </article>
+  <article class="pat">
+    <div class="who">MuJoCo Playground · Brax · MJX</div>
+    <h3>The step is a pure function</h3>
+    <p>No managers. Each env writes <code>step(state, action)</code>, and substeps are a <code>jax.lax.scan</code> over <code>mjx.step</code> with <code>ctrl</code> held.</p>
+    <p>A custom scan body <code>tick → mjx.step → sense</code> would be <code>SingleRobot.step</code> compiled to GPU. It's the cleanest version of what we want.</p>
+    <p class="fit">The cost: rewrite the torch plant in JAX.</p>
+  </article>
+</div></div>
+
+<div class="wrap">
+<p>Two patterns hold across all three. <strong>The richer the plant, the more it strains a framework's hooks.</strong> legged_gym fits in one loop because its plant is a PD law, while ours has a battery, a 2 ms delay grid and firmware filters. And <strong>everyone who deploys has two loops</strong>, a vectorized training loop and a single-robot deployment loop. The only choice is whether the second one is a copy (unitree) or shares the plant code (us).</p>
+
+<h2>How we got to the decision</h2>
+<ul class="list-tight">
+  <li>The layer is <strong>earned</strong>: four callers, framework-agnostic, and it replaced drifting copies.</li>
+  <li>Native mjlab would cover only part of the plant. A custom actuator would remain even if mjlab were the only engine.</li>
+  <li>The friction is real, but it costs <strong>readability, not correctness</strong>. Debating it further costs more than the friction does.</li>
+  <li>We already have the single loop: <code>SingleRobot.step</code>. The training side can get the same shape later through a Direct-style <code>step()</code> override, at the cost of owning a copy of mjlab's step (reset ordering, <code>sim.forward()</code>, the command manager, recorders).</li>
+</ul>
+
+<h2>Deferred cleanups, one pass later</h2>
+<ul class="todo">
+  <li>Make <code>WheelVoltageAction.apply_actions</code> a no-op with a one-line reason: torque comes from <code>WheelVoltageActuator.compute</code> every substep.</li>
+  <li>Replace "the Gymnasium env" with "the PyBullet env" in <code>wlbot/sim/single_robot.py</code> (lines 1, 112, 298).</li>
+  <li>Refresh the knowledge graph (<code>/graphify . --update</code>). It predates the removal of <code>terms.py</code> and the addition of <code>plant_adapter.py</code>.</li>
+</ul>
+
+<h2>Still open</h2>
+<ul class="list-tight">
+  <li><strong>Is each engine still paying for itself?</strong> What has Newton caught that PyBullet plus mjlab would not have?</li>
+  <li><strong>Terminations at the policy rate.</strong> There are five <code>sim.step()</code> calls but one termination check per step. If pitch passes the fall limit at substep 2 and recovers by substep 5, what does the check see, and does it matter?</li>
+</ul>
+
+<h2>Sources</h2>
+<ol class="sources">
+  <li><a href="https://isaac-sim.github.io/IsaacLab/main/source/setup/walkthrough/technical_env_design.html">Isaac Lab: Environment Design</a></li>
+  <li><a href="https://isaac-sim.github.io/IsaacLab/main/source/tutorials/03_envs/create_direct_rl_env.html">Isaac Lab: Creating a Direct Workflow RL Environment</a></li>
+  <li><a href="https://github.com/leggedrobotics/legged_gym/blob/master/legged_gym/envs/base/legged_robot.py">legged_gym, legged_robot.py</a></li>
+  <li><a href="https://github.com/Improbable-AI/walk-these-ways/blob/master/go1_gym/envs/base/legged_robot.py">walk-these-ways, legged_robot.py</a></li>
+  <li><a href="https://github.com/unitreerobotics/unitree_rl_gym/blob/main/deploy/deploy_mujoco/deploy_mujoco.py">unitree_rl_gym, deploy_mujoco.py</a></li>
+  <li><a href="https://arxiv.org/pdf/1901.08652">Hwangbo et al. 2019, Learning agile and dynamic motor skills for legged robots</a></li>
+  <li><a href="https://github.com/google-deepmind/mujoco_playground">MuJoCo Playground</a></li>
+  <li>Local: <code>mjlab/envs/manager_based_rl_env.py</code>, <code>mjlab/actuator/builtin_actuator.py</code>, <code>wlbot_mjlab/tasks/mdp/plant_adapter.py</code>, <code>wlbot/sim/single_robot.py</code></li>
+</ol>
+</div>
+
+</body></html>

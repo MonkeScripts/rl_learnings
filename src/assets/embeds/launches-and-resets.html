@@ -1,0 +1,437 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Launches and Resets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #eae8e2;
+  --ink: #1a1d23;
+  --ink-2: #4d5059;
+  --ink-3: #7d808a;
+  --rule: #d4d1c8;
+  --accent: #c4622d;
+  --accent-dim: #9e5028;
+  --cpu: #4a7fb5;
+  --cpu-dim: #3a6594;
+  --ok: #3a8a4e;
+  --warn: #b84a30;
+  --code-bg: #e6e4dc;
+  --diff-del: #f0ddd6;
+  --diff-add: #d6eadb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d;
+    --surface: #1e2028;
+    --ink: #e4e2db;
+    --ink-2: #b0ada4;
+    --ink-3: #7d7a72;
+    --rule: #33363e;
+    --accent: #e0824a;
+    --accent-dim: #c06a38;
+    --cpu: #6fa3d6;
+    --cpu-dim: #5a8ab8;
+    --ok: #6fbf80;
+    --warn: #e07a60;
+    --code-bg: #22242c;
+    --diff-del: #2e2220;
+    --diff-add: #1e2c22;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d;
+  --surface: #1e2028;
+  --ink: #e4e2db;
+  --ink-2: #b0ada4;
+  --ink-3: #7d7a72;
+  --rule: #33363e;
+  --accent: #e0824a;
+  --accent-dim: #c06a38;
+  --cpu: #6fa3d6;
+  --cpu-dim: #5a8ab8;
+  --ok: #6fbf80;
+  --warn: #e07a60;
+  --code-bg: #22242c;
+  --diff-del: #2e2220;
+  --diff-add: #1e2c22;
+}
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size: 17px; line-height: 1.65;
+}
+main { max-width: 700px; margin: 0 auto; padding: 56px 20px 100px; }
+h1 { font-size: 32px; font-weight: 600; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 22px; font-weight: 600; margin: 52px 0 14px; line-height: 1.25; text-wrap: balance; }
+h3 { font-size: 18px; font-weight: 600; margin: 32px 0 10px; }
+p { margin: 0 0 16px; max-width: 62ch; }
+.lede { color: var(--ink-2); font-size: 19px; margin-bottom: 20px; max-width: 56ch; }
+.label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 16px;
+}
+code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 0.85em; background: var(--code-bg); padding: 2px 5px; border-radius: 3px; }
+pre { background: var(--code-bg); padding: 16px; border-radius: 6px; overflow-x: auto; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; line-height: 1.5; margin: 0 0 16px; }
+pre code { background: none; padding: 0; }
+figure { margin: 28px 0 32px; }
+figure svg { max-width: 100%; height: auto; display: block; }
+figcaption { font-size: 14px; color: var(--ink-2); margin-top: 10px; max-width: 60ch; font-style: italic; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 8px 0 20px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-2); font-size: 12px; font-family: "JetBrains Mono", monospace; letter-spacing: 0.04em; text-transform: uppercase; }
+td.n { text-align: right; font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; font-size: 14px; }
+.wrap { overflow-x: auto; }
+.callout { border-left: 3px solid var(--accent); padding: 6px 0 6px 16px; color: var(--ink-2); margin: 20px 0; font-size: 16px; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 48px 0; }
+pre.diff { font-size: 12.5px; line-height: 1.5; }
+pre.diff .d { display: block; background: var(--diff-del); }
+pre.diff .a { display: block; background: var(--diff-add); }
+pre.diff .c { display: block; color: var(--ink-3); }
+pre.diff .d::before { content: "- "; color: var(--warn); }
+pre.diff .a::before { content: "+ "; color: var(--ok); }
+pre.diff .c::before { content: "  "; }
+.file { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-3); margin: 16px 0 4px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 12px 0 20px; }
+.cols > div { background: var(--surface); padding: 16px; border-radius: 6px; }
+.cols h4 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.cols ul { margin: 0; padding-left: 18px; } .cols li { margin: 0 0 6px; font-size: 14.5px; }
+.cols .y { color: var(--ok); } .cols .n { color: var(--warn); }
+@media (max-width: 560px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 26px; } }
+</style><style>/* learning_rl: phone-width fix */@media (max-width:600px){figure:has(> svg){overflow-x:auto;-webkit-overflow-scrolling:touch}figure > svg{min-width:600px;max-width:none}}</style>
+
+<main>
+<div class="label">wlbot · lean_mdp · training throughput</div>
+<h1>Why the GPU was idle half the time</h1>
+<p class="lede">Our training loop runs 1024 robots on the GPU, and the GPU was only busy 46% of the time. This is the story of finding why, trying two fixes, and learning that the obvious one failed.</p>
+
+<h2>The symptom</h2>
+
+<p>A training iteration takes 2.9 seconds. We profiled one policy step (20.5 ms) and found this:</p>
+
+<figure>
+<svg viewBox="0 0 680 240" role="img" aria-label="Stacked bar showing where 20.5 ms goes: sense tick 4.0, mjlab 4.2, actuation 1.35, physics 2.3, reset 2.1, obs 1.5, reward 0.8, PPO 4.5">
+  <g font-family="Source Serif 4, Georgia, serif" font-size="12" fill="currentColor">
+    <text x="0" y="15" font-weight="600" font-size="14">Where one policy step goes (20.5 ms)</text>
+    <g transform="translate(0,32)">
+      <rect x="0" y="0" width="132" height="30" rx="2" fill="var(--accent)"/>
+      <rect x="136" y="0" width="137" height="30" rx="2" fill="var(--surface)" stroke="var(--rule)"/>
+      <rect x="277" y="0" width="44" height="30" rx="2" fill="var(--accent)" opacity="0.6"/>
+      <rect x="325" y="0" width="75" height="30" rx="2" fill="var(--cpu)"/>
+      <rect x="404" y="0" width="69" height="30" rx="2" fill="var(--surface)" stroke="var(--rule)"/>
+      <rect x="477" y="0" width="49" height="30" rx="2" fill="var(--surface)" stroke="var(--rule)"/>
+      <rect x="530" y="0" width="26" height="30" rx="2" fill="var(--surface)" stroke="var(--rule)"/>
+      <rect x="560" y="0" width="118" height="30" rx="2" fill="var(--surface)" stroke="var(--rule)" stroke-dasharray="4 3"/>
+    </g>
+    <g font-size="11" transform="translate(0,78)">
+      <text x="66" y="0" text-anchor="middle" font-weight="600">sense tick</text>
+      <text x="66" y="14" text-anchor="middle" fill="var(--ink-2)">4.0 ms · 280 kernels</text>
+      <text x="204" y="0" text-anchor="middle">mjlab managers</text>
+      <text x="204" y="14" text-anchor="middle" fill="var(--ink-2)">4.2 ms</text>
+      <text x="299" y="28" text-anchor="middle" font-weight="600">actuation</text>
+      <text x="299" y="42" text-anchor="middle" fill="var(--ink-2)">1.35 ms · 55 kernels</text>
+      <text x="362" y="0" text-anchor="middle">physics</text>
+      <text x="362" y="14" text-anchor="middle" fill="var(--ink-2)">2.3 ms</text>
+      <text x="438" y="28" text-anchor="middle">reset</text>
+      <text x="438" y="42" text-anchor="middle" fill="var(--ink-2)">2.1 ms</text>
+      <text x="501" y="0" text-anchor="middle">obs</text>
+      <text x="501" y="14" text-anchor="middle" fill="var(--ink-2)">1.5 ms</text>
+      <text x="543" y="28" text-anchor="middle" fill="var(--ink-2)">rew</text>
+      <text x="619" y="0" text-anchor="middle" fill="var(--ink-3)">PPO share</text>
+    </g>
+    <g font-size="11" fill="var(--ink-3)" transform="translate(0,148)">
+      <rect x="0" y="-9" width="10" height="10" rx="1" fill="var(--accent)"/><text x="16" y="0">our pipeline ticks (ran five times, once per substep)</text>
+      <rect x="0" y="7" width="10" height="10" rx="1" fill="var(--cpu)"/><text x="16" y="16">MuJoCo Warp physics</text>
+      <rect x="0" y="23" width="10" height="10" rx="1" fill="var(--surface)" stroke="var(--rule)"/><text x="16" y="32">everything else</text>
+    </g>
+  </g>
+</svg>
+<figcaption>The two pipeline ticks (sensing and actuation) and the physics engine are the per-substep items. Everything else runs once per policy step.</figcaption>
+</figure>
+
+<p>The sense tick alone issues 280 GPU kernels per substep. At five substeps per step, that is 1400 kernel launches from our code every 20 ms, plus another 275 from the actuation tick and 520 from the physics engine.</p>
+
+<p>Each kernel is a small program. Launching it is a handshake: the CPU describes the work, packs the arguments, and sends it to the GPU. That handshake takes a few microseconds no matter how much work the kernel does. With 1024 robots, each kernel runs over about a thousand numbers, which the GPU finishes in under a microsecond. The handshake is longer than the work.</p>
+
+<figure>
+<svg viewBox="0 0 680 165" role="img" aria-label="Timeline showing CPU issuing many small blocks and the GPU doing brief work slivers between long idle gaps">
+  <g font-family="Source Serif 4, Georgia, serif" font-size="12" fill="currentColor">
+    <text x="0" y="15" font-weight="600" font-size="14">What happens in a substep</text>
+    <g transform="translate(0,30)">
+      <text x="0" y="16" font-size="11" fill="var(--ink-2)">CPU</text>
+      <line x1="36" y1="12" x2="660" y2="12" stroke="var(--rule)"/>
+      <g fill="var(--cpu)">
+        <rect x="40" y="2" width="28" height="20" rx="2"/><rect x="82" y="2" width="28" height="20" rx="2"/>
+        <rect x="124" y="2" width="28" height="20" rx="2"/><rect x="166" y="2" width="28" height="20" rx="2"/>
+        <rect x="208" y="2" width="28" height="20" rx="2"/><rect x="250" y="2" width="28" height="20" rx="2"/>
+        <rect x="292" y="2" width="28" height="20" rx="2"/><rect x="334" y="2" width="28" height="20" rx="2"/>
+        <rect x="376" y="2" width="28" height="20" rx="2"/><rect x="418" y="2" width="28" height="20" rx="2"/>
+        <rect x="460" y="2" width="28" height="20" rx="2"/><rect x="502" y="2" width="28" height="20" rx="2"/>
+        <rect x="544" y="2" width="28" height="20" rx="2"/><rect x="586" y="2" width="28" height="20" rx="2"/>
+        <rect x="628" y="2" width="28" height="20" rx="2"/>
+      </g>
+    </g>
+    <g transform="translate(0,70)">
+      <text x="0" y="16" font-size="11" fill="var(--ink-2)">GPU</text>
+      <line x1="36" y1="12" x2="660" y2="12" stroke="var(--rule)"/>
+      <g fill="var(--accent)">
+        <rect x="70" y="2" width="5" height="20" rx="1"/><rect x="112" y="2" width="5" height="20" rx="1"/>
+        <rect x="154" y="2" width="5" height="20" rx="1"/><rect x="196" y="2" width="5" height="20" rx="1"/>
+        <rect x="238" y="2" width="5" height="20" rx="1"/><rect x="280" y="2" width="5" height="20" rx="1"/>
+        <rect x="322" y="2" width="5" height="20" rx="1"/><rect x="364" y="2" width="5" height="20" rx="1"/>
+        <rect x="406" y="2" width="5" height="20" rx="1"/><rect x="448" y="2" width="5" height="20" rx="1"/>
+        <rect x="490" y="2" width="5" height="20" rx="1"/><rect x="532" y="2" width="5" height="20" rx="1"/>
+        <rect x="574" y="2" width="5" height="20" rx="1"/><rect x="616" y="2" width="5" height="20" rx="1"/>
+        <rect x="658" y="2" width="5" height="20" rx="1"/>
+      </g>
+    </g>
+    <text x="40" y="128" font-size="12" fill="var(--ink-2)">Each blue block is the CPU describing one kernel. Each orange sliver is the</text>
+    <text x="40" y="144" font-size="12" fill="var(--ink-2)">GPU running it. The white space between slivers is the GPU waiting for the next instruction.</text>
+  </g>
+</svg>
+<figcaption>This is why more robots does not mean proportionally more throughput. The bottleneck is the number of instructions, not the size of each one.</figcaption>
+</figure>
+
+<p>Two fixes target the two orange blocks in the step bar. The sense and actuation ticks, which we can rewrite, and the reset term, which fires whenever a robot's episode ends.</p>
+
+<h2>The ticks: kernel fusion</h2>
+
+<h3>The idea</h3>
+
+<p>Most of our 280 kernels per substep are small: scale a tensor, add a bias, clamp a range, add noise. Each of these is its own launch. <code>torch.compile</code> traces the Python function, sees that five of those operations touch the same tensors in sequence, and merges them into one kernel that does all five. The number of launches drops from 280 to roughly 90, and the merged kernels are slightly faster because they keep data in GPU registers instead of writing it to memory between steps.</p>
+
+<p>Think of it like this. Without fusion, the CPU is a manager who walks to the GPU's desk for every small task: "multiply this column by 0.8", walks back, "now add the bias", walks back, "now clamp to this range", walks back. With fusion, the manager writes a single memo: "multiply by 0.8, add the bias, clamp to this range" and makes one trip.</p>
+
+<h3>But first: clearing the roadblocks</h3>
+
+<p><code>torch.compile</code> traces the function and builds a graph of its operations. Any line where Python asks the GPU for a value and waits for the answer breaks the graph into pieces. Each piece gets its own launch, defeating the point. We had four of these per substep, and each was a pattern like this:</p>
+
+<div class="file">pitch_filter.py — the pitch estimator decides whether to seed</div>
+<pre class="diff"><code><span class="d">if bool(self._pending.any()):        # "hey GPU, is anyone pending?"</span>
+<span class="d">    ids = self._pending.nonzero()    # "which ones?" (variable-length result)</span>
+<span class="d">    self.filter.reset(ids, ...)      # now operate on only those</span>
+<span class="a">m = self._pending                     # the mask stays on the GPU</span>
+<span class="a">seed_deg = static_seed_deg(...)       # compute the seed for everyone</span>
+<span class="a">f.pitch = torch.where(m, seed_deg, f.pitch)   # keep it only where pending</span>
+<span class="a">f.acc_angle = torch.where(m, seed_deg, f.acc_angle)</span>
+<span class="a">f.rejected = torch.where(m, torch.zeros_like(f.rejected), f.rejected)</span></code></pre>
+
+<p>The old version asks the GPU a question ("is anyone pending?"), waits for the answer, then builds an index of variable length. The compiler cannot predict the shape of that index, so it gives up and runs the rest eagerly. The new version computes the seed for all 1024 robots, which is a fixed shape the compiler can trace, and uses <code>torch.where</code> to keep the result only where the mask is true. Pending robots get exactly the same values. The rest keep theirs. No question asked, no waiting.</p>
+
+<p>The same pattern appeared in three more places:</p>
+
+<div class="file">latency.py — the observation delay ring fills unfilled slots</div>
+<pre class="diff"><code><span class="c">fill = ~self.filled</span>
+<span class="d">if bool(fill.any()):                     # wait for the GPU</span>
+<span class="d">    self.buf[fill] = frame[fill].unsqueeze(1).expand(...)   # variable shape</span>
+<span class="d">    self.filled = torch.ones_like(self.filled)</span>
+<span class="a">self.buf = torch.where(fill[:, None, None], frame[:, None, :], self.buf)</span>
+<span class="a">self.filled = torch.ones_like(self.filled)</span></code></pre>
+
+<div class="file">actuators.py — motor noise check</div>
+<pre class="diff"><code><span class="c">noise = self.torque_noise.unsqueeze(-1)</span>
+<span class="d">if bool((noise > 0.0).any()):            # asks the GPU every substep</span>
+<span class="a">if self._noisy:                          # decided once at startup, from the config</span>
+<span class="c">    tau = tau + noise * torch.randn(...)</span></code></pre>
+
+<p>The noise level is a config constant. Asking the GPU whether it is nonzero 25,000 times per iteration is 25,000 round trips with a known answer.</p>
+
+<h3>The wrapping</h3>
+
+<p>With the roadblocks gone, the compile call is two lines in the GPU actuator hook, where the trainer calls the ticks:</p>
+
+<div class="file">mjlab_wheel_actuator.py — compile at initialisation</div>
+<pre class="diff"><code><span class="a">self._sense_tick = torch.compile(self.sense.tick, dynamic=False)</span>
+<span class="a">self._pipe_tick = torch.compile(self.pipeline.tick, dynamic=False)</span></code></pre>
+
+<p>The models themselves know nothing about compilation. The CPU single-robot path calls the same methods eagerly. The parity between the two paths is a test, not an assumption.</p>
+
+<h3>What it bought</h3>
+
+<div class="wrap"><table>
+<tr><th></th><th class="n">before</th><th class="n">after</th></tr>
+<tr><td>sense tick per substep</td><td class="n">0.85 ms, 280 kernels</td><td class="n">0.28 ms</td></tr>
+<tr><td>graph breaks (host syncs)</td><td class="n">9 in sense, 3 in actuation</td><td class="n">0</td></tr>
+<tr><td>iteration time</td><td class="n">2.90 s</td><td class="n">2.57 s</td></tr>
+</table></div>
+
+<h2>The idea that failed: CUDA graphs</h2>
+
+<p>Fusion merges nearby operations into fewer kernels. A CUDA graph goes further: it records the entire sequence of launches once, then replays the whole recording with a single instruction from the CPU. Every launch becomes free after the first run.</p>
+
+<p>Here is the concept. Imagine you are directing a play. Without a graph, you call out each lighting cue and each sound effect one at a time from the booth: "lights down", wait for confirmation, "sound effect 3", wait, "spotlight on". The crew is fast, but half the show is you talking to them.</p>
+
+<figure>
+<svg viewBox="0 0 680 200" role="img" aria-label="Three-panel diagram: 1) Director calls one cue at a time, crew waits between. 2) Director records a script and hands it over, crew runs it all back-to-back. 3) But the actors moved since the recording, so the script points to empty chairs.">
+  <g font-family="Source Serif 4, Georgia, serif" font-size="11.5" fill="currentColor">
+    <!-- Panel 1: one at a time -->
+    <g transform="translate(0,0)">
+      <rect x="0" y="0" width="212" height="90" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+      <text x="10" y="18" font-weight="600" font-size="12">Without a graph</text>
+      <g fill="var(--cpu)" transform="translate(10,28)">
+        <rect x="0" y="0" width="24" height="14" rx="2"/><rect x="34" y="0" width="24" height="14" rx="2"/>
+        <rect x="68" y="0" width="24" height="14" rx="2"/><rect x="102" y="0" width="24" height="14" rx="2"/>
+        <rect x="136" y="0" width="24" height="14" rx="2"/><rect x="170" y="0" width="24" height="14" rx="2"/>
+      </g>
+      <g fill="var(--accent)" transform="translate(10,52)">
+        <rect x="26" y="0" width="4" height="14" rx="1"/><rect x="60" y="0" width="4" height="14" rx="1"/>
+        <rect x="94" y="0" width="4" height="14" rx="1"/><rect x="128" y="0" width="4" height="14" rx="1"/>
+        <rect x="162" y="0" width="4" height="14" rx="1"/>
+      </g>
+      <text x="10" y="82" fill="var(--ink-3)" font-size="10">one cue at a time, crew waits between</text>
+    </g>
+    <!-- Panel 2: graph -->
+    <g transform="translate(234,0)">
+      <rect x="0" y="0" width="212" height="90" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+      <text x="10" y="18" font-weight="600" font-size="12">With a CUDA graph</text>
+      <g transform="translate(10,28)">
+        <rect x="0" y="0" width="30" height="14" rx="2" fill="var(--cpu)"/>
+        <text x="36" y="11" font-size="10" fill="var(--ink-3)">"replay"</text>
+      </g>
+      <g fill="var(--accent)" transform="translate(10,52)">
+        <rect x="0" y="0" width="16" height="14" rx="1"/><rect x="18" y="0" width="12" height="14" rx="1"/>
+        <rect x="32" y="0" width="20" height="14" rx="1"/><rect x="54" y="0" width="10" height="14" rx="1"/>
+        <rect x="66" y="0" width="14" height="14" rx="1"/><rect x="82" y="0" width="18" height="14" rx="1"/>
+      </g>
+      <text x="10" y="82" fill="var(--ink-3)" font-size="10">one instruction, crew runs it back-to-back</text>
+    </g>
+    <!-- Panel 3: why it fails -->
+    <g transform="translate(468,0)">
+      <rect x="0" y="0" width="212" height="90" rx="4" fill="var(--surface)" stroke="var(--warn)" stroke-opacity="0.5"/>
+      <text x="10" y="18" font-weight="600" font-size="12" fill="var(--warn)">Why it failed for us</text>
+      <text x="10" y="36" fill="var(--ink-2)" font-size="11">The script says "light on chair A".</text>
+      <text x="10" y="50" fill="var(--ink-2)" font-size="11">But the actor moved to chair B.</text>
+      <text x="10" y="64" fill="var(--ink-2)" font-size="11">Copy the actor back to A first.</text>
+      <text x="10" y="78" fill="var(--ink-2)" font-size="11">Do that for every prop, every take.</text>
+    </g>
+    <!-- Arrow showing flow -->
+    <g transform="translate(0,108)">
+      <text x="0" y="12" font-size="12" fill="var(--ink-2)">A CUDA graph locks every memory address. If a tensor moves between calls, PyTorch copies it</text>
+      <text x="0" y="28" font-size="12" fill="var(--ink-2)">to the recorded address before each replay. Our ticks create fresh tensors every substep</text>
+      <text x="0" y="44" font-size="12" fill="var(--ink-2)">(the true-state dictionary) and reassign state (</text>
+      <text x="284" y="44" font-size="12" fill="var(--ink-2)"><tspan font-family="JetBrains Mono, monospace" font-size="11">self.x = new_value</tspan>), so nearly everything moves.</text>
+      <text x="0" y="60" font-size="12" fill="var(--ink-2)">At 1024 robots the copies cost about as much as the launches the graph removes.</text>
+    </g>
+  </g>
+</svg>
+<figcaption>The graph records the script on the first run. If nothing moves between takes, every subsequent take is free. Ours moved.</figcaption>
+</figure>
+
+<p>A CUDA graph records which kernels run, in what order, reading from which memory addresses and writing to which others. On replay it issues the whole sequence with one instruction. The crew runs the lighting cues back to back with no pauses.</p>
+
+<p>The catch: the recording is literal about memory. If a tensor lived at address 0x7f00 during recording, the replayed kernel reads from 0x7f00. If that tensor was freed and a new one allocated at 0x7f10, the kernel reads stale data at the old address. PyTorch handles this by copying every moved tensor back to its recorded address before each replay.</p>
+
+<p>In our ticks, nearly everything moves. The actuator hook builds a fresh dictionary of seven true-state tensors every substep, and the sensor models update their state by writing <code>self.pitch = new_pitch</code>, which in Python creates a new tensor at a new address. So before each replay, PyTorch copies seven inputs and about forty state tensors to their recorded positions. At 1024 robots, those copies cost about as much time as the 280 launches the graph was supposed to remove.</p>
+
+<div class="wrap"><table>
+<tr><th>mode</th><th class="n">iteration time</th><th>notes</th></tr>
+<tr><td>eager (no compile)</td><td class="n">2.90 s</td><td>the baseline</td></tr>
+<tr><td>fusion only</td><td class="n">2.57 s</td><td>fewer kernels, same launch pattern</td></tr>
+<tr><td>fusion + CUDA graph</td><td class="n">2.65 s</td><td>graph copies eat the launch savings</td></tr>
+</table></div>
+
+<p>The graph mode was tried, measured, and removed from the codebase. The comment in the actuator hook says what happened and why, so the next person who reaches for <code>reduce-overhead</code> knows what to fix first: make the state tensors in-place (write into existing buffers rather than creating new ones, about 43 assignment sites across six files) and stage the inputs into fixed buffers. That is a wider edit and it was not the one we needed today.</p>
+
+<p>Fusion alone delivered 11% off the iteration. We kept that.</p>
+
+
+<h2>The resets: fewer instructions for the same job</h2>
+
+<h3>The problem</h3>
+
+<p>When a robot's episode ends, the <code>ResetRobot</code> event draws new physical parameters (motor constants, masses, friction, wheel radius) and writes them into the MuJoCo model. This costs 2.1 ms per call, whether one robot resets or 128. The cost is flat because it is made of about 380 kernel launches, not 380 units of computation.</p>
+
+<p>With episodes about 900 steps long, one or two of the 1024 robots reset almost every step. So the reset term fires nearly every step and adds a steady 2 ms to a 20 ms step.</p>
+
+<h3>What we changed</h3>
+
+<p>Before touching code, we profiled the reset section by section. The four-bar kinematics round trip, which had looked like the obvious waste (data goes GPU to CPU, through numpy, back to GPU), turned out to cost 0.13 ms. The sync itself was 9 microseconds. The cost was in the writes, not the transfer.</p>
+
+<div class="file">events.py — mass and inertia: three groups became one write</div>
+<pre class="diff"><code><span class="d">for key, gids in self.mass_group_ids.items():</span>
+<span class="d">    ge, gb = torch.meshgrid(ids, gids, indexing="ij")</span>
+<span class="d">    nominal_mass = env.sim.get_default_field("body_mass")[gids]</span>
+<span class="d">    model.body_mass[ge, gb] = nominal_mass * factor</span>
+<span class="d">    model.body_inertia[ge, gb] = nominal_inertia * factor</span>
+<span class="c">                 ↓ three loops × (meshgrid + 2 reads + 2 writes) = 15 launches</span>
+<span class="a">factor = torch.stack([fac[k][:, c] if fac[k].dim() == 2 else fac[k]</span>
+<span class="a">                      for k, c in self.mass_layout], dim=-1)</span>
+<span class="a">rows = ids[:, None]</span>
+<span class="a">model.body_mass[rows, self.mass_bids] = self.nominal_mass * factor</span>
+<span class="a">model.body_inertia[rows, self.mass_bids] = self.nominal_inertia * factor</span>
+<span class="c">                 ↓ one stack + 2 writes = 3 launches</span></code></pre>
+
+<p>The per-group loop ran three times (base, leg, wheel), each time building index tensors with <code>meshgrid</code>, reading the nominal values from the model, and writing the scaled result. The new version builds one flat index tensor in <code>__init__</code>, reads the nominals once at construction, and writes each field with a single indexed assignment.</p>
+
+<div class="file">events.py — the spawn pose: twenty small GPU writes became one numpy upload</div>
+<pre class="diff"><code><span class="d">r = params["wheel_radius"].mean(dim=-1)              # GPU tensor</span>
+<span class="d">pitch = init["pitch"]                                # GPU tensor</span>
+<span class="d">h_np = init["h_mm"].detach().cpu().numpy()            # sync 1</span>
+<span class="d">leg_pose = {k: torch.as_tensor(v, device=...)         # upload per joint</span>
+<span class="d">            for k, v in self.kin.joint_values(h_np)}</span>
+<span class="d">drop = torch.as_tensor(self.kin.axle_drop(h_np), ...) # upload</span>
+<span class="d">...                                                   # 15+ lines of GPU math</span>
+<span class="d">root[:, 7] = init["v_x"]                              # one write per field</span>
+<span class="a">host = torch.stack([init["pitch"], init["h_mm"], init["v_x"],</span>
+<span class="a">    init["omega_y"], params["wheel_radius"].mean(-1)],</span>
+<span class="a">    dim=-1).cpu().numpy()                              # one sync</span>
+<span class="a">pitch, h_np, v_x, omega_y, r = host.T</span>
+<span class="a">leg_pose = self.kin.joint_values(h_np)                 # same kinematics</span>
+<span class="a">root = np.zeros((n, 13), dtype=np.float32)             # build in numpy</span>
+<span class="a">...                                                    # same formulas</span>
+<span class="a">root = torch.as_tensor(root, device=env.device)        # one upload</span></code></pre>
+
+<p>The height had to reach the CPU for the four-bar kinematics anyway. We sent all five scalars over in one stack, built the whole 13-column root state in numpy with the same formulas, and uploaded it in one tensor. The kinematics is called exactly as before.</p>
+
+<h3>What it bought</h3>
+
+<div class="wrap"><table>
+<tr><th></th><th class="n">before</th><th class="n">after</th></tr>
+<tr><td>reset term, one robot</td><td class="n">2.12 ms</td><td class="n">1.81 ms</td></tr>
+<tr><td>CUDA kernels per reset</td><td class="n">380</td><td class="n">325</td></tr>
+</table></div>
+
+<p>Modest. About 5% of the iteration. The remaining cost is mostly the parameter draws (0.35 ms, fifteen small draws) and the geometry-bounds recompute (0.30 ms, runs every time even when the radius did not change). Both were left alone because each would need a wider contract change to remove.</p>
+
+
+<h2>The result</h2>
+
+<div class="wrap"><table>
+<tr><th></th><th class="n">before</th><th class="n">after</th></tr>
+<tr><td>pipeline ticks, five substeps</td><td class="n">5.4 ms</td><td class="n">~2.4 ms</td></tr>
+<tr><td>reset term, per call</td><td class="n">2.1 ms</td><td class="n">1.8 ms</td></tr>
+<tr><td>policy step (profile script)</td><td class="n">20.5 ms</td><td class="n">18.0 ms</td></tr>
+<tr><td>iteration</td><td class="n">2.90 s</td><td class="n">2.57 s</td></tr>
+<tr><td>5000-iteration run</td><td class="n">~4.0 h</td><td class="n">~3.6 h</td></tr>
+</table></div>
+
+<p>Physics is now an eighth of the step and our pipeline code about a quarter. What remains is mostly mjlab's own manager overhead (4.2 ms) and the PPO update (0.58 s per iteration), neither of which we can touch. The next lever is running two experiments at once on the half-idle card, which the panel script already supports.</p>
+
+<h2>What we learned</h2>
+
+<p>Both estimates were too high, and for the same reason. Each assumed the largest visible item was the cost, and the finer measurement said otherwise. The kinematics round trip looked like the obvious waste in the reset and turned out to be 6% of it. The CUDA graph looked like the obvious tool for a launch-bound loop and turned out slower than plain fusion. The habit that paid was measuring one level deeper before editing.</p>
+
+<div class="cols">
+  <div>
+    <h4 class="y">What worked</h4>
+    <ul>
+      <li><strong>Kernel fusion</strong> via <code>torch.compile</code>, merging small operations into bigger kernels.</li>
+      <li><strong>Replacing host syncs</strong> with masked <code>torch.where</code>, so the compiler can trace the whole function.</li>
+      <li><strong>Batching indexed writes</strong> into one per model field instead of one per group.</li>
+      <li><strong>Building the spawn pose</strong> on the host alongside the kinematics that was already there.</li>
+    </ul>
+  </div>
+  <div>
+    <h4 class="n">What did not</h4>
+    <ul>
+      <li><strong>CUDA graphs</strong>. The tensor copies before each replay cost as much as the launches removed. Would work after making all state in-place (~43 sites), which we chose not to do.</li>
+      <li><strong>Optimising the kinematics transfer</strong>. It was 0.13 ms. The rest of the reset was ten times more.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+<p style="font-size:13px; color:var(--ink-3);">All numbers from profiling scripts in the session scratchpad, 200 to 300 policy steps at 1024 environments after warmup, with CUDA synchronization around every timed section. Utilization from nvidia-smi at 1 Hz during 12-iteration runs. RTX 5080, 16 September 2026.</p>
+</main>
+
+</body></html>

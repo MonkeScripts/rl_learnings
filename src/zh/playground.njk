@@ -1,0 +1,21 @@
+---
+layout: base.njk
+permalink: /zh/playground/
+title: 组件试验场
+widgets: [ppo-clip, gamma-horizon, rl-loop]
+---
+<main class="day-layout" style="grid-template-columns:minmax(0,1fr)">
+  <article class="day" style="margin:0 auto">
+    <header class="day-head"><p class="eyebrow">Playground</p><h1>组件试验场</h1>
+    <p class="meta">所有交互组件集中在一页，方便检查。课程里不会链接到这里。</p></header>
+    <div class="prose">
+      <h2>PPO 裁剪探索器（第 9 天）</h2>
+      <p>把 A 调到大于 0，先在裁剪开的状态下点“执行 10 步梯度上升”，再关掉裁剪试一次。裁剪开时 r 停在 1+ε，关掉后没有任何东西拦得住它。</p>
+      <ppo-clip></ppo-clip>
+      <h2>γ 与时间跨度（第 1、6 天）</h2>
+      <gamma-horizon></gamma-horizon>
+      <h2>RL 循环步进器（第 1 天）</h2>
+      <rl-loop></rl-loop>
+    </div>
+  </article>
+</main>

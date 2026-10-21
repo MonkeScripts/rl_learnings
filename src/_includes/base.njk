@@ -1,0 +1,38 @@
+{%- set t = i18n[lang] -%}
+{%- set otherUrl = ('/zh' ~ page.url) if lang == "en" else page.url | replace("/zh/", "/") -%}
+{%- set enUrl = page.url if lang == "en" else otherUrl -%}
+{%- set zhUrl = otherUrl if lang == "en" else page.url -%}
+<!doctype html>
+<html lang="{{ t.htmlLang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if title %}{{ title }} · {% endif %}{{ t.siteTitle }}</title>
+  <meta name="description" content="{{ goal or t.tagline }}">
+  <link rel="alternate" hreflang="en" href="{{ enUrl | url }}">
+  <link rel="alternate" hreflang="zh-CN" href="{{ zhUrl | url }}">
+  <link rel="alternate" hreflang="x-default" href="{{ enUrl | url }}">
+  <link rel="icon" href="{{ '/assets/favicon.svg' | url }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+SC:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{{ '/assets/katex/katex.min.css' | url }}">
+  <link rel="stylesheet" href="{{ '/assets/site.css' | url }}">
+  <script>try{var m=localStorage.getItem("lrl.theme");if(m)document.documentElement.dataset.theme=m}catch(e){}</script>
+</head>
+<body data-lang="{{ lang }}" data-base="{{ base | url }}">
+  <header class="topbar">
+    <a class="brand" href="{{ base | url }}"><span class="brand-mark" aria-hidden="true">π</span>{{ t.siteTitle }}</a>
+    <nav class="topbar-actions">
+      <a class="lang-switch" href="{{ otherUrl | url }}" hreflang="{{ t.otherLang }}">{{ t.other }}</a>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="{{ t.theme }}" title="{{ t.theme }}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
+    </nav>
+  </header>
+  {{ content | safe }}
+  <footer class="site-footer"><p>{{ t.footer }}</p></footer>
+  <script src="{{ '/assets/site.js' | url }}" defer></script>
+  {%- for w in widgets %}
+  <script src="{{ ('/assets/widgets/' ~ w ~ '.js') | url }}" defer></script>
+  {%- endfor %}
+</body>
+</html>

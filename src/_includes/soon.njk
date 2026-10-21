@@ -1,0 +1,16 @@
+---
+layout: base.njk
+---
+{%- set t = i18n[lang] -%}
+<main class="day-layout" style="grid-template-columns:minmax(0,1fr)">
+  <article class="day" style="margin:0 auto">
+    <header class="day-head">
+      <p class="eyebrow">{% if lang == "zh" %}{{ t.day }} {{ n }} {{ t.dayAfter }}{% else %}{{ t.day }} {{ n }}{% endif %} · {{ t.soon }}</p>
+      <h1>{{ title }}</h1>
+    </header>
+    <div class="prose">
+      <p>{% if lang == "zh" %}这一天还在写。先回到上一天，或者看看全部章节。{% else %}This day is still being written. Go back to the previous day, or browse all days.{% endif %}</p>
+      <p><a class="button" href="{{ base | url }}">{{ t.allDays }}</a></p>
+    </div>
+  </article>
+</main>
