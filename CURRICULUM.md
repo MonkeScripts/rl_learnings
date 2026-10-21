@@ -1,6 +1,6 @@
 # RL Study Guide: Curriculum Plan
 
-Modelled on [leeebo/learning_ai](https://github.com/leeebo/learning_ai): numbered days grouped into stages, bilingual (EN + zh-CN), published at monkescripts.github.io/rl_learnings.
+Numbered days grouped into stages, bilingual (EN + zh-CN), published at monkescripts.github.io/rl_learnings.
 
 - 19 core days in 4 stages, plus 2 elective days.
 - The whole guide is one story, told the way `notes/ppo-takeaways-clean.md` tells "The PPO story" (see `STYLE.md`). Each day ends on a problem it could not solve, and the next day opens by picking it up. That line is the **Hand-off** on every day below.

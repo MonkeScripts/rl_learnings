@@ -25,4 +25,4 @@ Content format, widget contract and voice rules: [AGENTS.md](AGENTS.md), [STYLE.
 
 ## Credits
 
-Built from my own notes and experiments. Parts of Stage 1 and 2 are adapted from the [Hugging Face Deep RL Course](https://huggingface.co/learn/deep-rl-course), credited on each page where used. Inspired by the day-by-day format of [leeebo/learning_ai](https://github.com/leeebo/learning_ai).
+Built from my own notes and experiments. Parts of Stage 1 and 2 are adapted from the [Hugging Face Deep RL Course](https://huggingface.co/learn/deep-rl-course), credited on each page where used.
